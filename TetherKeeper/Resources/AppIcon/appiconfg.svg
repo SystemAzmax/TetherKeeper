@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="456" height="456" viewBox="0 0 456 456" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <g fill="none" stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round">
+        <!-- テザリング（電波）: 心拍の頂点から発信 -->
+        <path d="M171.43 183.43 A80 80 0 0 1 284.57 183.43" stroke-width="28" />
+        <path d="M125.47 137.47 A145 145 0 0 1 330.53 137.47" stroke-width="28" />
+        <!-- キープアライブ（心拍） -->
+        <polyline points="60,330 160,330 185,355 228,236 268,380 292,330 396,330" stroke-width="26" />
+    </g>
+</svg>

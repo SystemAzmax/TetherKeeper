@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="KeepAlive.Core/KeepAlive.Core.csproj" />
+  <Project Path="KeepAlive.Infrastructure/KeepAlive.Infrastructure.csproj" />
+  <Project Path="KeepAlive.Tests/KeepAlive.Tests.csproj" />
+  <Project Path="TetherKeeper/TetherKeeper.csproj" />
+</Solution>

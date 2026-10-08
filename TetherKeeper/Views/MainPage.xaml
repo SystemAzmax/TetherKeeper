@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:TetherKeeper.ViewModels"
+             x:Class="TetherKeeper.Views.MainPage"
+             x:DataType="vm:MainViewModel"
+             Title="モニター">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*"
+          Padding="16"
+          RowSpacing="12">
+
+        <!-- 状態 -->
+        <Border Grid.Row="0"
+                Padding="16"
+                StrokeShape="RoundRectangle 8"
+                Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}">
+            <VerticalStackLayout Spacing="6">
+                <HorizontalStackLayout Spacing="10">
+                    <Ellipse Fill="{Binding StatusColor}"
+                             WidthRequest="14"
+                             HeightRequest="14"
+                             VerticalOptions="Center" />
+                    <Label Text="{Binding StatusText}"
+                           FontSize="20"
+                           FontAttributes="Bold"
+                           SemanticProperties.HeadingLevel="Level1" />
+                </HorizontalStackLayout>
+                <Label Text="{Binding ConfigurationText}" LineBreakMode="CharacterWrap" />
+                <Label Text="{Binding NextRunText}"
+                       TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray300}}" />
+            </VerticalStackLayout>
+        </Border>
+
+        <!-- 操作 -->
+        <Grid Grid.Row="1" ColumnDefinitions="*,*,90" ColumnSpacing="8">
+            <Button Text="{Binding ToggleButtonText}"
+                    Command="{Binding ToggleCommand}" />
+            <Button Grid.Column="1"
+                    Text="今すぐ実行"
+                    Command="{Binding RunNowCommand}" />
+            <!-- 終了は主操作 (紫) や無効状態 (グレー) と区別するため薄い赤の塗りつぶし -->
+            <Button Grid.Column="2"
+                    Text="終了"
+                    Command="{Binding ExitCommand}"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource DangerContainer}, Dark={StaticResource DangerContainerDark}}"
+                    TextColor="{AppThemeBinding Light={StaticResource Danger}, Dark={StaticResource OnDangerContainerDark}}" />
+        </Grid>
+
+        <!-- 統計 -->
+        <Grid Grid.Row="2"
+              ColumnDefinitions="*,*,*,*"
+              RowDefinitions="Auto,Auto"
+              ColumnSpacing="4">
+            <Label Text="合計" HorizontalOptions="Center" FontSize="12" />
+            <Label Grid.Column="1" Text="成功" HorizontalOptions="Center" FontSize="12" />
+            <Label Grid.Column="2" Text="失敗" HorizontalOptions="Center" FontSize="12" />
+            <Label Grid.Column="3" Text="連続失敗" HorizontalOptions="Center" FontSize="12" />
+            <Label Grid.Row="1" Text="{Binding TotalCount}" HorizontalOptions="Center" FontSize="22" />
+            <Label Grid.Row="1" Grid.Column="1" Text="{Binding SuccessCount}" HorizontalOptions="Center" FontSize="22" />
+            <Label Grid.Row="1" Grid.Column="2" Text="{Binding FailureCount}" HorizontalOptions="Center" FontSize="22" />
+            <Label Grid.Row="1" Grid.Column="3" Text="{Binding ConsecutiveFailures}" HorizontalOptions="Center" FontSize="22" />
+        </Grid>
+
+        <VerticalStackLayout Grid.Row="3" Spacing="4">
+            <Label Text="{Binding LastResultText}" LineBreakMode="TailTruncation" />
+            <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="8">
+                <Label Text="ログ" FontAttributes="Bold" VerticalOptions="Center" />
+                <Button Grid.Column="1"
+                        Text="統計リセット"
+                        Padding="10,4"
+                        MinimumHeightRequest="32"
+                        Command="{Binding ResetStatisticsCommand}" />
+                <Button Grid.Column="2"
+                        Text="ログ消去"
+                        Padding="10,4"
+                        MinimumHeightRequest="32"
+                        ToolTipProperties.Text="画面のログを消去 (ファイルのログは残ります)"
+                        Command="{Binding ClearLogCommand}" />
+                <Button Grid.Column="3"
+                        Text="保存先"
+                        Padding="10,4"
+                        MinimumHeightRequest="32"
+                        ToolTipProperties.Text="ログファイルの保存フォルダを開く"
+                        Command="{Binding OpenLogFolderCommand}" />
+            </Grid>
+        </VerticalStackLayout>
+
+        <!-- ログ -->
+        <Border Grid.Row="4"
+                Padding="8"
+                StrokeShape="RoundRectangle 8"
+                Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}">
+            <CollectionView ItemsSource="{Binding Logs}">
+                <CollectionView.EmptyView>
+                    <Label Text="ログはありません" HorizontalOptions="Center" Margin="0,16" />
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:LogLine">
+                        <Label Text="{Binding Text}"
+                               TextColor="{Binding TextColor}"
+                               FontSize="12"
+                               Padding="0,2"
+                               LineBreakMode="CharacterWrap" />
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </Border>
+    </Grid>
+
+</ContentPage>

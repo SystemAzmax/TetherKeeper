@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:TetherKeeper.ViewModels"
+             x:Class="TetherKeeper.Views.SettingsPage"
+             x:DataType="vm:SettingsViewModel"
+             Title="設定">
+
+    <ContentPage.Resources>
+        <Style x:Key="FieldLabel" TargetType="Label">
+            <Setter Property="FontAttributes" Value="Bold" />
+            <Setter Property="Margin" Value="0,8,0,0" />
+        </Style>
+        <Style x:Key="Hint" TargetType="Label">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray300}}" />
+        </Style>
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="4" MaximumWidthRequest="640">
+
+            <Label Text="通信方式" Style="{StaticResource FieldLabel}" />
+            <Picker ItemsSource="{Binding Methods}"
+                    ItemDisplayBinding="{Binding DisplayName, x:DataType=vm:MethodOption}"
+                    SelectedItem="{Binding SelectedMethod}" />
+            <Label Text="{Binding MethodDescription}" Style="{StaticResource Hint}" />
+
+            <VerticalStackLayout IsVisible="{Binding IsPing}" Spacing="4">
+                <Label Text="Ping 送信先（ホスト名 / IP アドレス）" Style="{StaticResource FieldLabel}" />
+                <Entry Text="{Binding PingHost}" Placeholder="1.1.1.1" />
+            </VerticalStackLayout>
+
+            <VerticalStackLayout IsVisible="{Binding IsHttpHead}" Spacing="4">
+                <Label Text="HTTP HEAD 送信先 URL" Style="{StaticResource FieldLabel}" />
+                <Entry Text="{Binding HttpUrl}" Keyboard="Url" Placeholder="http://www.msftconnecttest.com/connecttest.txt" />
+            </VerticalStackLayout>
+
+            <!-- ホストとポートは横並びにして縦幅を抑える -->
+            <Grid IsVisible="{Binding IsTcpConnect}"
+                  ColumnDefinitions="*,110"
+                  RowDefinitions="Auto,Auto"
+                  ColumnSpacing="8"
+                  RowSpacing="4">
+                <Label Text="TCP 接続先ホスト" Style="{StaticResource FieldLabel}" />
+                <Label Grid.Column="1" Text="ポート" Style="{StaticResource FieldLabel}" />
+                <Entry Grid.Row="1" Text="{Binding TcpHost}" Placeholder="1.1.1.1" />
+                <Entry Grid.Row="1" Grid.Column="1" Text="{Binding TcpPort}" Keyboard="Numeric" Placeholder="443" />
+            </Grid>
+
+            <!-- 実行間隔とタイムアウトも横並び -->
+            <Grid ColumnDefinitions="*,*"
+                  RowDefinitions="Auto,Auto"
+                  ColumnSpacing="8"
+                  RowSpacing="4">
+                <Label Text="実行間隔（秒）" Style="{StaticResource FieldLabel}" />
+                <Label Grid.Column="1" Text="タイムアウト（ミリ秒）" Style="{StaticResource FieldLabel}" />
+                <Entry Grid.Row="1" Text="{Binding IntervalSeconds}" Keyboard="Numeric" />
+                <Entry Grid.Row="1" Grid.Column="1" Text="{Binding TimeoutMilliseconds}" Keyboard="Numeric" />
+            </Grid>
+            <Label Text="間隔 5〜3600 秒、タイムアウト 500〜30000 ミリ秒（間隔より短く）。切断される場合は間隔を 15〜30 秒程度に。"
+                   Style="{StaticResource Hint}" />
+
+            <Grid ColumnDefinitions="*,Auto" Margin="0,8,0,0">
+                <Label Text="アプリ起動時に自動で開始する" VerticalOptions="Center" />
+                <Switch Grid.Column="1" IsToggled="{Binding StartOnLaunch}" />
+            </Grid>
+
+            <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding IsAutoStartSupported}">
+                <Label Text="Windows ログイン時にアプリを起動する" VerticalOptions="Center" />
+                <Switch Grid.Column="1" IsToggled="{Binding LaunchAtLogin}" />
+            </Grid>
+
+            <Label Text="{Binding ErrorText}"
+                   IsVisible="{Binding HasErrors}"
+                   TextColor="#E53935"
+                   Margin="0,12,0,0" />
+
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8" Margin="0,12,0,0">
+                <Button Text="保存" Command="{Binding SaveCommand}" />
+                <Button Grid.Column="1"
+                        Text="既定値に戻す"
+                        Command="{Binding RestoreDefaultsCommand}"
+                        BackgroundColor="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}"
+                        TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}" />
+            </Grid>
+            <Label Text="{Binding StatusMessage}" Style="{StaticResource Hint}" HorizontalOptions="Center" />
+
+            <Label Text="※ 本アプリは定期的に微小な通信を発生させてアイドル切断を軽減するものであり、切断を完全に防ぐことは保証できません。"
+                   Style="{StaticResource Hint}"
+                   Margin="0,12,0,0" />
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>
