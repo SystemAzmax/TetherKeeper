@@ -273,4 +273,41 @@ public sealed class KeepAliveWorkerTests : IAsyncDisposable
         await TestHelpers.WaitUntilAsync(() => !_worker.IsRunning, AdvanceOneSecond);
         Assert.Equal(1, _ping.ExecutionCount);
     }
+    [Fact]
+    public async Task ResultReceivedHandlerException_DoesNotStopLoop()
+    {
+        _worker.ResultReceived += (_, _) => throw new InvalidOperationException("handler boom");
+        _worker.Start();
+
+        await TestHelpers.WaitUntilAsync(() => _ping.ExecutionCount == 2, AdvanceOneSecond);
+
+        Assert.True(_worker.IsRunning);
+        Assert.Contains(_log.GetEntries(), e => e.Level == LogLevelKind.Error && e.Message.Contains("handler boom"));
+    }
+
+    [Fact]
+    public async Task UnexpectedLoopException_StopsWorkerInsteadOfHangingAsRunning()
+    {
+        var settings = new FaultySettingsService(new AppSettings { IntervalSeconds = 600 });
+        using var worker = new KeepAliveWorker(
+            new KeepAliveStrategyResolver([_ping, _tcp]), settings, _log, _power, _time, new KeepAliveOptions());
+        var stateChanges = 0;
+        worker.StateChanged += (_, _) => Interlocked.Increment(ref stateChanges);
+
+        worker.Start();
+        await TestHelpers.WaitUntilAsync(() => _ping.ExecutionCount == 1);
+        settings.Throw = true;
+        worker.TriggerNow();
+
+        await TestHelpers.WaitUntilAsync(() => !worker.IsRunning);
+        await TestHelpers.WaitUntilAsync(() => Volatile.Read(ref stateChanges) == 2);
+        Assert.Contains(_log.GetEntries(), e => e.Level == LogLevelKind.Error && e.Message.Contains("settings boom"));
+
+        // 停止済みのため StopAsync は何もせず、例外も投げない。再開もできる
+        await worker.StopAsync();
+        settings.Throw = false;
+        worker.Start();
+        await TestHelpers.WaitUntilAsync(() => _ping.ExecutionCount == 2);
+        await worker.StopAsync();
+    }
 }

@@ -48,12 +48,14 @@ public sealed class LogService : ILogService
                 _entries.Dequeue();
         }
 
+        // ログ出力の失敗で呼び出し元 (キープアライブのループ等) を止めないよう、出力先ごとに例外を握りつぶす。
+        // 失敗をこのログ自身に書くと再帰するため、ILogger (デバッグ出力) にだけ残す
 #pragma warning disable CA2254 // ログメッセージはユーザー向け文字列をそのまま出力する
-        _logger.Log(ToLogLevel(level), message);
+        TryOutput("ILogger", () => _logger.Log(ToLogLevel(level), message));
 #pragma warning restore CA2254
         foreach (var sink in _sinks)
-            sink.Write(entry);
-        EntryAdded?.Invoke(this, entry);
+            TryOutput(sink.GetType().Name, () => sink.Write(entry));
+        TryOutput(nameof(EntryAdded), () => EntryAdded?.Invoke(this, entry));
     }
 
     public Task FlushAsync() => Task.WhenAll(_sinks.Select(s => s.FlushAsync()));
@@ -66,6 +68,25 @@ public sealed class LogService : ILogService
         }
 
         Cleared?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void TryOutput(string target, Action output)
+    {
+        try
+        {
+            output();
+        }
+        catch (Exception ex)
+        {
+            try
+            {
+                _logger.LogError(ex, "ログの出力に失敗しました ({Target})", target);
+            }
+            catch
+            {
+                // ILogger 自体が失敗した場合は諦める
+            }
+        }
     }
 
     private static LogLevel ToLogLevel(LogLevelKind level) => level switch

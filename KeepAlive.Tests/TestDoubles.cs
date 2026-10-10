@@ -99,6 +99,23 @@ internal sealed class StaticSettingsService(AppSettings settings) : ISettingsSer
     }
 }
 
+/// <summary><see cref="Throw"/> を true にすると Current の取得で例外を投げる ISettingsService (異常系テスト用)。</summary>
+internal sealed class FaultySettingsService(AppSettings settings) : ISettingsService
+{
+    public volatile bool Throw;
+
+    public AppSettings Current => Throw ? throw new InvalidOperationException("settings boom") : settings;
+
+#pragma warning disable CS0067
+    public event EventHandler<AppSettings>? SettingsChanged;
+#pragma warning restore CS0067
+
+    public Task<AppSettings> LoadAsync(CancellationToken cancellationToken = default) => Task.FromResult(settings);
+
+    public Task<IReadOnlyList<string>> SaveAsync(AppSettings s, CancellationToken cancellationToken = default) =>
+        Task.FromResult<IReadOnlyList<string>>([]);
+}
+
 internal static class TestHelpers
 {
     public static LogService CreateLogService(TimeProvider? timeProvider = null) =>

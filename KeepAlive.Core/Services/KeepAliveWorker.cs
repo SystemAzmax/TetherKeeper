@@ -90,8 +90,17 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
             _loopTask = Task.Run(async () =>
             {
                 await startSignal.Task.ConfigureAwait(false);
-                if (await RunAsync(startedAt, token).ConfigureAwait(false))
-                    _ = AutoStopAsync(runCts);
+                try
+                {
+                    if (await RunAsync(startedAt, token).ConfigureAwait(false))
+                        _ = AutoStopAsync(runCts);
+                }
+                catch (Exception ex) when (!token.IsCancellationRequested)
+                {
+                    // ループが黙って止まり「動作中」の表示だけが残るのを防ぐため、停止状態に戻す
+                    _log.Error($"予期しないエラーのためキープアライブを停止しました: {ex.GetType().Name}: {ex.Message}");
+                    _ = StopCoreAsync(runCts);
+                }
             }, CancellationToken.None);
         }
 
@@ -106,7 +115,7 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
                     _log.Warning($"自動停止日時 ({stopAt.ToLocalTime():yyyy/MM/dd HH:mm}) を過ぎているため、自動停止は行いません。");
             }
 
-            StateChanged?.Invoke(this, EventArgs.Empty);
+            RaiseStateChanged();
         }
         finally
         {
@@ -146,13 +155,18 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
         catch (OperationCanceledException)
         {
         }
+        catch (Exception ex)
+        {
+            // 停止 (アプリ終了を含む) が失敗しないよう、ここでは例外を外に出さない
+            _log.Error($"停止処理中にエラーが発生しました: {ex.GetType().Name}: {ex.Message}");
+        }
         finally
         {
             cts.Dispose();
         }
 
         _log.Info("キープアライブを停止しました。");
-        StateChanged?.Invoke(this, EventArgs.Empty);
+        RaiseStateChanged();
     }
 
     public void TriggerNow()
@@ -280,7 +294,27 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
         else
             _log.Warning($"失敗: {detail} {result.Message}".TrimEnd());
 
-        ResultReceived?.Invoke(this, result);
+        try
+        {
+            ResultReceived?.Invoke(this, result);
+        }
+        catch (Exception ex)
+        {
+            // 通知先 (画面など) の不具合でキープアライブを止めない
+            _log.Error($"実行結果の通知先でエラーが発生しました: {ex.GetType().Name}: {ex.Message}");
+        }
+    }
+
+    private void RaiseStateChanged()
+    {
+        try
+        {
+            StateChanged?.Invoke(this, EventArgs.Empty);
+        }
+        catch (Exception ex)
+        {
+            _log.Error($"状態変化の通知先でエラーが発生しました: {ex.GetType().Name}: {ex.Message}");
+        }
     }
 
     /// <summary>

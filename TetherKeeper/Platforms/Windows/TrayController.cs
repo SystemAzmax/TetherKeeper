@@ -121,12 +121,20 @@ internal sealed class TrayController
         new("終了", () => _ = _exitService.ExitAsync()),
     ];
 
+    // async void のため、例外を外に出すとアプリが落ちる
     private async void ToggleWorker()
     {
-        if (_worker.IsRunning)
-            await _worker.StopAsync();
-        else
-            _worker.Start();
+        try
+        {
+            if (_worker.IsRunning)
+                await _worker.StopAsync();
+            else
+                _worker.Start();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"TrayController: 開始／停止に失敗しました: {ex}");
+        }
     }
 
     private void UpdateToolTip() => _notifyIcon.ToolTip = BuildToolTip();
