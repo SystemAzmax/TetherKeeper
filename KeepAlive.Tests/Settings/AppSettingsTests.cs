@@ -20,6 +20,33 @@ public class AppSettingsTests
         Assert.Contains(settings.Validate(), e => e.Contains("実行間隔"));
     }
 
+    [Theory]
+    [InlineData("http://user:secret@example.com/ping")]
+    [InlineData("https://user@example.com/")]
+    public void Validate_RejectsHttpUrlWithUserInfo_WhenHttpHeadSelected(string url)
+    {
+        var settings = new AppSettings { Method = KeepAliveMethod.HttpHead, HttpUrl = url };
+
+        Assert.Contains(settings.Validate(), e => e.Contains("パスワード"));
+    }
+
+    [Fact]
+    public void Normalize_RemovesUserInfoFromHttpUrl()
+    {
+        var settings = new AppSettings { HttpUrl = "http://user:secret@example.com:8080/ping?a=1" }.Normalize();
+
+        Assert.Equal("http://example.com:8080/ping?a=1", settings.HttpUrl);
+    }
+
+    [Fact]
+    public void Normalize_KeepsHttpUrlAsIs_WhenNoUserInfo()
+    {
+        // 表記 (末尾スラッシュの有無など) を勝手に変えない
+        var settings = new AppSettings { HttpUrl = "http://example.com" }.Normalize();
+
+        Assert.Equal("http://example.com", settings.HttpUrl);
+    }
+
     [Fact]
     public void Validate_RejectsTimeoutNotShorterThanInterval()
     {

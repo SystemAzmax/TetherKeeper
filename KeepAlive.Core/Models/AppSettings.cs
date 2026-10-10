@@ -75,6 +75,10 @@ public sealed record AppSettings
             case KeepAliveMethod.HttpHead when !IsValidHttpUrl(HttpUrl):
                 errors.Add("HTTP の URL は http:// または https:// で始まる絶対 URL を指定してください。");
                 break;
+            case KeepAliveMethod.HttpHead when HasUserInfo(HttpUrl):
+                // 疎通確認に認証は不要。含めると設定ファイル・ログ・画面に平文で残ってしまう
+                errors.Add("HTTP の URL にユーザー名やパスワードを含めないでください。");
+                break;
             case KeepAliveMethod.TcpConnect when string.IsNullOrWhiteSpace(TcpHost):
                 errors.Add("TCP の接続先ホストを入力してください。");
                 break;
@@ -103,7 +107,7 @@ public sealed record AppSettings
             IntervalSeconds = interval,
             TimeoutMilliseconds = timeout,
             PingHost = string.IsNullOrWhiteSpace(PingHost) ? defaults.PingHost : PingHost.Trim(),
-            HttpUrl = IsValidHttpUrl(HttpUrl) ? HttpUrl.Trim() : defaults.HttpUrl,
+            HttpUrl = IsValidHttpUrl(HttpUrl) ? RemoveUserInfo(HttpUrl.Trim()) : defaults.HttpUrl,
             TcpHost = string.IsNullOrWhiteSpace(TcpHost) ? defaults.TcpHost : TcpHost.Trim(),
             TcpPort = TcpPort is >= 1 and <= 65535 ? TcpPort : defaults.TcpPort,
         };
@@ -112,4 +116,20 @@ public sealed record AppSettings
     private static bool IsValidHttpUrl(string? url) =>
         Uri.TryCreate(url?.Trim(), UriKind.Absolute, out var uri)
         && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
+
+    private static bool HasUserInfo(string? url) =>
+        Uri.TryCreate(url?.Trim(), UriKind.Absolute, out var uri) && uri.UserInfo.Length > 0;
+
+    /// <summary>
+    /// URL からユーザー名・パスワードを取り除く。手編集された設定ファイルなどに含まれていた場合に、
+    /// ログや画面へ平文で出さないため。含まれていなければ表記を変えないよう元の文字列をそのまま返す。
+    /// </summary>
+    private static string RemoveUserInfo(string url)
+    {
+        if (!HasUserInfo(url))
+            return url;
+
+        var builder = new UriBuilder(url) { UserName = string.Empty, Password = string.Empty };
+        return builder.Uri.AbsoluteUri;
+    }
 }
