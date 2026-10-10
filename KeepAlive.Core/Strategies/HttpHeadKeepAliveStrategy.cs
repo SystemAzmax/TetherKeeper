@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Headers;
 using KeepAlive.Core.Interfaces;
 using KeepAlive.Core.Models;
@@ -48,8 +49,7 @@ public sealed class HttpHeadKeepAliveStrategy : IKeepAliveStrategy
                 .ConfigureAwait(false);
 
             return KeepAliveResult.Succeeded(
-                Name, url, timestamp, _timeProvider.GetElapsedTime(started),
-                $"HTTP {(int)response.StatusCode} {response.ReasonPhrase}".TrimEnd());
+                Name, url, timestamp, _timeProvider.GetElapsedTime(started), DescribeStatus(response.StatusCode));
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -65,5 +65,23 @@ public sealed class HttpHeadKeepAliveStrategy : IKeepAliveStrategy
             return KeepAliveResult.Failed(
                 Name, url, timestamp, _timeProvider.GetElapsedTime(started), ex.InnerException?.Message ?? ex.Message);
         }
+    }
+
+    /// <summary>
+    /// 結果メッセージ用のステータス表記。
+    /// サーバーが返す ReasonPhrase は使わない (平文 HTTP では経路上の第三者も書き換えられ、
+    /// 任意の文字列がログに残ってしまうため)。
+    /// </summary>
+    internal static string DescribeStatus(HttpStatusCode status)
+    {
+        var code = (int)status;
+        var text = Enum.IsDefined(status) ? $"HTTP {code} {status}" : $"HTTP {code}";
+
+        // 自動リダイレクトは無効にしているため、3xx はそのまま返ってくる。
+        // 回線は生きているので成功扱いだが、目的のサーバーではなくログイン画面 (キャプティブポータル) や
+        // プロキシが応答している可能性がある
+        return code is >= 300 and < 400
+            ? $"{text}（リダイレクト応答: ログイン画面やプロキシが応答している可能性があります）"
+            : text;
     }
 }

@@ -58,6 +58,39 @@ public class HttpHeadKeepAliveStrategyTests
     }
 
     [Fact]
+    public async Task ExecuteAsync_DoesNotIncludeServerReasonPhrase()
+    {
+        // 平文 HTTP では経路上で書き換えられるため、サーバーの文言はログに残さない
+        var handler = new StubHandler((_, _) => Task.FromResult(
+            new HttpResponseMessage(HttpStatusCode.OK) { ReasonPhrase = "INJECTED by server" }));
+
+        var result = await CreateStrategy(handler).ExecuteAsync(CancellationToken.None);
+
+        Assert.True(result.Success);
+        Assert.DoesNotContain("INJECTED", result.Message);
+        Assert.Equal("HTTP 200 OK", result.Message);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.Found)]
+    [InlineData(HttpStatusCode.TemporaryRedirect)]
+    public async Task ExecuteAsync_TreatsRedirectAsSuccessWithNote(HttpStatusCode status)
+    {
+        var handler = new StubHandler((_, _) => Task.FromResult(new HttpResponseMessage(status)));
+
+        var result = await CreateStrategy(handler).ExecuteAsync(CancellationToken.None);
+
+        Assert.True(result.Success);
+        Assert.Contains("リダイレクト", result.Message);
+    }
+
+    [Fact]
+    public void DescribeStatus_ShowsOnlyCode_ForUndefinedStatus()
+    {
+        Assert.Equal("HTTP 599", HttpHeadKeepAliveStrategy.DescribeStatus((HttpStatusCode)599));
+    }
+
+    [Fact]
     public async Task ExecuteAsync_ReturnsFailure_OnNetworkError()
     {
         var handler = new StubHandler((_, _) => throw new HttpRequestException("network unreachable"));

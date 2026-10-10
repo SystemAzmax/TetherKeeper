@@ -22,7 +22,11 @@ public sealed record AppSettings
     /// <summary>Ping の送信先 (ホスト名または IP アドレス)。</summary>
     public string PingHost { get; init; } = "1.1.1.1";
 
-    /// <summary>HTTP HEAD の送信先 URL。</summary>
+    /// <summary>
+    /// HTTP HEAD の送信先 URL。
+    /// 既定値を平文 HTTP にしているのは、HTTPS は TLS ハンドシェイクで 1 回あたりの通信量が数 KB 増え、
+    /// テザリングの通信量を圧迫するため。送受信するのは固定の疎通確認用ファイルのヘッダーだけで、機密情報は含まない。
+    /// </summary>
     public string HttpUrl { get; init; } = "http://www.msftconnecttest.com/connecttest.txt";
 
     /// <summary>TCP 接続先ホスト。</summary>

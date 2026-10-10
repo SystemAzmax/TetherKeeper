@@ -26,7 +26,7 @@ public partial class SettingsViewModel : ObservableObject
     public IReadOnlyList<MethodOption> Methods { get; } =
     [
         new(KeepAliveMethod.Ping, "Ping (ICMP)", "通信量が最小。管理者権限は不要です。ICMP を遮断するネットワークでは失敗します。"),
-        new(KeepAliveMethod.HttpHead, "HTTP HEAD", "プロキシ環境や ICMP 遮断環境でも通りやすい方式です。通信量は Ping より多くなります。"),
+        new(KeepAliveMethod.HttpHead, "HTTP HEAD", "プロキシ環境や ICMP 遮断環境でも通りやすい方式です。通信量は Ping より多くなります。HTTP の応答があれば内容に関わらず成功とみなします。"),
         new(KeepAliveMethod.TcpConnect, "TCP Connect", "接続確立のみ行い即切断します。ポート 443 などへの接続が許可されている必要があります。"),
     ];
 
