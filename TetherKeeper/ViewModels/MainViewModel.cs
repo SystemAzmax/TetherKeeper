@@ -9,7 +9,8 @@ using TetherKeeper.Services;
 namespace TetherKeeper.ViewModels;
 
 /// <summary>ログ一覧の 1 行。</summary>
-public sealed record LogLine(string Text, Color TextColor);
+/// <summary>ログ一覧の 1 行。<see cref="Entry"/> は重複表示の判定に使う。</summary>
+public sealed record LogLine(LogEntry Entry, string Text, Color TextColor);
 
 public partial class MainViewModel : ObservableObject, IDisposable
 {
@@ -52,6 +53,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         AutoStopTime = defaultStopAt.TimeOfDay;
 
         RefreshAll();
+        LoadInitialLogs();
     }
 
     public ObservableCollection<LogLine> Logs { get; } = [];
@@ -247,6 +249,10 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private void OnLogEntryAdded(object? sender, LogEntry entry) =>
         MainThread.BeginInvokeOnMainThread(() =>
         {
+            // 初期表示の読み込みと追加通知が重なった場合に、同じログを二重に並べない
+            if (Logs.Any(line => ReferenceEquals(line.Entry, entry)))
+                return;
+
             Logs.Insert(0, ToLogLine(entry));
             while (Logs.Count > MaxVisibleLogs)
                 Logs.RemoveAt(Logs.Count - 1);
@@ -272,12 +278,17 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         RefreshStatistics();
         UpdateCountdown();
+    }
 
-        if (Logs.Count == 0)
-        {
-            foreach (var entry in _log.GetEntries().Reverse().Take(MaxVisibleLogs))
-                Logs.Add(ToLogLine(entry));
-        }
+    /// <summary>
+    /// 画面を作る前に出力されたログを表示する (以降のログは EntryAdded で追加する)。
+    /// 購読より後に読み込むため、購読から読み込みまでの間に出たログは両方の経路で届くが、
+    /// <see cref="OnLogEntryAdded"/> 側で重複を除く。
+    /// </summary>
+    private void LoadInitialLogs()
+    {
+        foreach (var entry in _log.GetEntries().Reverse().Take(MaxVisibleLogs))
+            Logs.Add(ToLogLine(entry));
     }
 
     private void RefreshAutoStop()
@@ -331,6 +342,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     }
 
     private static LogLine ToLogLine(LogEntry entry) => new(
+        entry,
         entry.ToString(),
         entry.Level switch
         {
