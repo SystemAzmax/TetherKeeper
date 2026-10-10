@@ -4,6 +4,7 @@ namespace KeepAlive.Core.Interfaces;
 
 /// <summary>
 /// 設定間隔でキープアライブ通信を繰り返すバックグラウンド処理。
+/// <see cref="AppSettings.AutoStopAt"/> が設定されていれば、その日時に自動で停止する。
 /// </summary>
 public interface IKeepAliveWorker
 {

@@ -27,6 +27,10 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
     private Task? _loopTask;
     private KeepAliveStatistics _statistics = KeepAliveStatistics.Empty;
     private DateTimeOffset? _nextRunAt;
+    private AppSettings _lastSettings;
+
+    /// <summary>待機の打ち切りが通信の要求か (1)、自動停止日時の再計算のみか (0)。</summary>
+    private int _runRequested;
 
     public KeepAliveWorker(
         IKeepAliveStrategyResolver resolver,
@@ -42,6 +46,7 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
         _power = power;
         _timeProvider = timeProvider;
         _options = options;
+        _lastSettings = settings.Current;
 
         _settings.SettingsChanged += OnSettingsChanged;
         _power.Suspending += OnSuspending;
@@ -70,6 +75,7 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
     public void Start()
     {
         var s = _settings.Current;
+        var startedAt = _timeProvider.GetUtcNow();
         var startSignal = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         lock (_gate)
         {
@@ -77,19 +83,29 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
                 return;
 
             while (_wake.Reader.TryRead(out _)) { }
-            _runCts = new CancellationTokenSource();
-            var token = _runCts.Token;
+            _runRequested = 0;
+            var runCts = _runCts = new CancellationTokenSource();
+            var token = runCts.Token;
             // 「開始」ログが初回結果より先に出るよう、ループ本体は開始通知の後に走らせる
             _loopTask = Task.Run(async () =>
             {
                 await startSignal.Task.ConfigureAwait(false);
-                await RunAsync(token).ConfigureAwait(false);
+                if (await RunAsync(startedAt, token).ConfigureAwait(false))
+                    _ = AutoStopAsync(runCts);
             }, CancellationToken.None);
         }
 
         try
         {
             _log.Info($"キープアライブを開始しました ({_resolver.Resolve(s.Method).Name} / {s.IntervalSeconds} 秒間隔)。");
+            if (s.AutoStopAt is { } stopAt)
+            {
+                if (stopAt > startedAt)
+                    _log.Info($"{stopAt.ToLocalTime():yyyy/MM/dd HH:mm} に自動停止します。");
+                else
+                    _log.Warning($"自動停止日時 ({stopAt.ToLocalTime():yyyy/MM/dd HH:mm}) を過ぎているため、自動停止は行いません。");
+            }
+
             StateChanged?.Invoke(this, EventArgs.Empty);
         }
         finally
@@ -98,12 +114,20 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
         }
     }
 
-    public async Task StopAsync()
+    public Task StopAsync() => StopCoreAsync(expected: null);
+
+    /// <param name="expected">
+    /// 指定した場合、その実行が現在も続いているときだけ停止する (自動停止と手動の停止・再開との競合対策)。
+    /// </param>
+    private async Task StopCoreAsync(CancellationTokenSource? expected)
     {
         CancellationTokenSource? cts;
         Task? loop;
         lock (_gate)
         {
+            if (expected is not null && !ReferenceEquals(_runCts, expected))
+                return;
+
             cts = _runCts;
             loop = _loopTask;
             _runCts = null;
@@ -131,7 +155,11 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
         StateChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    public void TriggerNow() => _wake.Writer.TryWrite(true);
+    public void TriggerNow()
+    {
+        Volatile.Write(ref _runRequested, 1);
+        _wake.Writer.TryWrite(true);
+    }
 
     public void ResetStatistics()
     {
@@ -153,7 +181,10 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
         }
     }
 
-    private async Task RunAsync(CancellationToken cancellationToken)
+    /// <summary>
+    /// 停止されるまで通信を繰り返す。自動停止日時に達した場合は true を返して終了する。
+    /// </summary>
+    private async Task<bool> RunAsync(DateTimeOffset startedAt, CancellationToken cancellationToken)
     {
         DateTimeOffset? lastRunAt = null;
 
@@ -161,6 +192,10 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
         {
             var settings = _settings.Current;
             var now = _timeProvider.GetUtcNow();
+
+            // スリープ中に日時を過ぎた場合も、復帰後のこの判定で通信せずに停止する
+            if (GetActiveAutoStopAt(settings, startedAt) is { } stopAt && now >= stopAt)
+                return true;
 
             // 電源イベントを取得できない OS 向けの保険: 想定より大きく時間が飛んでいればスリープ等とみなす
             if (lastRunAt is { } last && now - last > settings.Interval * 2 + settings.Timeout)
@@ -170,13 +205,43 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
             await ExecuteOnceAsync(settings, cancellationToken).ConfigureAwait(false);
 
             var interval = _settings.Current.Interval;
+            var nextRunAt = _timeProvider.GetUtcNow() + interval;
             lock (_gate)
             {
                 if (!cancellationToken.IsCancellationRequested)
                     _nextRunAt = _timeProvider.GetLocalNow() + interval;
             }
 
-            await WaitForNextRunAsync(interval, cancellationToken).ConfigureAwait(false);
+            if (!await WaitForNextRunAsync(nextRunAt, startedAt, cancellationToken).ConfigureAwait(false))
+                return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// この実行で有効な自動停止日時。開始時点で既に過ぎていた日時は対象外とする
+    /// (前回終了後に過ぎた日時で、次回起動時に即停止してしまうのを防ぐ)。
+    /// </summary>
+    private static DateTimeOffset? GetActiveAutoStopAt(AppSettings settings, DateTimeOffset startedAt) =>
+        settings.AutoStopAt is { } stopAt && stopAt > startedAt ? stopAt : null;
+
+    private async Task AutoStopAsync(CancellationTokenSource runCts)
+    {
+        try
+        {
+            var stopAt = _settings.Current.AutoStopAt;
+            _log.Info($"自動停止日時 ({stopAt?.ToLocalTime():yyyy/MM/dd HH:mm}) になりました。");
+            await StopCoreAsync(runCts).ConfigureAwait(false);
+
+            // 使い終わった日時を解除し、次回の開始時に再適用されないようにする
+            var current = _settings.Current;
+            if (current.AutoStopAt == stopAt)
+                await _settings.SaveAsync(current with { AutoStopAt = null }).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _log.Error($"自動停止の処理に失敗しました: {ex.Message}");
         }
     }
 
@@ -218,23 +283,58 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
         ResultReceived?.Invoke(this, result);
     }
 
-    private async Task WaitForNextRunAsync(TimeSpan interval, CancellationToken cancellationToken)
+    /// <summary>
+    /// 次回実行時刻まで待つ。<see cref="TriggerNow"/> で打ち切られる。
+    /// 自動停止日時に達した場合は false を返す。
+    /// </summary>
+    private async Task<bool> WaitForNextRunAsync(
+        DateTimeOffset nextRunAt, DateTimeOffset startedAt, CancellationToken cancellationToken)
     {
-        using var waitCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        var delay = Task.Delay(interval, _timeProvider, waitCts.Token);
-        var wake = _wake.Reader.WaitToReadAsync(waitCts.Token).AsTask();
+        while (true)
+        {
+            var now = _timeProvider.GetUtcNow();
+            var stopAt = GetActiveAutoStopAt(_settings.Current, startedAt);
+            if (now >= stopAt)
+                return false;
 
-        await Task.WhenAny(delay, wake).ConfigureAwait(false);
-        waitCts.Cancel();
-        cancellationToken.ThrowIfCancellationRequested();
+            // 自動停止日時が次回実行より前なら、その時刻に起きて停止判定を行う
+            var wakeAt = stopAt < nextRunAt ? stopAt.Value : nextRunAt;
+            if (now >= wakeAt)
+            {
+                _wake.Reader.TryRead(out _);
+                Volatile.Write(ref _runRequested, 0);
+                return true;
+            }
 
-        _wake.Reader.TryRead(out _);
+            using var waitCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            var delay = Task.Delay(wakeAt - now, _timeProvider, waitCts.Token);
+            var wake = _wake.Reader.WaitToReadAsync(waitCts.Token).AsTask();
+
+            var completed = await Task.WhenAny(delay, wake).ConfigureAwait(false);
+            waitCts.Cancel();
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (completed == delay)
+                continue;
+
+            _wake.Reader.TryRead(out _);
+            if (Interlocked.Exchange(ref _runRequested, 0) == 1)
+                return true;
+            // 自動停止日時だけが変わった場合は通信せず、待ち時間を計算し直す
+        }
     }
 
     private void OnSettingsChanged(object? sender, AppSettings settings)
     {
+        var previous = Interlocked.Exchange(ref _lastSettings, settings);
         if (!IsRunning)
             return;
+
+        if (previous with { AutoStopAt = null } == settings with { AutoStopAt = null })
+        {
+            _wake.Writer.TryWrite(true);
+            return;
+        }
 
         _log.Info($"設定変更を反映します ({_resolver.Resolve(settings.Method).Name} / {settings.IntervalSeconds} 秒間隔)。");
         TriggerNow();

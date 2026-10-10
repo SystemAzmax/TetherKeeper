@@ -202,4 +202,75 @@ public sealed class KeepAliveWorkerTests : IAsyncDisposable
         await TestHelpers.WaitUntilAsync(() => _ping.ExecutionCount == 2);
         Assert.Contains(_log.GetEntries(), e => e.Level == LogLevelKind.Warning && e.Message.Contains("前回実行から"));
     }
+    [Fact]
+    public async Task AutoStopAt_StopsWorkerAndClearsSetting()
+    {
+        await _settings.SaveAsync(_settings.Current with { IntervalSeconds = 600, AutoStopAt = _time.GetUtcNow().AddSeconds(30) });
+        _worker.Start();
+        await TestHelpers.WaitUntilAsync(() => _ping.ExecutionCount == 1);
+
+        await TestHelpers.WaitUntilAsync(() => !_worker.IsRunning, AdvanceOneSecond);
+        await TestHelpers.WaitUntilAsync(() => _settings.Current.AutoStopAt is null);
+
+        Assert.Equal(1, _ping.ExecutionCount);
+        Assert.Null(_store.Stored?.AutoStopAt);
+        Assert.Contains(_log.GetEntries(), e => e.Message.Contains("自動停止日時"));
+    }
+
+    [Fact]
+    public async Task AutoStopAt_PassedDuringSleep_StopsWithoutExecuting()
+    {
+        await _settings.SaveAsync(_settings.Current with { IntervalSeconds = 600, AutoStopAt = _time.GetUtcNow().AddMinutes(30) });
+        _worker.Start();
+        await TestHelpers.WaitUntilAsync(() => _ping.ExecutionCount == 1);
+
+        _time.Advance(TimeSpan.FromHours(2));
+        _power.RaiseResumed();
+
+        await TestHelpers.WaitUntilAsync(() => !_worker.IsRunning, AdvanceOneSecond);
+        Assert.Equal(1, _ping.ExecutionCount);
+    }
+
+    [Fact]
+    public async Task AutoStopAt_AlreadyPassedAtStart_IsIgnored()
+    {
+        await _settings.SaveAsync(_settings.Current with { AutoStopAt = _time.GetUtcNow().AddMinutes(-1) });
+        _worker.Start();
+
+        await TestHelpers.WaitUntilAsync(() => _ping.ExecutionCount == 2, AdvanceOneSecond);
+        Assert.True(_worker.IsRunning);
+    }
+
+    [Fact]
+    public async Task AutoStop_DoesNotStopRunRestartedByUser()
+    {
+        await _settings.SaveAsync(_settings.Current with { IntervalSeconds = 600, AutoStopAt = _time.GetUtcNow().AddSeconds(30) });
+        _worker.Start();
+        await TestHelpers.WaitUntilAsync(() => _ping.ExecutionCount == 1);
+        await _worker.StopAsync();
+
+        // 自動停止日時の後に再開した実行は、過ぎた日時では止まらない
+        _time.Advance(TimeSpan.FromMinutes(1));
+        _worker.Start();
+        await TestHelpers.WaitUntilAsync(() => _ping.ExecutionCount == 2);
+        _time.Advance(TimeSpan.FromSeconds(5));
+        await Task.Delay(100);
+
+        Assert.True(_worker.IsRunning);
+    }
+    [Fact]
+    public async Task ScheduleAutoStopWhileRunning_DoesNotExecuteAndStopsAtTime()
+    {
+        await _settings.SaveAsync(_settings.Current with { IntervalSeconds = 600 });
+        _worker.Start();
+        await TestHelpers.WaitUntilAsync(() => _ping.ExecutionCount == 1);
+
+        // 自動停止日時だけの変更では通信しない
+        await _settings.SaveAsync(_settings.Current with { AutoStopAt = _time.GetUtcNow().AddSeconds(30) });
+        await Task.Delay(100);
+        Assert.Equal(1, _ping.ExecutionCount);
+
+        await TestHelpers.WaitUntilAsync(() => !_worker.IsRunning, AdvanceOneSecond);
+        Assert.Equal(1, _ping.ExecutionCount);
+    }
 }

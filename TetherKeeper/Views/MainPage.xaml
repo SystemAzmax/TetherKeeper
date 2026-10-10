@@ -6,7 +6,7 @@
              x:DataType="vm:MainViewModel"
              Title="モニター">
 
-    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*"
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,*"
           Padding="16"
           RowSpacing="12">
 
@@ -47,8 +47,43 @@
                     TextColor="{AppThemeBinding Light={StaticResource Danger}, Dark={StaticResource OnDangerContainerDark}}" />
         </Grid>
 
+        <!-- 自動停止 -->
+        <Border Grid.Row="2"
+                Padding="12,8"
+                StrokeShape="RoundRectangle 8"
+                Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}">
+            <VerticalStackLayout Spacing="4">
+                <!-- Windows の TimePicker は最小幅が大きいため、ボタンは見出し行に置き、ピッカーは狭い幅で折り返す -->
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                    <Label Text="自動停止" FontAttributes="Bold" VerticalOptions="Center" />
+                    <Button Grid.Column="1"
+                            Text="{Binding AutoStopButtonText}"
+                            Padding="10,4"
+                            MinimumHeightRequest="32"
+                            Command="{Binding ToggleAutoStopCommand}" />
+                </Grid>
+                <FlexLayout Wrap="Wrap" AlignItems="Center">
+                    <DatePicker Date="{Binding AutoStopDate}"
+                                Format="yyyy/MM/dd"
+                                IsEnabled="{Binding CanEditAutoStop}"
+                                Margin="0,0,8,4" />
+                    <TimePicker Time="{Binding AutoStopTime}"
+                                Format="HH:mm"
+                                IsEnabled="{Binding CanEditAutoStop}"
+                                Margin="0,0,0,4" />
+                </FlexLayout>
+                <Label Text="{Binding AutoStopText}"
+                       FontSize="12"
+                       TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray300}}" />
+                <Label Text="{Binding AutoStopError}"
+                       IsVisible="{Binding HasAutoStopError}"
+                       FontSize="12"
+                       TextColor="#E53935" />
+            </VerticalStackLayout>
+        </Border>
+
         <!-- 統計 -->
-        <Grid Grid.Row="2"
+        <Grid Grid.Row="3"
               ColumnDefinitions="*,*,*,*"
               RowDefinitions="Auto,Auto"
               ColumnSpacing="4">
@@ -62,7 +97,7 @@
             <Label Grid.Row="1" Grid.Column="3" Text="{Binding ConsecutiveFailures}" HorizontalOptions="Center" FontSize="22" />
         </Grid>
 
-        <VerticalStackLayout Grid.Row="3" Spacing="4">
+        <VerticalStackLayout Grid.Row="4" Spacing="4">
             <Label Text="{Binding LastResultText}" LineBreakMode="TailTruncation" />
             <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="8">
                 <Label Text="ログ" FontAttributes="Bold" VerticalOptions="Center" />
@@ -87,7 +122,7 @@
         </VerticalStackLayout>
 
         <!-- ログ -->
-        <Border Grid.Row="4"
+        <Border Grid.Row="5"
                 Padding="8"
                 StrokeShape="RoundRectangle 8"
                 Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}">

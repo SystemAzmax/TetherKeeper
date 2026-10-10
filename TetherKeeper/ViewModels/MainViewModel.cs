@@ -46,6 +46,11 @@ public partial class MainViewModel : ObservableObject, IDisposable
         _log.EntryAdded += OnLogEntryAdded;
         _log.Cleared += OnLogCleared;
 
+        // 初期値は次の正時
+        var defaultStopAt = DateTime.Now.Date.AddHours(DateTime.Now.Hour + 1);
+        AutoStopDate = defaultStopAt.Date;
+        AutoStopTime = defaultStopAt.TimeOfDay;
+
         RefreshAll();
     }
 
@@ -69,6 +74,32 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     [ObservableProperty]
     public partial string NextRunText { get; set; } = string.Empty;
+
+    /// <summary>自動停止の日付 (ピッカーの入力値)。</summary>
+    [ObservableProperty]
+    public partial DateTime? AutoStopDate { get; set; }
+
+    /// <summary>自動停止の時刻 (ピッカーの入力値)。</summary>
+    [ObservableProperty]
+    public partial TimeSpan? AutoStopTime { get; set; }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanEditAutoStop))]
+    public partial bool IsAutoStopScheduled { get; set; }
+
+    public bool CanEditAutoStop => !IsAutoStopScheduled;
+
+    [ObservableProperty]
+    public partial string AutoStopButtonText { get; set; } = "予約";
+
+    [ObservableProperty]
+    public partial string AutoStopText { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasAutoStopError))]
+    public partial string AutoStopError { get; set; } = string.Empty;
+
+    public bool HasAutoStopError => AutoStopError.Length > 0;
 
     [ObservableProperty]
     public partial int TotalCount { get; set; }
@@ -105,6 +136,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
     /// <summary>次回実行までのカウントダウン表示を更新する (UI タイマーから毎秒呼ぶ)。</summary>
     public void UpdateCountdown()
     {
+        // 停止中に予約日時を過ぎた場合なども表示に反映する
+        RefreshAutoStop();
+
         if (_worker.NextRunAt is not { } next)
         {
             NextRunText = IsRunning ? "実行中…" : string.Empty;
@@ -124,6 +158,42 @@ public partial class MainViewModel : ObservableObject, IDisposable
             await _worker.StopAsync();
         else
             _worker.Start();
+    }
+
+    /// <summary>自動停止を予約する。予約済みなら解除する。</summary>
+    [RelayCommand]
+    private async Task ToggleAutoStopAsync()
+    {
+        AutoStopError = string.Empty;
+        DateTimeOffset? stopAt = null;
+
+        if (!IsAutoStopScheduled)
+        {
+            if (AutoStopDate is not { } date || AutoStopTime is not { } time)
+            {
+                AutoStopError = "自動停止の日付と時刻を指定してください。";
+                return;
+            }
+
+            stopAt = new DateTimeOffset(DateTime.SpecifyKind(date.Date + time, DateTimeKind.Local));
+            if (stopAt <= DateTimeOffset.Now)
+            {
+                AutoStopError = "現在より後の日時を指定してください。";
+                return;
+            }
+        }
+
+        var errors = await _settings.SaveAsync(_settings.Current with { AutoStopAt = stopAt });
+        if (errors.Count > 0)
+        {
+            AutoStopError = string.Join(Environment.NewLine, errors);
+            return;
+        }
+
+        _log.Info(stopAt is { } at
+            ? $"自動停止を {at:yyyy/MM/dd HH:mm} に予約しました。"
+            : "自動停止の予約を解除しました。");
+        RefreshAutoStop();
     }
 
     [RelayCommand(CanExecute = nameof(IsRunning))]
@@ -207,6 +277,27 @@ public partial class MainViewModel : ObservableObject, IDisposable
         {
             foreach (var entry in _log.GetEntries().Reverse().Take(MaxVisibleLogs))
                 Logs.Add(ToLogLine(entry));
+        }
+    }
+
+    private void RefreshAutoStop()
+    {
+        // 過ぎた日時 (停止中に迎えた予約など) は未予約として扱う
+        var stopAt = _settings.Current.AutoStopAt is { } at && at > DateTimeOffset.Now ? at.ToLocalTime() : (DateTimeOffset?)null;
+        IsAutoStopScheduled = stopAt is not null;
+        AutoStopButtonText = IsAutoStopScheduled ? "解除" : "予約";
+
+        if (stopAt is { } scheduled)
+        {
+            AutoStopDate = scheduled.Date;
+            AutoStopTime = new TimeSpan(scheduled.Hour, scheduled.Minute, 0);
+            AutoStopText = IsRunning
+                ? $"{scheduled:yyyy/MM/dd HH:mm} にキープアライブを停止します"
+                : $"{scheduled:yyyy/MM/dd HH:mm} に停止予定（開始すると有効になります）";
+        }
+        else
+        {
+            AutoStopText = "指定した日時にキープアライブを停止します（アプリは終了しません）";
         }
     }
 

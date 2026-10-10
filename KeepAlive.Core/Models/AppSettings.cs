@@ -37,6 +37,12 @@ public sealed record AppSettings
     /// <summary>OS ログイン時にアプリを自動起動するか (対応 OS のみ)。</summary>
     public bool LaunchAtLogin { get; init; }
 
+    /// <summary>
+    /// キープアライブを自動停止する日時。null は無効。
+    /// 動作中にこの日時を迎えると停止し、値は解除 (null) される。
+    /// </summary>
+    public DateTimeOffset? AutoStopAt { get; init; }
+
     public TimeSpan Interval => TimeSpan.FromSeconds(IntervalSeconds);
 
     public TimeSpan Timeout => TimeSpan.FromMilliseconds(TimeoutMilliseconds);

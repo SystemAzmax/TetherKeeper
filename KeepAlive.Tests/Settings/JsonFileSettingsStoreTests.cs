@@ -34,6 +34,7 @@ public sealed class JsonFileSettingsStoreTests : IDisposable
             TcpHost = "example.com",
             TcpPort = 8443,
             StartOnLaunch = true,
+            AutoStopAt = new DateTimeOffset(2026, 10, 11, 18, 30, 0, TimeSpan.FromHours(9)),
         };
 
         await store.SaveAsync(settings);
