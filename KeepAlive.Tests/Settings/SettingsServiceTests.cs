@@ -91,4 +91,41 @@ public class SettingsServiceTests
         Assert.Contains(errors, e => e.Contains("denied"));
         Assert.Equal(new AppSettings(), _service.Current);
     }
+
+    [Fact]
+    public async Task UpdateAsync_KeepsBothChanges_WhenSavesOverlap()
+    {
+        var gate = new TaskCompletionSource();
+        _store.SaveGate = gate.Task;
+
+        // 1 件目の保存中に 2 件目の更新を始める (別々の項目を変更)
+        var first = _service.UpdateAsync(s => s with { IntervalSeconds = 45 });
+        var second = _service.UpdateAsync(s => s with { PingHost = "8.8.8.8" });
+        gate.SetResult();
+        await Task.WhenAll(first, second);
+
+        Assert.Equal(45, _service.Current.IntervalSeconds);
+        Assert.Equal("8.8.8.8", _service.Current.PingHost);
+        Assert.Equal(_service.Current, _store.Stored);
+        Assert.Equal(2, _store.SaveCount);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_DoesNotSave_WhenUnchanged()
+    {
+        var errors = await _service.UpdateAsync(s => s with { });
+
+        Assert.Empty(errors);
+        Assert.Equal(0, _store.SaveCount);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_ReturnsErrorsAndDoesNotPersist_WhenInvalid()
+    {
+        var errors = await _service.UpdateAsync(s => s with { IntervalSeconds = 1 });
+
+        Assert.NotEmpty(errors);
+        Assert.Equal(0, _store.SaveCount);
+        Assert.Equal(new AppSettings(), _service.Current);
+    }
 }

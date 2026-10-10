@@ -100,20 +100,26 @@ public partial class SettingsViewModel : ObservableObject
             return;
         }
 
-        var updated = _settings.Current with
+        // この画面で扱う項目だけを、保存直前の最新の設定に上書きする
+        // (自動停止日時などモニター画面側で変わる項目を、画面を開いた時点の古い値で戻さないため)
+        var method = SelectedMethod.Method;
+        var pingHost = PingHost.Trim();
+        var httpUrl = HttpUrl.Trim();
+        var tcpHost = TcpHost.Trim();
+        var startOnLaunch = StartOnLaunch;
+        var launchAtLogin = LaunchAtLogin;
+        var errors = await _settings.UpdateAsync(current => current with
         {
-            Method = SelectedMethod.Method,
+            Method = method,
             IntervalSeconds = interval,
             TimeoutMilliseconds = timeout,
-            PingHost = PingHost.Trim(),
-            HttpUrl = HttpUrl.Trim(),
-            TcpHost = TcpHost.Trim(),
+            PingHost = pingHost,
+            HttpUrl = httpUrl,
+            TcpHost = tcpHost,
             TcpPort = port,
-            StartOnLaunch = StartOnLaunch,
-            LaunchAtLogin = LaunchAtLogin,
-        };
-
-        var errors = await _settings.SaveAsync(updated);
+            StartOnLaunch = startOnLaunch,
+            LaunchAtLogin = launchAtLogin,
+        });
         if (errors.Count > 0)
         {
             ErrorText = string.Join(Environment.NewLine, errors);

@@ -17,17 +17,21 @@ internal sealed class InMemorySettingsStore : ISettingsStore
 
     public int SaveCount { get; private set; }
 
+    /// <summary>設定すると、保存の前にこのタスクの完了を待つ (保存が重なる状況の再現用)。</summary>
+    public Task? SaveGate { get; set; }
+
     public Task<AppSettings?> LoadAsync(CancellationToken cancellationToken = default) =>
         LoadException is null ? Task.FromResult(Stored) : Task.FromException<AppSettings?>(LoadException);
 
-    public Task SaveAsync(AppSettings settings, CancellationToken cancellationToken = default)
+    public async Task SaveAsync(AppSettings settings, CancellationToken cancellationToken = default)
     {
+        if (SaveGate is { } gate)
+            await gate;
         if (SaveException is not null)
-            return Task.FromException(SaveException);
+            throw SaveException;
 
         SaveCount++;
         Stored = settings;
-        return Task.CompletedTask;
     }
 }
 
@@ -97,6 +101,10 @@ internal sealed class StaticSettingsService(AppSettings settings) : ISettingsSer
         Current = s;
         return Task.FromResult<IReadOnlyList<string>>([]);
     }
+
+    public Task<IReadOnlyList<string>> UpdateAsync(
+        Func<AppSettings, AppSettings> update, CancellationToken cancellationToken = default) =>
+        SaveAsync(update(Current), cancellationToken);
 }
 
 /// <summary><see cref="Throw"/> を true にすると Current の取得で例外を投げる ISettingsService (異常系テスト用)。</summary>
@@ -113,6 +121,10 @@ internal sealed class FaultySettingsService(AppSettings settings) : ISettingsSer
     public Task<AppSettings> LoadAsync(CancellationToken cancellationToken = default) => Task.FromResult(settings);
 
     public Task<IReadOnlyList<string>> SaveAsync(AppSettings s, CancellationToken cancellationToken = default) =>
+        Task.FromResult<IReadOnlyList<string>>([]);
+
+    public Task<IReadOnlyList<string>> UpdateAsync(
+        Func<AppSettings, AppSettings> update, CancellationToken cancellationToken = default) =>
         Task.FromResult<IReadOnlyList<string>>([]);
 }
 

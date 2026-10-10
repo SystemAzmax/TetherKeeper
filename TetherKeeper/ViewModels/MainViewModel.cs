@@ -183,7 +183,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
             }
         }
 
-        var errors = await _settings.SaveAsync(_settings.Current with { AutoStopAt = stopAt });
+        var errors = await _settings.UpdateAsync(current => current with { AutoStopAt = stopAt });
         if (errors.Count > 0)
         {
             AutoStopError = string.Join(Environment.NewLine, errors);

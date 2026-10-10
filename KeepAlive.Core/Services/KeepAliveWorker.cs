@@ -249,9 +249,10 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
             await StopCoreAsync(runCts).ConfigureAwait(false);
 
             // 使い終わった日時を解除し、次回の開始時に再適用されないようにする
-            var current = _settings.Current;
-            if (current.AutoStopAt == stopAt)
-                await _settings.SaveAsync(current with { AutoStopAt = null }).ConfigureAwait(false);
+            // (その間に利用者が別の日時を予約していれば、そちらは残す)
+            await _settings.UpdateAsync(
+                current => current.AutoStopAt == stopAt ? current with { AutoStopAt = null } : current)
+                .ConfigureAwait(false);
         }
         catch (Exception ex)
         {
