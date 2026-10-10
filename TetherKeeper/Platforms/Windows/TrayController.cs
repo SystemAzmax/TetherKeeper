@@ -49,7 +49,12 @@ internal sealed class TrayController
         _worker.StateChanged += (_, _) => _dispatcher.TryEnqueue(UpdateToolTip);
         _worker.ResultReceived += (_, _) => _dispatcher.TryEnqueue(UpdateToolTip);
         _exitService.Exiting += (_, _) => _notifyIcon.Dispose();
-        SingleInstance.ListenForActivation(() => _dispatcher.TryEnqueue(ShowWindow));
+        // UI スレッドで表示まで終えてから応答する (UI が固まっていれば応答せず、依頼元が利用者に知らせる)
+        SingleInstance.ListenForActivation(() => _dispatcher.TryEnqueue(() =>
+        {
+            ShowWindow();
+            SingleInstance.AcknowledgeActivation();
+        }));
 
         _startInTray = IsLaunchedAtLogin();
         if (_startInTray)
