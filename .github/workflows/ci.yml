@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+  pull_request:
+    branches: [master]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# 同じブランチへの連続プッシュでは、古い実行を取り消す
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  build:
+    # アプリは Windows 専用のため、Windows ランナーだけで実行する
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: チェックアウト
+        uses: actions/checkout@v7
+
+      - name: .NET 10 SDK のセットアップ
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      # MAUI ワークロードが不要なテストを先に実行し、失敗を早く知らせる
+      - name: 単体テスト
+        run: dotnet test KeepAlive.Tests -c Release
+
+      - name: MAUI ワークロードのインストール
+        run: dotnet workload install maui-windows
+
+      # ソリューション全体をビルドすると Android / iOS / Mac Catalyst も対象になるため、Windows 版だけをビルドする
+      - name: Windows 版のビルド
+        run: dotnet build TetherKeeper/TetherKeeper.csproj -f net10.0-windows10.0.19041.0 -c Release

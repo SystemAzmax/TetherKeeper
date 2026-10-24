@@ -480,3 +480,4 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+/docs/今後の機能候補.md
