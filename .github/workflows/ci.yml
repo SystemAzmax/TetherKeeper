@@ -47,6 +47,6 @@ jobs:
       - name: MAUI ワークロードのインストール
         run: dotnet workload install maui-windows
 
-      # ソリューション全体をビルドすると Android / iOS / Mac Catalyst も対象になるため、Windows 版だけをビルドする
+      # ソリューション全体をビルドすると Android / Mac Catalyst も対象になるため、Windows 版だけをビルドする
       - name: Windows 版のビルド
         run: dotnet build TetherKeeper/TetherKeeper.csproj -f net10.0-windows10.0.19041.0 -c Release

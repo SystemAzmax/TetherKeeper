@@ -43,7 +43,7 @@ public static class ServiceCollectionExtensions
         }
         else
         {
-            // TODO: macOS は SMAppService (Login Items)、iOS は自動起動の仕組み自体が無い
+            // TODO: macOS は SMAppService (Login Items) で実装する
             services.AddSingleton<IPowerEventSource, NullPowerEventSource>();
             services.AddSingleton<IAutoStartService, UnsupportedAutoStartService>();
         }

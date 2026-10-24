@@ -3,7 +3,7 @@ using KeepAlive.Core.Interfaces;
 namespace KeepAlive.Infrastructure.AutoStart;
 
 /// <summary>
-/// 自動起動に未対応のプラットフォーム用 (iOS など)。
+/// 自動起動に未対応のプラットフォーム用 (Windows 以外)。
 /// </summary>
 public sealed class UnsupportedAutoStartService : IAutoStartService
 {
