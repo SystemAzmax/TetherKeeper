@@ -5,6 +5,8 @@ namespace KeepAlive.Core.Interfaces;
 /// <summary>
 /// 設定間隔でキープアライブ通信を繰り返すバックグラウンド処理。
 /// <see cref="AppSettings.AutoStopAt"/> が設定されていれば、その日時に自動で停止する。
+/// <see cref="AppSettings.DataLimitMegabytes"/> が設定されていれば、通信量の累計 (<see cref="IDataUsageTracker"/>) が
+/// 上限に達したときに自動で停止し、達している間は <see cref="Start"/> しても開始しない。
 /// </summary>
 public interface IKeepAliveWorker
 {

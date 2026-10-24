@@ -6,7 +6,7 @@
              x:DataType="vm:MainViewModel"
              Title="モニター">
 
-    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,*"
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,*"
           Padding="16"
           RowSpacing="12">
 
@@ -82,8 +82,34 @@
             </VerticalStackLayout>
         </Border>
 
+        <!-- 通信量 -->
+        <Border Grid.Row="3"
+                Padding="12,8"
+                StrokeShape="RoundRectangle 8"
+                Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}">
+            <VerticalStackLayout Spacing="4">
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                    <Label Text="通信量" FontAttributes="Bold" VerticalOptions="Center" />
+                    <Label Grid.Column="1" Text="{Binding DataUsageText}" VerticalOptions="Center" />
+                    <Button Grid.Column="2"
+                            Text="リセット"
+                            Padding="10,4"
+                            MinimumHeightRequest="32"
+                            ToolTipProperties.Text="通信量の累計を 0 に戻す"
+                            Command="{Binding ResetDataUsageCommand}" />
+                </Grid>
+                <Label Text="{Binding DataUsageNote}"
+                       FontSize="12"
+                       TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray300}}" />
+                <Label Text="上限に達したため、開始できません。リセットすると再び開始できます。"
+                       IsVisible="{Binding IsDataLimitReached}"
+                       FontSize="12"
+                       TextColor="#E53935" />
+            </VerticalStackLayout>
+        </Border>
+
         <!-- 統計 -->
-        <Grid Grid.Row="3"
+        <Grid Grid.Row="4"
               ColumnDefinitions="*,*,*,*"
               RowDefinitions="Auto,Auto"
               ColumnSpacing="4">
@@ -97,7 +123,7 @@
             <Label Grid.Row="1" Grid.Column="3" Text="{Binding ConsecutiveFailures}" HorizontalOptions="Center" FontSize="22" />
         </Grid>
 
-        <VerticalStackLayout Grid.Row="4" Spacing="4">
+        <VerticalStackLayout Grid.Row="5" Spacing="4">
             <Label Text="{Binding LastResultText}" LineBreakMode="TailTruncation" />
             <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="8">
                 <Label Text="ログ" FontAttributes="Bold" VerticalOptions="Center" />
@@ -122,7 +148,7 @@
         </VerticalStackLayout>
 
         <!-- ログ -->
-        <Border Grid.Row="5"
+        <Border Grid.Row="6"
                 Padding="8"
                 StrokeShape="RoundRectangle 8"
                 Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}">

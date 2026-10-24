@@ -16,6 +16,9 @@ TetherKeeper は定期的に小さな通信を発生させて、このアイド�
 - 「今すぐ実行」ボタン
 - スリープ復帰を検知すると、5 秒後に即時実行する
 - 指定した日時にキープアライブを自動停止（モニター画面で日付と時刻を選んで「予約」。停止後は予約が自動で解除される）
+- 通信量の上限での自動停止（設定画面で上限を MB で指定。キープアライブ動作中の通信量を、モニター画面の「リセット」を押すまで累計し、上限に達したら停止する。上限に達している間は開始できない）
+  - 数えるのは、インターネットへの通信に使われているネットワークアダプター（有線 LAN と Wi-Fi の両方につながっている場合は Windows が通信に選んだ方）の送受信量で、ほかのアプリの通信も含む。どのアダプターを数えているかはログに「通信量の計測対象」として出る
+  - 計測は 5 秒ごとのため、その間の通信の分だけ上限を超えてから止まる。キープアライブを止めても、ほかのアプリの通信は止まらない
 - アプリ起動時の自動開始、Windows ログイン時の自動起動（トレイに格納した状態で起動）
 - タスクトレイ常駐（× ボタンでトレイに格納。終了は画面の「終了」ボタンかトレイメニューから）
 - ログのファイル出力（1 日 1 ファイル、30 日分を保存）
@@ -38,7 +41,7 @@ dotnet test KeepAlive.Tests
 
 Visual Studio では `TetherKeeper.slnx` を開き、デバッグ対象に「Windows Machine」を選びます。
 
-設定ファイルは `%LOCALAPPDATA%\TetherKeeper\settings.json` に保存されます。
+設定ファイルは `%LOCALAPPDATA%\TetherKeeper\settings.json` に、通信量の累計は同じフォルダの `data-usage.json` に保存されます。
 ログは同じフォルダ内の `logs\TetherKeeper_yyyyMMdd.log` に 1 日 1 ファイルで出力され、30 日を過ぎたファイルは自動で削除されます。
 保存フォルダは、モニター画面の「保存先」ボタンで開けます。
 （上記は開発時の非パッケージ版の場所です。MSIX 版は下記のとおりパッケージ専用フォルダになります）
@@ -112,13 +115,14 @@ powershell -ExecutionPolicy Bypass -File build\Publish-Msix.ps1 -NewCertificate
 
 ```text
 ├─ KeepAlive.Core            OS 非依存のロジック
-│   ├─ Models                AppSettings / KeepAliveResult / LogEntry / KeepAliveStatistics
-│   ├─ Interfaces            IKeepAliveStrategy / ISettingsService / ILogService / IKeepAliveWorker など
-│   ├─ Services              KeepAliveWorker / SettingsService / LogService / KeepAliveStrategyResolver
+│   ├─ Models                AppSettings / KeepAliveResult / LogEntry / KeepAliveStatistics / DataUsage
+│   ├─ Interfaces            IKeepAliveStrategy / ISettingsService / ILogService / IKeepAliveWorker / IDataUsageTracker など
+│   ├─ Services              KeepAliveWorker / SettingsService / LogService / KeepAliveStrategyResolver / DataUsageTracker
 │   ├─ Strategies            Ping / HttpHead / TcpConnect の各 KeepAliveStrategy
 │   └─ Configuration         DI 登録（AddKeepAliveCore）と KeepAliveOptions
 ├─ KeepAlive.Infrastructure  OS 依存の実装
-│   ├─ Settings              JsonFileSettingsStore
+│   ├─ Settings              JsonFileSettingsStore / JsonFileDataUsageStore（通信量の累計）
+│   ├─ Network               NetworkInterfaceDataUsageMeter（アダプターの送受信量）
 │   ├─ AutoStart             WindowsAutoStartService（HKCU\Run）
 │   └─ Power                 WindowsPowerEventSource（SystemEvents）
 ├─ TetherKeeper              .NET MAUI の UI（Views / ViewModels / Platforms）

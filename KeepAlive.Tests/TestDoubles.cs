@@ -35,6 +35,48 @@ internal sealed class InMemorySettingsStore : ISettingsStore
     }
 }
 
+internal sealed class InMemoryDataUsageStore : IDataUsageStore
+{
+    private DataUsage? _stored;
+
+    public DataUsage? Stored
+    {
+        get => Volatile.Read(ref _stored);
+        set => Volatile.Write(ref _stored, value);
+    }
+
+    public int SaveCount { get; private set; }
+
+    public Task<DataUsage?> LoadAsync(CancellationToken cancellationToken = default) => Task.FromResult(Stored);
+
+    public Task SaveAsync(DataUsage usage, CancellationToken cancellationToken = default)
+    {
+        SaveCount++;
+        Stored = usage;
+        return Task.CompletedTask;
+    }
+}
+
+internal sealed class FakeDataUsageMeter : IDataUsageMeter
+{
+    private DataUsageReading? _reading = new("fake", "FakeNetwork", 0);
+
+    /// <summary>次回以降の読み取りで返す値。null はネットワーク無し。</summary>
+    public DataUsageReading? Reading
+    {
+        get => Volatile.Read(ref _reading);
+        set => Volatile.Write(ref _reading, value);
+    }
+
+    /// <summary>設定すると読み取り時に送出する。</summary>
+    public Exception? ThrowOnRead { get; set; }
+
+    /// <summary>今のアダプターの送受信量を増やす (通信が発生した状況の再現用)。</summary>
+    public void AddBytes(long bytes) => Reading = Reading! with { TotalBytes = Reading.TotalBytes + bytes };
+
+    public DataUsageReading? Read() => ThrowOnRead is { } ex ? throw ex : Reading;
+}
+
 internal sealed class FakeStrategy : IKeepAliveStrategy
 {
     private readonly TimeProvider _timeProvider;

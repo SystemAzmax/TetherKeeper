@@ -18,5 +18,7 @@ public static class AppPaths
 
     public static string SettingsFile => Path.Combine(DataDirectory, "settings.json");
 
+    public static string DataUsageFile => Path.Combine(DataDirectory, "data-usage.json");
+
     public static string LogDirectory => Path.Combine(DataDirectory, "logs");
 }

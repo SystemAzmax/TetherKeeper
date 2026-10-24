@@ -23,6 +23,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     private readonly IKeepAliveWorker _worker;
     private readonly ISettingsService _settings;
+    private readonly IDataUsageTracker _dataUsage;
     private readonly ILogService _log;
     private readonly IKeepAliveStrategyResolver _resolver;
     private readonly AppExitService _exitService;
@@ -31,12 +32,14 @@ public partial class MainViewModel : ObservableObject, IDisposable
     public MainViewModel(
         IKeepAliveWorker worker,
         ISettingsService settings,
+        IDataUsageTracker dataUsage,
         ILogService log,
         IKeepAliveStrategyResolver resolver,
         AppExitService exitService)
     {
         _worker = worker;
         _settings = settings;
+        _dataUsage = dataUsage;
         _log = log;
         _resolver = resolver;
         _exitService = exitService;
@@ -44,6 +47,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         _worker.StateChanged += OnWorkerChanged;
         _worker.ResultReceived += OnResultReceived;
         _settings.SettingsChanged += OnSettingsChanged;
+        _dataUsage.Changed += OnDataUsageChanged;
         _log.EntryAdded += OnLogEntryAdded;
         _log.Cleared += OnLogCleared;
 
@@ -103,6 +107,16 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     public bool HasAutoStopError => AutoStopError.Length > 0;
 
+    /// <summary>通信量の累計と上限 (例: 12.3 MB / 500 MB)。</summary>
+    [ObservableProperty]
+    public partial string DataUsageText { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial string DataUsageNote { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial bool IsDataLimitReached { get; set; }
+
     [ObservableProperty]
     public partial int TotalCount { get; set; }
 
@@ -129,6 +143,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         _log.Info($"TetherKeeper {AppInfo.Current.VersionString} を起動しました。");
         var settings = await _settings.LoadAsync();
+        await _dataUsage.LoadAsync();
         RefreshAll();
 
         if (settings.StartOnLaunch)
@@ -209,6 +224,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
     }
 
     [RelayCommand]
+    private Task ResetDataUsageAsync() => _dataUsage.ResetAsync();
+
+    [RelayCommand]
     private void ClearLog() => _log.Clear();
 
     /// <summary>ログファイルの保存フォルダをエクスプローラーで開く。</summary>
@@ -235,6 +253,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         _worker.StateChanged -= OnWorkerChanged;
         _worker.ResultReceived -= OnResultReceived;
         _settings.SettingsChanged -= OnSettingsChanged;
+        _dataUsage.Changed -= OnDataUsageChanged;
         _log.EntryAdded -= OnLogEntryAdded;
         _log.Cleared -= OnLogCleared;
     }
@@ -245,6 +264,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private void OnResultReceived(object? sender, KeepAliveResult e) => MainThread.BeginInvokeOnMainThread(RefreshAll);
 
     private void OnSettingsChanged(object? sender, AppSettings e) => MainThread.BeginInvokeOnMainThread(RefreshAll);
+
+    private void OnDataUsageChanged(object? sender, DataUsage e) => MainThread.BeginInvokeOnMainThread(RefreshDataUsage);
 
     private void OnLogEntryAdded(object? sender, LogEntry entry) =>
         MainThread.BeginInvokeOnMainThread(() =>
@@ -277,6 +298,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         ConfigurationText = $"{strategyName} → {target}（{settings.IntervalSeconds} 秒間隔）";
 
         RefreshStatistics();
+        RefreshDataUsage();
         UpdateCountdown();
     }
 
@@ -310,6 +332,20 @@ public partial class MainViewModel : ObservableObject, IDisposable
         {
             AutoStopText = "指定した日時にキープアライブを停止します（アプリは終了しません）";
         }
+    }
+
+    private void RefreshDataUsage()
+    {
+        var usage = _dataUsage.Current;
+        var settings = _settings.Current;
+        var total = DataUsage.Format(usage.TotalBytes);
+        DataUsageText = settings.DataLimitBytes is null
+            ? $"{total}（上限なし）"
+            : $"{total} / {settings.DataLimitMegabytes:N0} MB";
+        IsDataLimitReached = settings.DataLimitBytes is { } limit && usage.TotalBytes >= limit;
+        DataUsageNote = usage.Since is { } since
+            ? $"{since.ToLocalTime():yyyy/MM/dd HH:mm} からの累計（キープアライブの動作中に計測。ほかのアプリの通信も含む）"
+            : "キープアライブの動作中に、使用中のネットワークの送受信量を数えます（ほかのアプリの通信も含む）";
     }
 
     private void RefreshStatistics()

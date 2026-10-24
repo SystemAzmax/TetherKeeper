@@ -27,6 +27,8 @@ public class KeepAliveStrategyResolverTests
         using var provider = new ServiceCollection()
             .AddSingleton(typeof(ILogger<>), typeof(NullLogger<>))
             .AddSingleton<ISettingsStore, InMemorySettingsStore>()
+            .AddSingleton<IDataUsageStore, InMemoryDataUsageStore>()
+            .AddSingleton<IDataUsageMeter, FakeDataUsageMeter>()
             .AddSingleton<IPowerEventSource, FakePowerEventSource>()
             .AddKeepAliveCore()
             .BuildServiceProvider();

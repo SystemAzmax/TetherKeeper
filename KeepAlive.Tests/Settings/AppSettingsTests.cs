@@ -122,8 +122,35 @@ public class AppSettingsTests
             TcpHost = "example.com",
             TcpPort = 80,
             StartOnLaunch = true,
+            DataLimitMegabytes = 500,
         };
 
         Assert.Equal(settings, settings.Normalize());
+    }
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(AppSettings.MaxDataLimitMegabytes + 1)]
+    public void Validate_RejectsDataLimitOutOfRange(int megabytes)
+    {
+        var settings = new AppSettings { DataLimitMegabytes = megabytes };
+
+        Assert.Contains(settings.Validate(), e => e.Contains("通信量の上限"));
+    }
+
+    [Fact]
+    public void Normalize_ClampsDataLimit()
+    {
+        Assert.Equal(0, new AppSettings { DataLimitMegabytes = -5 }.Normalize().DataLimitMegabytes);
+        Assert.Equal(
+            AppSettings.MaxDataLimitMegabytes,
+            new AppSettings { DataLimitMegabytes = int.MaxValue }.Normalize().DataLimitMegabytes);
+    }
+
+    [Fact]
+    public void DataLimitBytes_IsNullWhenDisabled_AndUsesDecimalMegabytes()
+    {
+        Assert.Null(new AppSettings().DataLimitBytes);
+        Assert.Equal(500_000_000L, new AppSettings { DataLimitMegabytes = 500 }.DataLimitBytes);
     }
 }

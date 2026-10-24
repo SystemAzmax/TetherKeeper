@@ -39,6 +39,7 @@ namespace TetherKeeper
                 .AddKeepAliveCore()
                 .AddKeepAliveInfrastructure(
                     AppPaths.SettingsFile,
+                    AppPaths.DataUsageFile,
                     AppPaths.LogDirectory,
                     appName: "TetherKeeper",
                     autoStartArguments: "--tray");

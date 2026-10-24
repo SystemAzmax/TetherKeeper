@@ -9,11 +9,13 @@ namespace KeepAlive.Core.Services;
 /// 設定間隔でキープアライブ通信を繰り返す。
 /// 開始直後に 1 回実行し、以降は「前回完了から Interval 後」に実行する。
 /// 設定変更・スリープ復帰・<see cref="TriggerNow"/> では待機を打ち切って即時実行する。
+/// 動作中は通信量を計測し、自動停止日時か通信量の上限に達したら停止する。
 /// </summary>
 public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
 {
     private readonly IKeepAliveStrategyResolver _resolver;
     private readonly ISettingsService _settings;
+    private readonly IDataUsageTracker _dataUsage;
     private readonly ILogService _log;
     private readonly IPowerEventSource _power;
     private readonly TimeProvider _timeProvider;
@@ -29,12 +31,22 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
     private DateTimeOffset? _nextRunAt;
     private AppSettings _lastSettings;
 
-    /// <summary>待機の打ち切りが通信の要求か (1)、自動停止日時の再計算のみか (0)。</summary>
+    /// <summary>待機の打ち切りが通信の要求か (1)、自動停止の条件の再計算のみか (0)。</summary>
     private int _runRequested;
+
+    private enum AutoStopReason
+    {
+        /// <summary>自動停止日時 (<see cref="AppSettings.AutoStopAt"/>) になった。</summary>
+        ScheduledTime,
+
+        /// <summary>通信量の累計が上限 (<see cref="AppSettings.DataLimitMegabytes"/>) に達した。</summary>
+        DataLimit,
+    }
 
     public KeepAliveWorker(
         IKeepAliveStrategyResolver resolver,
         ISettingsService settings,
+        IDataUsageTracker dataUsage,
         ILogService log,
         IPowerEventSource power,
         TimeProvider timeProvider,
@@ -42,6 +54,7 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
     {
         _resolver = resolver;
         _settings = settings;
+        _dataUsage = dataUsage;
         _log = log;
         _power = power;
         _timeProvider = timeProvider;
@@ -75,6 +88,15 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
     public void Start()
     {
         var s = _settings.Current;
+        // 上限に達したまま開始しても、開始直後に止まるだけになるため開始しない
+        if (!IsRunning && IsDataLimitReached(s))
+        {
+            _log.Warning(
+                $"通信量の累計 ({DataUsage.Format(_dataUsage.Current.TotalBytes)}) が上限 ({s.DataLimitMegabytes} MB) に達しているため、開始できません。" +
+                "モニター画面で通信量をリセットするか、設定画面で上限を変更してください。");
+            return;
+        }
+
         var startedAt = _timeProvider.GetUtcNow();
         var startSignal = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         lock (_gate)
@@ -92,8 +114,8 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
                 await startSignal.Task.ConfigureAwait(false);
                 try
                 {
-                    if (await RunAsync(startedAt, token).ConfigureAwait(false))
-                        _ = AutoStopAsync(runCts);
+                    if (await RunAsync(startedAt, token).ConfigureAwait(false) is { } reason)
+                        _ = AutoStopAsync(runCts, reason);
                 }
                 catch (Exception ex) when (!token.IsCancellationRequested)
                 {
@@ -114,6 +136,9 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
                 else
                     _log.Warning($"自動停止日時 ({stopAt.ToLocalTime():yyyy/MM/dd HH:mm}) を過ぎているため、自動停止は行いません。");
             }
+
+            if (s.DataLimitBytes is not null)
+                _log.Info($"通信量の累計が {s.DataLimitMegabytes} MB に達したら自動停止します (現在 {DataUsage.Format(_dataUsage.Current.TotalBytes)})。");
 
             RaiseStateChanged();
         }
@@ -196,42 +221,56 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
     }
 
     /// <summary>
-    /// 停止されるまで通信を繰り返す。自動停止日時に達した場合は true を返して終了する。
+    /// 停止されるまで通信を繰り返す。自動停止の条件を満たした場合は、その理由を返して終了する。
     /// </summary>
-    private async Task<bool> RunAsync(DateTimeOffset startedAt, CancellationToken cancellationToken)
+    private async Task<AutoStopReason?> RunAsync(DateTimeOffset startedAt, CancellationToken cancellationToken)
     {
-        DateTimeOffset? lastRunAt = null;
-
-        while (!cancellationToken.IsCancellationRequested)
+        var dataUsage = _dataUsage.StartMeasurement();
+        try
         {
-            var settings = _settings.Current;
-            var now = _timeProvider.GetUtcNow();
+            DateTimeOffset? lastRunAt = null;
 
-            // スリープ中に日時を過ぎた場合も、復帰後のこの判定で通信せずに停止する
-            if (GetActiveAutoStopAt(settings, startedAt) is { } stopAt && now >= stopAt)
-                return true;
-
-            // 電源イベントを取得できない OS 向けの保険: 想定より大きく時間が飛んでいればスリープ等とみなす
-            if (lastRunAt is { } last && now - last > settings.Interval * 2 + settings.Timeout)
-                _log.Warning($"前回実行から {(now - last).TotalMinutes:F1} 分経過しています (スリープ／休止からの復帰の可能性)。");
-            lastRunAt = now;
-
-            await ExecuteOnceAsync(settings, cancellationToken).ConfigureAwait(false);
-
-            var interval = _settings.Current.Interval;
-            var nextRunAt = _timeProvider.GetUtcNow() + interval;
-            lock (_gate)
+            while (!cancellationToken.IsCancellationRequested)
             {
-                if (!cancellationToken.IsCancellationRequested)
-                    _nextRunAt = _timeProvider.GetLocalNow() + interval;
+                var settings = _settings.Current;
+                var now = _timeProvider.GetUtcNow();
+
+                // スリープ中に日時を過ぎた場合も、復帰後のこの判定で通信せずに停止する
+                if (GetActiveAutoStopAt(settings, startedAt) is { } stopAt && now >= stopAt)
+                    return AutoStopReason.ScheduledTime;
+                if (IsDataLimitReached(settings))
+                    return AutoStopReason.DataLimit;
+
+                // 電源イベントを取得できない OS 向けの保険: 想定より大きく時間が飛んでいればスリープ等とみなす
+                if (lastRunAt is { } last && now - last > settings.Interval * 2 + settings.Timeout)
+                    _log.Warning($"前回実行から {(now - last).TotalMinutes:F1} 分経過しています (スリープ／休止からの復帰の可能性)。");
+                lastRunAt = now;
+
+                await ExecuteOnceAsync(settings, cancellationToken).ConfigureAwait(false);
+
+                var interval = _settings.Current.Interval;
+                var nextRunAt = _timeProvider.GetUtcNow() + interval;
+                lock (_gate)
+                {
+                    if (!cancellationToken.IsCancellationRequested)
+                        _nextRunAt = _timeProvider.GetLocalNow() + interval;
+                }
+
+                if (await WaitForNextRunAsync(nextRunAt, startedAt, dataUsage, cancellationToken).ConfigureAwait(false) is { } reason)
+                    return reason;
             }
 
-            if (!await WaitForNextRunAsync(nextRunAt, startedAt, cancellationToken).ConfigureAwait(false))
-                return true;
+            return null;
         }
-
-        return false;
+        finally
+        {
+            // 停止までの通信量を数えて保存する
+            await dataUsage.DisposeAsync().ConfigureAwait(false);
+        }
     }
+
+    private bool IsDataLimitReached(AppSettings settings) =>
+        settings.DataLimitBytes is { } limit && _dataUsage.Current.TotalBytes >= limit;
 
     /// <summary>
     /// この実行で有効な自動停止日時。開始時点で既に過ぎていた日時は対象外とする
@@ -240,10 +279,19 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
     private static DateTimeOffset? GetActiveAutoStopAt(AppSettings settings, DateTimeOffset startedAt) =>
         settings.AutoStopAt is { } stopAt && stopAt > startedAt ? stopAt : null;
 
-    private async Task AutoStopAsync(CancellationTokenSource runCts)
+    private async Task AutoStopAsync(CancellationTokenSource runCts, AutoStopReason reason)
     {
         try
         {
+            if (reason == AutoStopReason.DataLimit)
+            {
+                // 上限は解除しない (累計をリセットするまで、開始できないままにする)
+                _log.Info(
+                    $"通信量の累計 ({DataUsage.Format(_dataUsage.Current.TotalBytes)}) が上限 ({_settings.Current.DataLimitMegabytes} MB) に達しました。");
+                await StopCoreAsync(runCts).ConfigureAwait(false);
+                return;
+            }
+
             var stopAt = _settings.Current.AutoStopAt;
             _log.Info($"自動停止日時 ({stopAt?.ToLocalTime():yyyy/MM/dd HH:mm}) になりました。");
             await StopCoreAsync(runCts).ConfigureAwait(false);
@@ -319,27 +367,40 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
     }
 
     /// <summary>
-    /// 次回実行時刻まで待つ。<see cref="TriggerNow"/> で打ち切られる。
-    /// 自動停止日時に達した場合は false を返す。
+    /// 次回実行時刻まで待つ。<see cref="TriggerNow"/> で打ち切られる。待っている間も通信量を定期的に計測する。
+    /// 自動停止の条件を満たした場合はその理由を、通信する時になった場合は null を返す。
     /// </summary>
-    private async Task<bool> WaitForNextRunAsync(
-        DateTimeOffset nextRunAt, DateTimeOffset startedAt, CancellationToken cancellationToken)
+    private async Task<AutoStopReason?> WaitForNextRunAsync(
+        DateTimeOffset nextRunAt,
+        DateTimeOffset startedAt,
+        IDataUsageMeasurement dataUsage,
+        CancellationToken cancellationToken)
     {
         while (true)
         {
             var now = _timeProvider.GetUtcNow();
-            var stopAt = GetActiveAutoStopAt(_settings.Current, startedAt);
+            var settings = _settings.Current;
+            var stopAt = GetActiveAutoStopAt(settings, startedAt);
             if (now >= stopAt)
-                return false;
+                return AutoStopReason.ScheduledTime;
 
-            // 自動停止日時が次回実行より前なら、その時刻に起きて停止判定を行う
-            var wakeAt = stopAt < nextRunAt ? stopAt.Value : nextRunAt;
-            if (now >= wakeAt)
+            // 上限に達したら、次回実行を待たずに停止する
+            await dataUsage.SampleAsync().ConfigureAwait(false);
+            if (IsDataLimitReached(settings))
+                return AutoStopReason.DataLimit;
+
+            if (now >= nextRunAt)
             {
                 _wake.Reader.TryRead(out _);
                 Volatile.Write(ref _runRequested, 0);
-                return true;
+                return null;
             }
+
+            // 次回実行・次の通信量の計測・自動停止日時のうち、最も早い時刻に起きる
+            var sampleAt = now + _options.DataUsageSampleInterval;
+            var wakeAt = sampleAt < nextRunAt ? sampleAt : nextRunAt;
+            if (stopAt < wakeAt)
+                wakeAt = stopAt.Value;
 
             using var waitCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             var delay = Task.Delay(wakeAt - now, _timeProvider, waitCts.Token);
@@ -354,8 +415,8 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
 
             _wake.Reader.TryRead(out _);
             if (Interlocked.Exchange(ref _runRequested, 0) == 1)
-                return true;
-            // 自動停止日時だけが変わった場合は通信せず、待ち時間を計算し直す
+                return null;
+            // 自動停止の条件だけが変わった場合は通信せず、停止判定と待ち時間を計算し直す
         }
     }
 
@@ -365,7 +426,7 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
         if (!IsRunning)
             return;
 
-        if (previous with { AutoStopAt = null } == settings with { AutoStopAt = null })
+        if (WithoutAutoStopConditions(previous) == WithoutAutoStopConditions(settings))
         {
             _wake.Writer.TryWrite(true);
             return;
@@ -374,6 +435,10 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
         _log.Info($"設定変更を反映します ({_resolver.Resolve(settings.Method).Name} / {settings.IntervalSeconds} 秒間隔)。");
         TriggerNow();
     }
+
+    /// <summary>自動停止の条件を除いた設定 (通信に関わる設定が変わったかの判定用)。</summary>
+    private static AppSettings WithoutAutoStopConditions(AppSettings settings) =>
+        settings with { AutoStopAt = null, DataLimitMegabytes = 0 };
 
     private void OnSuspending(object? sender, EventArgs e) => _log.Info("OS がスリープに入ります。");
 

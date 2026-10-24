@@ -12,8 +12,11 @@ public sealed class KeepAliveWorkerTests : IAsyncDisposable
     private readonly FakeTimeProvider _time = new();
     private readonly FakePowerEventSource _power = new();
     private readonly InMemorySettingsStore _store = new();
+    private readonly FakeDataUsageMeter _meter = new();
+    private readonly InMemoryDataUsageStore _usageStore = new();
     private readonly LogService _log;
     private readonly SettingsService _settings;
+    private readonly DataUsageTracker _dataUsage;
     private readonly FakeStrategy _ping;
     private readonly FakeStrategy _tcp;
     private readonly KeepAliveWorker _worker;
@@ -25,15 +28,20 @@ public sealed class KeepAliveWorkerTests : IAsyncDisposable
         _settings = new SettingsService(_store, _log);
         _settings.LoadAsync().GetAwaiter().GetResult();
 
+        var options = new KeepAliveOptions { ResumeDelay = TimeSpan.FromSeconds(5) };
+        _dataUsage = new DataUsageTracker(_meter, _usageStore, _log, _time, options);
+        _dataUsage.LoadAsync().GetAwaiter().GetResult();
+
         _ping = new FakeStrategy(KeepAliveMethod.Ping, _time);
         _tcp = new FakeStrategy(KeepAliveMethod.TcpConnect, _time);
         _worker = new KeepAliveWorker(
             new KeepAliveStrategyResolver([_ping, _tcp]),
             _settings,
+            _dataUsage,
             _log,
             _power,
             _time,
-            new KeepAliveOptions { ResumeDelay = TimeSpan.FromSeconds(5) });
+            options);
     }
 
     public async ValueTask DisposeAsync()
@@ -273,6 +281,74 @@ public sealed class KeepAliveWorkerTests : IAsyncDisposable
         await TestHelpers.WaitUntilAsync(() => !_worker.IsRunning, AdvanceOneSecond);
         Assert.Equal(1, _ping.ExecutionCount);
     }
+
+    [Fact]
+    public async Task DataLimit_StopsWithoutWaitingForNextRun_AndKeepsLimit()
+    {
+        await _settings.SaveAsync(_settings.Current with { IntervalSeconds = 600, DataLimitMegabytes = 1 });
+        _worker.Start();
+        await TestHelpers.WaitUntilAsync(() => _ping.ExecutionCount == 1);
+
+        _meter.AddBytes(AppSettings.BytesPerMegabyte);
+
+        await TestHelpers.WaitUntilAsync(() => !_worker.IsRunning, AdvanceOneSecond);
+        Assert.Equal(1, _ping.ExecutionCount);
+        Assert.Equal(1, _settings.Current.DataLimitMegabytes);
+        Assert.Equal(AppSettings.BytesPerMegabyte, _usageStore.Stored?.TotalBytes);
+        Assert.Contains(_log.GetEntries(), e => e.Message.Contains("上限 (1 MB) に達しました"));
+    }
+
+    [Fact]
+    public async Task Start_IsRefusedWhileDataLimitReached_AndAllowedAfterReset()
+    {
+        await _settings.SaveAsync(_settings.Current with { IntervalSeconds = 600, DataLimitMegabytes = 1 });
+        _worker.Start();
+        await TestHelpers.WaitUntilAsync(() => _ping.ExecutionCount == 1);
+        _meter.AddBytes(AppSettings.BytesPerMegabyte);
+        await TestHelpers.WaitUntilAsync(() => !_worker.IsRunning, AdvanceOneSecond);
+
+        _worker.Start();
+        Assert.False(_worker.IsRunning);
+        Assert.Contains(_log.GetEntries(), e => e.Level == LogLevelKind.Warning && e.Message.Contains("開始できません"));
+
+        await _dataUsage.ResetAsync();
+        _worker.Start();
+        await TestHelpers.WaitUntilAsync(() => _ping.ExecutionCount == 2);
+        Assert.True(_worker.IsRunning);
+    }
+
+    [Fact]
+    public async Task LoweringDataLimitWhileRunning_StopsWithoutExecuting()
+    {
+        await _settings.SaveAsync(_settings.Current with { IntervalSeconds = 600 });
+        _worker.Start();
+        await TestHelpers.WaitUntilAsync(() => _ping.ExecutionCount == 1);
+        _meter.AddBytes(2 * AppSettings.BytesPerMegabyte);
+        await TestHelpers.WaitUntilAsync(() => _dataUsage.Current.TotalBytes > 0, AdvanceOneSecond);
+
+        // 上限だけの変更では通信しない
+        await _settings.SaveAsync(_settings.Current with { DataLimitMegabytes = 1 });
+
+        await TestHelpers.WaitUntilAsync(() => !_worker.IsRunning);
+        Assert.Equal(1, _ping.ExecutionCount);
+    }
+
+    [Fact]
+    public async Task DataUsage_IsCountedOnlyWhileRunning()
+    {
+        _worker.Start();
+        await TestHelpers.WaitUntilAsync(() => _ping.ExecutionCount == 1);
+        _meter.AddBytes(1_000);
+        await _worker.StopAsync();
+
+        _meter.AddBytes(5_000);
+        _worker.Start();
+        await TestHelpers.WaitUntilAsync(() => _ping.ExecutionCount == 2);
+        await _worker.StopAsync();
+
+        Assert.Equal(1_000, _dataUsage.Current.TotalBytes);
+    }
+
     [Fact]
     public async Task ResultReceivedHandlerException_DoesNotStopLoop()
     {
@@ -290,7 +366,7 @@ public sealed class KeepAliveWorkerTests : IAsyncDisposable
     {
         var settings = new FaultySettingsService(new AppSettings { IntervalSeconds = 600 });
         using var worker = new KeepAliveWorker(
-            new KeepAliveStrategyResolver([_ping, _tcp]), settings, _log, _power, _time, new KeepAliveOptions());
+            new KeepAliveStrategyResolver([_ping, _tcp]), settings, _dataUsage, _log, _power, _time, new KeepAliveOptions());
         var stateChanges = 0;
         worker.StateChanged += (_, _) => Interlocked.Increment(ref stateChanges);
 

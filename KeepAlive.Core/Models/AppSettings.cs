@@ -9,6 +9,12 @@ public sealed record AppSettings
     public const int MaxIntervalSeconds = 3600;
     public const int MinTimeoutMilliseconds = 500;
     public const int MaxTimeoutMilliseconds = 30_000;
+    public const int MaxDataLimitMegabytes = 1_000_000;
+
+    /// <summary>
+    /// 通信量の 1 MB のバイト数。上限が少なめ (早めに止まる側) になるよう、1 MB = 1,000,000 バイトとする。
+    /// </summary>
+    public const long BytesPerMegabyte = 1_000_000;
 
     /// <summary>使用する通信方式。</summary>
     public KeepAliveMethod Method { get; init; } = KeepAliveMethod.Ping;
@@ -47,7 +53,17 @@ public sealed record AppSettings
     /// </summary>
     public DateTimeOffset? AutoStopAt { get; init; }
 
+    /// <summary>
+    /// 通信量の上限 (MB)。0 は無効。
+    /// 通信量の累計 (<see cref="Interfaces.IDataUsageTracker"/>) がこの値に達するとキープアライブを停止し、
+    /// 累計をリセットするまでは開始できなくなる。自動停止日時と違い、停止しても値は解除しない。
+    /// </summary>
+    public int DataLimitMegabytes { get; init; }
+
     public TimeSpan Interval => TimeSpan.FromSeconds(IntervalSeconds);
+
+    /// <summary>通信量の上限 (バイト)。無効なら null。</summary>
+    public long? DataLimitBytes => DataLimitMegabytes > 0 ? DataLimitMegabytes * BytesPerMegabyte : null;
 
     public TimeSpan Timeout => TimeSpan.FromMilliseconds(TimeoutMilliseconds);
 
@@ -66,6 +82,8 @@ public sealed record AppSettings
             errors.Add($"タイムアウトは {MinTimeoutMilliseconds}〜{MaxTimeoutMilliseconds} ミリ秒で指定してください。");
         if (TimeoutMilliseconds >= IntervalSeconds * 1000L)
             errors.Add("タイムアウトは実行間隔より短くしてください。");
+        if (DataLimitMegabytes is < 0 or > MaxDataLimitMegabytes)
+            errors.Add($"通信量の上限は 0〜{MaxDataLimitMegabytes} MB で指定してください。");
 
         switch (Method)
         {
@@ -110,6 +128,7 @@ public sealed record AppSettings
             HttpUrl = IsValidHttpUrl(HttpUrl) ? RemoveUserInfo(HttpUrl.Trim()) : defaults.HttpUrl,
             TcpHost = string.IsNullOrWhiteSpace(TcpHost) ? defaults.TcpHost : TcpHost.Trim(),
             TcpPort = TcpPort is >= 1 and <= 65535 ? TcpPort : defaults.TcpPort,
+            DataLimitMegabytes = Math.Clamp(DataLimitMegabytes, 0, MaxDataLimitMegabytes),
         };
     }
 

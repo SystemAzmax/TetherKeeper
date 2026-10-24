@@ -11,7 +11,8 @@ public static class ServiceCollectionExtensions
 {
     /// <summary>
     /// OS 非依存のサービスを登録する。
-    /// <see cref="ISettingsStore"/> / <see cref="IAutoStartService"/> / <see cref="IPowerEventSource"/> は
+    /// <see cref="ISettingsStore"/> / <see cref="IDataUsageStore"/> / <see cref="IDataUsageMeter"/> /
+    /// <see cref="IAutoStartService"/> / <see cref="IPowerEventSource"/> は
     /// プラットフォーム側 (Infrastructure) で別途登録すること。
     /// </summary>
     public static IServiceCollection AddKeepAliveCore(
@@ -24,6 +25,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton(options);
         services.AddSingleton<ILogService, LogService>();
         services.AddSingleton<ISettingsService, SettingsService>();
+        services.AddSingleton<IDataUsageTracker, DataUsageTracker>();
 
         services.AddSingleton<IKeepAliveStrategy, PingKeepAliveStrategy>();
         services.AddSingleton<IKeepAliveStrategy>(sp => new HttpHeadKeepAliveStrategy(

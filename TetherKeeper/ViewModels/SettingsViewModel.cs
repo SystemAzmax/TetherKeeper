@@ -54,6 +54,10 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     public partial string TcpPort { get; set; } = string.Empty;
 
+    /// <summary>通信量の上限 (MB)。空欄は 0 (上限なし) とみなす。</summary>
+    [ObservableProperty]
+    public partial string DataLimitMegabytes { get; set; } = string.Empty;
+
     [ObservableProperty]
     public partial bool StartOnLaunch { get; set; }
 
@@ -94,6 +98,9 @@ public partial class SettingsViewModel : ObservableObject
         var interval = ParseInt(IntervalSeconds, "実行間隔", parseErrors);
         var timeout = ParseInt(TimeoutMilliseconds, "タイムアウト", parseErrors);
         var port = ParseInt(TcpPort, "TCP ポート", parseErrors);
+        var dataLimit = string.IsNullOrWhiteSpace(DataLimitMegabytes)
+            ? 0
+            : ParseInt(DataLimitMegabytes, "通信量の上限", parseErrors);
         if (parseErrors.Count > 0)
         {
             ErrorText = string.Join(Environment.NewLine, parseErrors);
@@ -117,6 +124,7 @@ public partial class SettingsViewModel : ObservableObject
             HttpUrl = httpUrl,
             TcpHost = tcpHost,
             TcpPort = port,
+            DataLimitMegabytes = dataLimit,
             StartOnLaunch = startOnLaunch,
             LaunchAtLogin = launchAtLogin,
         });
@@ -152,6 +160,7 @@ public partial class SettingsViewModel : ObservableObject
         HttpUrl = settings.HttpUrl;
         TcpHost = settings.TcpHost;
         TcpPort = settings.TcpPort.ToString();
+        DataLimitMegabytes = settings.DataLimitMegabytes.ToString();
         StartOnLaunch = settings.StartOnLaunch;
         // LaunchAtLogin は OS 側の実際の状態を正とするため RefreshLaunchAtLoginAsync で別途取得する
     }

@@ -61,6 +61,11 @@
             <Label Text="間隔 5〜3600 秒、タイムアウト 500〜30000 ミリ秒（間隔より短く）。切断される場合は間隔を 15〜30 秒程度に。"
                    Style="{StaticResource Hint}" />
 
+            <Label Text="通信量の上限（MB）" Style="{StaticResource FieldLabel}" />
+            <Entry Text="{Binding DataLimitMegabytes}" Keyboard="Numeric" Placeholder="0" />
+            <Label Text="キープアライブの動作中に数えた通信量の累計がこの値に達したら停止します（0 は上限なし）。ほかのアプリの通信も含みます。累計はモニター画面でリセットするまで、停止やアプリの再起動をまたいで加算します。"
+                   Style="{StaticResource Hint}" />
+
             <Grid ColumnDefinitions="*,Auto" Margin="0,8,0,0">
                 <Label Text="アプリ起動時に自動で開始する" VerticalOptions="Center" />
                 <Switch Grid.Column="1" IsToggled="{Binding StartOnLaunch}" />
