@@ -34,11 +34,12 @@
 		<ApplicationId>com.companyname.tetherkeeper</ApplicationId>
 
 		<!-- Versions
-		     Windows では、ApplicationDisplayVersion が exe のバージョン (1.1.0 → 1.1.0.0) になり、
-		     「ApplicationDisplayVersion.ApplicationVersion」が MSIX のバージョン (1.1.0.0) になる。
+		     exe 版とストア版のバージョンは、ApplicationDisplayVersion の 1 か所で決める。
+		     Windows では、ApplicationDisplayVersion が exe のバージョン (1.0.0 → 1.0.0.0) になり、
+		     「ApplicationDisplayVersion.ApplicationVersion」が MSIX のバージョン (1.0.0.0) になる。
 		     ストアに提出するパッケージは 4 つ目の数字を 0 にする必要があるため、ApplicationVersion は 0 のままにし、
 		     リリースのときは ApplicationDisplayVersion を上げる (docs/BuildGuide.md の「バージョンの上げ方」を参照) -->
-		<ApplicationDisplayVersion>1.1.0</ApplicationDisplayVersion>
+		<ApplicationDisplayVersion>1.0.0</ApplicationDisplayVersion>
 		<ApplicationVersion>0</ApplicationVersion>
 
 		<!-- 「このアプリについて」に表示する著作権表記 -->
@@ -90,5 +91,20 @@
 	  <ProjectReference Include="..\KeepAlive.Core\KeepAlive.Core.csproj" />
 	  <ProjectReference Include="..\KeepAlive.Infrastructure\KeepAlive.Infrastructure.csproj" />
 	</ItemGroup>
+
+	<!-- MAUI が Package.appxmanifest を作るターゲット (MauiGeneratePackageAppxManifest) は、入力に csproj を含まない。
+	     そのため ApplicationDisplayVersion などを変えても、前回作ったマニフェストの古いバージョンのまま MSIX ができてしまう。
+	     バージョンが前回と違うときは、そのターゲットの出力の目印 (stamp) を消して、マニフェストを作り直させる -->
+	<Target Name="RegenerateAppxManifestWhenVersionChanges"
+	        BeforeTargets="MauiGeneratePackageAppxManifest"
+	        Condition="'$(_ResizetizerIsWindowsAppSdk)' == 'True'">
+		<PropertyGroup>
+			<_AppVersionStampFile>$(IntermediateOutputPath)appversion.stamp</_AppVersionStampFile>
+			<_AppVersionText>$(ApplicationDisplayVersion).$(ApplicationVersion)</_AppVersionText>
+			<_PreviousAppVersionText Condition="Exists('$(_AppVersionStampFile)')">$([System.IO.File]::ReadAllText('$(_AppVersionStampFile)').Trim())</_PreviousAppVersionText>
+		</PropertyGroup>
+		<Delete Files="$(_MauiManifestStampFile)" Condition="'$(_AppVersionText)' != '$(_PreviousAppVersionText)'" />
+		<WriteLinesToFile File="$(_AppVersionStampFile)" Lines="$(_AppVersionText)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+	</Target>
 
 </Project>

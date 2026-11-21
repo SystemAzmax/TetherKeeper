@@ -91,7 +91,7 @@ powershell -ExecutionPolicy Bypass -File build\Publish-Msix.ps1
 
 ### 更新
 
-`TetherKeeper\TetherKeeper.csproj` の `ApplicationDisplayVersion` を上げて（例: `1.1.0` → `1.2.0`）から `Publish-Msix.ps1` を実行し、新しい `.msix` をダブルクリックします。設定とログは引き継がれます（同じバージョンのままだと更新できません）。
+`TetherKeeper\TetherKeeper.csproj` の `ApplicationDisplayVersion` を上げて（例: `1.0.0` → `1.1.0`）から `Publish-Msix.ps1` を実行し、新しい `.msix` をダブルクリックします。設定とログは引き継がれます（同じバージョンのままだと更新できません）。
 `ApplicationVersion` は、ストアに提出できるよう `0` のままにします（詳しくは [docs/BuildGuide.md](docs/BuildGuide.md) の「バージョンの上げ方」を参照）。
 
 ### アンインストール

@@ -92,7 +92,7 @@ Because the signature is timestamped, the script needs an internet connection (o
 
 ### Update
 
-Raise `ApplicationDisplayVersion` in `TetherKeeper\TetherKeeper.csproj` (for example, `1.1.0` → `1.2.0`), run `Publish-Msix.ps1`, and double-click the new `.msix`. Settings and logs are kept (you can't update without changing the version).
+Raise `ApplicationDisplayVersion` in `TetherKeeper\TetherKeeper.csproj` (for example, `1.0.0` → `1.1.0`), run `Publish-Msix.ps1`, and double-click the new `.msix`. Settings and logs are kept (you can't update without changing the version).
 Keep `ApplicationVersion` at `0` so that the package can be submitted to the Store (see "バージョンの上げ方" (How to raise the version) in [docs/BuildGuide.md](docs/BuildGuide.md)).
 
 ### Uninstall

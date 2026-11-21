@@ -45,19 +45,24 @@
 ## バージョンの上げ方
 
 バージョンは、`TetherKeeper\TetherKeeper.csproj` の `ApplicationDisplayVersion` の 1 か所で決めます。
-MAUI のビルドが、ここから exe 版とストア版（MSIX）の両方のバージョンを作ります。
+MAUI のビルドが、ここから exe 版とストア版（MSIX）の両方のバージョンを作るため、2 つの版はいつも同じバージョンになります。
+Microsoft Store で最初に公開するバージョンは `1.0.0` です。
 
-| | 作られるバージョン | `ApplicationDisplayVersion` が `1.1.0` のとき |
+| | 作られるバージョン | `ApplicationDisplayVersion` が `1.0.0` のとき |
 | --- | --- | --- |
-| exe 版 | アセンブリのバージョン（`ApplicationDisplayVersion`） | `1.1.0.0` |
-| ストア版（MSIX） | `Package.appxmanifest` の `Identity` の `Version`（`ApplicationDisplayVersion.ApplicationVersion`） | `1.1.0.0` |
+| exe 版 | アセンブリのバージョン（`ApplicationDisplayVersion`） | `1.0.0.0` |
+| ストア版（MSIX） | `Package.appxmanifest` の `Identity` の `Version`（`ApplicationDisplayVersion.ApplicationVersion`） | `1.0.0.0` |
 
-- リリースのときは、`ApplicationDisplayVersion` を上げます（例: `1.1.0` → `1.2.0`）。
+- リリースのときは、`ApplicationDisplayVersion` を上げます（例: `1.0.0` → `1.1.0`）。
 - `ApplicationVersion` は `0` のままにします。ストアに提出するパッケージは、4 つ目の数字（リビジョン）を 0 にする必要があるためです。
 - `Package.appxmanifest` の `Version="0.0.0.0"` はビルドで置き換えられるので、書き換えません。
-- 画面では、4 つ目の数字が 0 のときは省いて `1.1.0` のように表示します。
+- MAUI は、csproj のバージョンを変えただけではマニフェストを作り直しません。
+  そのため csproj の `RegenerateAppxManifestWhenVersionChanges` で、バージョンが前回と違うときに作り直させています。
+- 画面では、4 つ目の数字が 0 のときは省いて `1.0.0` のように表示します。
 - MSIX は、インストール済みのものより大きいバージョンでないと更新できません。
-  以前の `Publish-Msix.ps1` で作ったパッケージは `1.0.0.1` だったため、それより大きい `1.1.0` から始めています。
+  以前の `Publish-Msix.ps1` で作ったパッケージは `1.0.0.1` のため、それを入れた PC には `1.0.0`（`1.0.0.0`）を上書きでインストールできません。
+  いったんアンインストールしてから入れ直してください（設定とログも削除されます）。
+  ストアと関連付けたあとのパッケージは名前と発行元が変わり、別のアプリとして扱われるため、この制限は受けません。
 
 ## ライセンス表示の更新
 
