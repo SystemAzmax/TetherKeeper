@@ -1,3 +1,5 @@
+using TetherKeeper.Services;
+
 namespace TetherKeeper
 {
     public partial class App : Application
@@ -14,7 +16,8 @@ namespace TetherKeeper
         {
             return new Window(_shell)
             {
-                Title = "TetherKeeper",
+                // タイトルバーとタスクバーに出るアプリ名。表示言語に合わせて日本語名と英語名を切り替える
+                Title = AppInfoProvider.GetProductName(),
                 Width = 480,
                 Height = 760,
                 MinimumWidth = 380,

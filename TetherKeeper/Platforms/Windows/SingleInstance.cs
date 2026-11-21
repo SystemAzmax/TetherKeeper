@@ -1,4 +1,6 @@
 using System.Runtime.InteropServices;
+using KeepAlive.Core.Services;
+using TetherKeeper.Services;
 
 namespace TetherKeeper.WinUI;
 
@@ -53,10 +55,10 @@ internal static class SingleInstance
 
         MessageBox(
             IntPtr.Zero,
-            "TetherKeeper は既に起動していますが、応答がありません。\n\n" +
-            "タスクマネージャーで TetherKeeper を終了してから、もう一度起動してください。\n" +
-            "TetherKeeper が見当たらない場合は、PC を再起動してください。",
-            "TetherKeeper",
+            $"{AppDisplayName.JAPANESE}は既に起動していますが、応答がありません。\n\n" +
+            $"タスクマネージャーで{AppDisplayName.JAPANESE}（TetherKeeper.exe）を終了してから、もう一度起動してください。\n" +
+            "見当たらない場合は、PC を再起動してください。",
+            AppInfoProvider.GetProductName(),
             MB_OK | MB_ICONWARNING);
     }
 

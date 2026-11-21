@@ -15,6 +15,11 @@
             <Setter Property="FontSize" Value="12" />
             <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray300}}" />
         </Style>
+        <!-- 「アプリの情報」のボタン。「保存」と区別するため、「既定値に戻す」と同じ控えめな色にする -->
+        <Style x:Key="InfoButton" TargetType="Button">
+            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}" />
+            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}" />
+        </Style>
     </ContentPage.Resources>
 
     <ScrollView>
@@ -94,6 +99,21 @@
             <Label Text="※ 本アプリは定期的に微小な通信を発生させてアイドル切断を軽減するものであり、切断を完全に防ぐことは保証できません。"
                    Style="{StaticResource Hint}"
                    Margin="0,12,0,0" />
+
+            <!-- アプリの情報 -->
+            <Label Text="アプリの情報" Style="{StaticResource FieldLabel}" Margin="0,16,0,0" />
+            <Button Text="このアプリについて"
+                    Style="{StaticResource InfoButton}"
+                    Clicked="OnAboutButtonClick"
+                    ToolTipProperties.Text="アプリのバージョンなどを表示します。" />
+            <Button Text="ライセンス情報"
+                    Style="{StaticResource InfoButton}"
+                    Clicked="OnThirdPartyNoticesButtonClick"
+                    ToolTipProperties.Text="使用しているソフトウェアのライセンスを表示します。" />
+            <Button Text="使い方"
+                    Style="{StaticResource InfoButton}"
+                    Clicked="OnUserGuideButtonClick"
+                    ToolTipProperties.Text="使い方ガイドを Web ブラウザーで開きます。" />
         </VerticalStackLayout>
     </ScrollView>
 

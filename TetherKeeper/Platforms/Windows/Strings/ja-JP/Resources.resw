@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Package.appxmanifest から ms-resource: で参照する、日本語の表示名と説明。
+  表示名は、スタートメニューと、自動起動（StartupTask）の名前に使われる。
+  日本語以外の言語では、既定の言語（en-US）の Strings\en-US\Resources.resw が使われる。
+  表示名は Partner Center で予約した名前にする（docs/BuildGuide.md を参照）。
+-->
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AppDisplayName" xml:space="preserve">
+    <value>テザリングキーパー</value>
+    <comment>スタートメニューなどに表示するアプリ名</comment>
+  </data>
+  <data name="AppDescription" xml:space="preserve">
+    <value>定期的に小さな通信を発生させて、テザリングなどのアイドル切断を起きにくくするツール</value>
+    <comment>アプリの説明</comment>
+  </data>
+</root>

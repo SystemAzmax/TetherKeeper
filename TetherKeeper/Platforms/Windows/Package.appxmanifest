@@ -13,8 +13,10 @@
   <mp:PhoneIdentity PhoneProductId="FFF04110-B8C1-4264-8C3A-7E63456A4440" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>$placeholder$</DisplayName>
-    <PublisherDisplayName>TetherKeeper</PublisherDisplayName>
+    <!-- 表示名と説明は Strings\<言語>\Resources.resw にある。日本語は「テザリングキーパー」、それ以外は「TetherKeeper」 -->
+    <DisplayName>ms-resource:AppDisplayName</DisplayName>
+    <!-- Partner Center のアカウントに登録した発行元の表示名と同じにする -->
+    <PublisherDisplayName>あずま屋</PublisherDisplayName>
     <Logo>$placeholder$.png</Logo>
   </Properties>
 
@@ -30,8 +32,8 @@
   <Applications>
     <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="$targetentrypoint$">
       <uap:VisualElements
-        DisplayName="$placeholder$"
-        Description="テザリング等のアイドル切断を軽減するキープアライブツール"
+        DisplayName="ms-resource:AppDisplayName"
+        Description="ms-resource:AppDescription"
         Square150x150Logo="$placeholder$.png"
         Square44x44Logo="$placeholder$.png"
         BackgroundColor="transparent">
@@ -42,9 +44,10 @@
       <Extensions>
         <!-- ログイン時の自動起動。TaskId は StartupTaskAutoStartService.TaskId と一致させること。
              Enabled="false": インストール直後は無効。アプリの設定画面で有効にする
-             Executable には $targetnametoken$ が使えない (置換されない) ため exe 名を直接書く -->
+             Executable には $targetnametoken$ が使えない (置換されない) ため exe 名を直接書く
+             DisplayName はタスクマネージャーの「スタートアップ アプリ」に出る名前 -->
         <uap5:Extension Category="windows.startupTask" Executable="TetherKeeper.exe" EntryPoint="Windows.FullTrustApplication">
-          <uap5:StartupTask TaskId="TetherKeeperStartup" Enabled="false" DisplayName="TetherKeeper" />
+          <uap5:StartupTask TaskId="TetherKeeperStartup" Enabled="false" DisplayName="ms-resource:AppDisplayName" />
         </uap5:Extension>
       </Extensions>
     </Application>

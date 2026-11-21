@@ -1,4 +1,5 @@
 using KeepAlive.Core.Interfaces;
+using KeepAlive.Core.Services;
 using Windows.ApplicationModel;
 
 namespace TetherKeeper.WinUI;
@@ -47,7 +48,8 @@ internal sealed class StartupTaskAutoStartService : IAutoStartService
                 return;
             case StartupTaskState.DisabledByUser:
                 throw new InvalidOperationException(
-                    "タスクマネージャーの「スタートアップ アプリ」で TetherKeeper が無効にされています。そちらで有効にしてください。");
+                    // タスクマネージャーには、パッケージのリソースの表示名 (表示言語の名前) が出る
+                    $"タスクマネージャーの「スタートアップ アプリ」で{AppDisplayName.GetCurrent()}が無効にされています。そちらで有効にしてください。");
             case StartupTaskState.DisabledByPolicy:
                 throw new InvalidOperationException("組織のポリシーで自動起動が禁止されています。");
             default:

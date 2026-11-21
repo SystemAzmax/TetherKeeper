@@ -1,4 +1,5 @@
 using KeepAlive.Core.Interfaces;
+using KeepAlive.Core.Services;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using TetherKeeper.Services;
@@ -104,7 +105,7 @@ internal sealed class TrayController
         {
             _hiddenNoticeShown = true;
             _notifyIcon.ShowBalloon(
-                "TetherKeeper はタスクトレイで動作中です",
+                $"{AppDisplayName.JAPANESE}はタスクトレイで動作中です",
                 "終了するには、トレイアイコンを右クリックして「終了」を選んでください。");
         }
     }
@@ -146,12 +147,14 @@ internal sealed class TrayController
 
     private string BuildToolTip()
     {
+        // アプリ名は表示言語に合わせて日本語名と英語名を切り替える
+        var name = AppInfoProvider.GetProductName();
         if (!_worker.IsRunning)
-            return "TetherKeeper（停止中）";
+            return $"{name}（停止中）";
 
         var failures = _worker.Statistics.ConsecutiveFailures;
         return failures > 0
-            ? $"TetherKeeper（動作中・{failures} 回連続失敗）"
-            : "TetherKeeper（動作中）";
+            ? $"{name}（動作中・{failures} 回連続失敗）"
+            : $"{name}（動作中）";
     }
 }

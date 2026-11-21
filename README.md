@@ -1,142 +1,160 @@
-# TetherKeeper（KeepAlive for Tethering）
+# TetherKeeper
 
-iPhone のインターネット共有（テザリング）、Wi-Fi ルーター、モバイル回線、一部の VPN は、一定時間通信が無いと接続を切断することがあります。
-TetherKeeper は定期的に小さな通信を発生させて、このアイドル切断を起きにくくするツールです。
+English | [日本語](README_ja.md)
 
-> テザリングの切断を 100% 防げる保証はありません。
+iPhone Personal Hotspot (tethering), Wi-Fi routers, mobile connections, and some VPNs may drop the connection when there is no traffic for a while.
+TetherKeeper sends a small amount of traffic at regular intervals so that these idle disconnections are less likely to happen. Its Japanese name is テザリングキーパー, which Windows shows when the display language is Japanese.
 
-## 機能
+The app's screens are in Japanese only.
 
-- 3 つの通信方式（設定画面で切り替え）
-  - **Ping (ICMP)**: 通信量が最小で、管理者権限も不要（既定）
-  - **HTTP HEAD**: ICMP が遮断された環境やプロキシ環境向け
-  - **TCP Connect**: 接続を確立したらすぐに切断する
-- 実行間隔（5〜3600 秒）とタイムアウトを設定可能
-- 成功・失敗の回数、連続失敗数、ログの表示
-- 「今すぐ実行」ボタン
-- スリープ復帰を検知すると、5 秒後に即時実行する
-- 指定した日時にキープアライブを自動停止（モニター画面で日付と時刻を選んで「予約」。停止後は予約が自動で解除される）
-- 通信量の上限での自動停止（設定画面で上限を MB で指定。キープアライブ動作中の通信量を、モニター画面の「リセット」を押すまで累計し、上限に達したら停止する。上限に達している間は開始できない）
-  - 数えるのは、インターネットへの通信に使われているネットワークアダプター（有線 LAN と Wi-Fi の両方につながっている場合は Windows が通信に選んだ方）の送受信量で、ほかのアプリの通信も含む。どのアダプターを数えているかはログに「通信量の計測対象」として出る
-  - 計測は 5 秒ごとのため、その間の通信の分だけ上限を超えてから止まる。キープアライブを止めても、ほかのアプリの通信は止まらない
-- アプリ起動時の自動開始、Windows ログイン時の自動起動（トレイに格納した状態で起動）
-- タスクトレイ常駐（× ボタンでトレイに格納。終了は画面の「終了」ボタンかトレイメニューから）
-- ログのファイル出力（1 日 1 ファイル、30 日分を保存）
+> There is no guarantee that tethering never drops.
 
-## 動作環境
+## Features
 
-- Windows 10 1809 以降 / Windows 11
-- 開発時: .NET 10 SDK と MAUI ワークロード（`maui-windows`）
+- Three methods (switch on the Settings screen)
+  - **Ping (ICMP)**: Uses the least data and doesn't require administrator rights (default)
+  - **HTTP HEAD**: For networks that block ICMP or use a proxy
+  - **TCP Connect**: Disconnects as soon as the connection is established
+- Configurable interval (5 to 3600 seconds) and timeout
+- Shows the number of successes and failures, consecutive failures, and the log
+- "今すぐ実行" (Run now) button
+- When the PC wakes from sleep, runs again after 5 seconds
+- Automatic stop at a specified date and time (choose the date and time on the "モニター" (Monitor) screen and select "予約" (Schedule). The schedule is cleared automatically after it stops)
+- Automatic stop at a data limit (set the limit in MB on the Settings screen. The app adds up the data used while the keep-alive is running until you select "リセット" (Reset) on the Monitor screen, and stops when it reaches the limit. You can't start while the limit is reached)
+  - The app counts the data sent and received by the network adapter used for internet traffic (if you are connected to both wired LAN and Wi-Fi, the one Windows chooses). This includes traffic from other apps. The log shows which adapter is counted
+  - Because it measures every 5 seconds, it stops after exceeding the limit by the amount of traffic in that time. Stopping the keep-alive does not stop traffic from other apps
+- Start automatically when the app starts, and start the app when you sign in to Windows (starts in the tray)
+- Runs in the notification area (system tray) ("×" moves the app to the tray. To exit, use the "終了" (Exit) button on the screen or the tray menu)
+- Log files (one file per day, kept for 30 days)
+- "アプリの情報" (App information) on the "設定" (Settings) screen shows About this app (version), License information, and the User guide
 
-## ビルドと実行
+For details on each setting and troubleshooting, see the [User Guide](docs/UserGuide.md).
+For how the app handles personal information and the network traffic it sends, see the [Privacy Policy](docs/PrivacyPolicy.md).
+To report a bug or make a request, please use [GitHub Issues](https://github.com/SystemAzmax/TetherKeeper/issues).
+
+## Requirements
+
+- Windows 10 version 1809 or later / Windows 11
+- For development: .NET 10 SDK and the MAUI workload (`maui-windows`)
+
+## Build and Run
 
 ```powershell
-# Windows 版を起動
+# Start the Windows app
 dotnet build TetherKeeper/TetherKeeper.csproj -f net10.0-windows10.0.19041.0
 dotnet run --project TetherKeeper/TetherKeeper.csproj -f net10.0-windows10.0.19041.0
 
-# 単体テスト
+# Unit tests
 dotnet test KeepAlive.Tests
 ```
 
-Visual Studio では `TetherKeeper.slnx` を開き、デバッグ対象に「Windows Machine」を選びます。
+In Visual Studio, open `TetherKeeper.slnx` and choose "Windows Machine" as the debug target.
 
-設定ファイルは `%LOCALAPPDATA%\TetherKeeper\settings.json` に、通信量の累計は同じフォルダの `data-usage.json` に保存されます。
-ログは同じフォルダ内の `logs\TetherKeeper_yyyyMMdd.log` に 1 日 1 ファイルで出力され、30 日を過ぎたファイルは自動で削除されます。
-保存フォルダは、モニター画面の「保存先」ボタンで開けます。
-（上記は開発時の非パッケージ版の場所です。MSIX 版は下記のとおりパッケージ専用フォルダになります）
+Settings are saved to `%LOCALAPPDATA%\TetherKeeper\settings.json`, and the total data usage is saved to `data-usage.json` in the same folder.
+Logs are written to `logs\TetherKeeper_yyyyMMdd.log` in the same folder, one file per day, and files older than 30 days are deleted automatically.
+You can open the folder with the "保存先" (Location) button on the Monitor screen.
+(These are the locations for the unpackaged app during development. The MSIX app uses a folder dedicated to the package, as described below.)
 
-## MSIX でのインストール
+## Installing with MSIX
 
-### パッケージの作成（開発 PC）
+### Create the package (development PC)
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File build\Publish-Msix.ps1
 ```
 
-`artifacts\msix\` に次のファイルが出力されます。
+The following files are written to `artifacts\msix\`.
 
-| ファイル | 用途 |
+| File | Purpose |
 |---|---|
-| `TetherKeeper_<バージョン>_Test\TetherKeeper_<バージョン>_x64.msix` | インストーラー本体（.NET と Windows App SDK を同梱しているため単体でインストール可能） |
-| `TetherKeeper.cer` | 署名証明書の公開鍵。インストール先 PC で信頼登録に使う |
+| `TetherKeeper_<version>_Test\TetherKeeper_<version>_x64.msix` | The installer (it includes .NET and the Windows App SDK, so it can be installed on its own) |
+| `TetherKeeper.cer` | The public key of the signing certificate. Used to trust the certificate on the PC where you install the app |
 
-署名用の自己署名証明書（`CN=TetherKeeper`、有効期間 5 年）は、初回実行時に現在のユーザーの証明書ストアに自動で作成されます。
+A self-signed certificate for signing (`CN=TetherKeeper`, valid for 5 years) is created automatically in the current user's certificate store the first time you run the script.
 
-署名にはタイムスタンプを付けるため、実行時にインターネット接続が必要です（タイムスタンプサーバーに送られるのは署名のハッシュ値だけです）。使うサーバーは `-TimestampUrl` で変更できます。
+Because the signature is timestamped, the script needs an internet connection (only the hash of the signature is sent to the timestamp server). You can change the server with `-TimestampUrl`.
 
-### インストール先 PC での作業
+### On the PC where you install the app
 
-1. **証明書の信頼登録（PC ごとに最初の 1 回だけ。管理者権限が必要）**
+1. **Trust the certificate (only the first time on each PC. Requires administrator rights)**
 
-   管理者の PowerShell で次を実行します。
+   Run the following in PowerShell as an administrator.
 
    ```powershell
    Import-Certificate -FilePath TetherKeeper.cer -CertStoreLocation Cert:\LocalMachine\TrustedPeople
    ```
 
-   画面操作で行う場合は、`TetherKeeper.cer` をダブルクリック →「証明書のインストール」→ 保存場所「ローカル コンピューター」→「証明書をすべて次のストアに配置する」で「信頼されたユーザー」を選びます。
+   To do this with the mouse, double-click `TetherKeeper.cer` → "Install Certificate" → Store Location "Local Machine" → "Place all certificates in the following store", and choose "Trusted People".
 
-2. **インストール（管理者権限は不要。使う本人のアカウントで実行）**
+2. **Install (no administrator rights required. Run it with the account of the person who uses the app)**
 
-   `.msix` をダブルクリックして「インストール」を押します。スタートメニューに TetherKeeper が追加されます。
+   Double-click the `.msix` and select "Install". TetherKeeper (テザリングキーパー when the display language is Japanese) is added to the Start menu.
 
-### 更新
+### Update
 
-`TetherKeeper\TetherKeeper.csproj` の `ApplicationVersion` を 1 つ上げてから `Publish-Msix.ps1` を実行し、新しい `.msix` をダブルクリックします。設定とログは引き継がれます（同じバージョンのままだと更新できません）。
+Raise `ApplicationDisplayVersion` in `TetherKeeper\TetherKeeper.csproj` (for example, `1.1.0` → `1.2.0`), run `Publish-Msix.ps1`, and double-click the new `.msix`. Settings and logs are kept (you can't update without changing the version).
+Keep `ApplicationVersion` at `0` so that the package can be submitted to the Store (see "バージョンの上げ方" (How to raise the version) in [docs/BuildGuide.md](docs/BuildGuide.md)).
 
-### アンインストール
+### Uninstall
 
-「設定」→「アプリ」→「インストールされているアプリ」から TetherKeeper をアンインストールします。設定とログもパッケージ専用フォルダごと削除されます。
+Uninstall TetherKeeper from Settings → Apps → Installed apps. The settings and logs are deleted together with the package's folder.
 
-### 非パッケージ版との違い
+### Differences from the unpackaged app
 
-| 項目 | 非パッケージ版（開発時の exe 直接実行） | MSIX 版 |
+| Item | Unpackaged (running the exe directly during development) | MSIX |
 |---|---|---|
-| 設定・ログの保存先 | `%LOCALAPPDATA%\TetherKeeper` | `%LOCALAPPDATA%\Packages\TetherKeeper_<発行元ID>\LocalState`（「保存先」ボタンで開ける） |
-| ログイン時の自動起動 | レジストリの Run キー | StartupTask（タスクマネージャーの「スタートアップ アプリ」でも切り替え可能） |
-| アンインストール時のデータ | 残る | 自動で削除される |
+| Where settings and logs are saved | `%LOCALAPPDATA%\TetherKeeper` | `%LOCALAPPDATA%\Packages\TetherKeeper_<publisher ID>\LocalState` (open it with the "保存先" (Location) button) |
+| Start at sign-in | The registry Run key | StartupTask (can also be switched in "Startup apps" in Task Manager) |
+| Data when uninstalled | Kept | Deleted automatically |
 
-タスクマネージャーで自動起動を無効にした場合、Windows の仕様によりアプリの設定画面からは再び有効にできません。タスクマネージャーの「スタートアップ アプリ」で有効に戻してください。
+If you disable start at sign-in in Task Manager, Windows doesn't allow the app's Settings screen to turn it back on. Turn it back on in "Startup apps" in Task Manager.
 
-### 署名証明書の管理
+### Managing the signing certificate
 
-署名に使う証明書（秘密鍵付き）は、パッケージを作成した PC の「現在のユーザー」の証明書ストアにだけあります。PC の入れ替えなどで失った場合は、新しい証明書が自動で作られます。その場合、各 PC で新しい `TetherKeeper.cer` を手順 1 と同じように信頼登録してください。
+The certificate used for signing (with its private key) exists only in the "Current User" certificate store on the PC where you created the package. If you lose it, for example when you replace the PC, a new certificate is created automatically. In that case, trust the new `TetherKeeper.cer` on each PC in the same way as step 1.
 
-秘密鍵はエクスポートできない設定で作成されるため、PC の外へ持ち出したりバックアップしたりはできません。これは、秘密鍵が盗まれると、この証明書を信頼したすべての PC で任意のパッケージが警告なしにインストールできてしまうのを防ぐためです。
+The private key is created as non-exportable, so you can't take it out of the PC or back it up. This prevents anyone who steals the private key from installing any package without warning on every PC that trusts this certificate.
 
-以前のスクリプトで作った証明書は秘密鍵をエクスポートできるため、実行時に警告が表示されます。次のように実行すると新しい証明書に切り替わります。この場合も、各 PC で新しい `TetherKeeper.cer` の信頼登録が必要です。古い証明書は `certmgr.msc`（現在のユーザー →「個人」→「証明書」）から削除してください。
+Certificates created by earlier versions of the script have an exportable private key, so the script shows a warning. Run the following to switch to a new certificate. In this case too, you need to trust the new `TetherKeeper.cer` on each PC. Delete the old certificate in `certmgr.msc` (Current User → "Personal" → "Certificates").
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File build\Publish-Msix.ps1 -NewCertificate
 ```
 
-## ソリューション構成
+## Solution Structure
 
 ```text
-├─ KeepAlive.Core            OS 非依存のロジック
+├─ KeepAlive.Core            Platform-independent logic
 │   ├─ Models                AppSettings / KeepAliveResult / LogEntry / KeepAliveStatistics / DataUsage
-│   ├─ Interfaces            IKeepAliveStrategy / ISettingsService / ILogService / IKeepAliveWorker / IDataUsageTracker など
+│   ├─ Interfaces            IKeepAliveStrategy / ISettingsService / ILogService / IKeepAliveWorker / IDataUsageTracker, etc.
 │   ├─ Services              KeepAliveWorker / SettingsService / LogService / KeepAliveStrategyResolver / DataUsageTracker
-│   ├─ Strategies            Ping / HttpHead / TcpConnect の各 KeepAliveStrategy
-│   └─ Configuration         DI 登録（AddKeepAliveCore）と KeepAliveOptions
-├─ KeepAlive.Infrastructure  OS 依存の実装
-│   ├─ Settings              JsonFileSettingsStore / JsonFileDataUsageStore（通信量の累計）
-│   ├─ Network               NetworkInterfaceDataUsageMeter（アダプターの送受信量）
-│   ├─ AutoStart             WindowsAutoStartService（HKCU\Run）
-│   └─ Power                 WindowsPowerEventSource（SystemEvents）
-├─ TetherKeeper              .NET MAUI の UI（Views / ViewModels / Platforms）
-├─ KeepAlive.Tests           xUnit の単体テスト
-├─ docs/設計判断.md           方式比較・スリープ時の挙動・フレームワーク選定
-└─ docs/今後の機能候補.md     今後実装を検討する機能と改善点
+│   │                        AppDisplayName (switches between the Japanese and English names) / AppAboutInfo (text for "About this app")
+│   ├─ Strategies            KeepAliveStrategy for Ping / HttpHead / TcpConnect
+│   └─ Configuration         DI registration (AddKeepAliveCore) and KeepAliveOptions
+├─ KeepAlive.Infrastructure  Platform-dependent implementations
+│   ├─ Settings              JsonFileSettingsStore / JsonFileDataUsageStore (total data usage)
+│   ├─ Network               NetworkInterfaceDataUsageMeter (data sent and received by the adapter)
+│   ├─ AutoStart             WindowsAutoStartService (HKCU\Run)
+│   └─ Power                 WindowsPowerEventSource (SystemEvents)
+├─ TetherKeeper              .NET MAUI UI (Views / ViewModels / Platforms)
+│   ├─ Services              AppInfoProvider (version and other information) / AppPaths / AppPackage, etc.
+│   ├─ Platforms/Windows     Tray, single instance, Package.appxmanifest and the display name resources (Strings)
+│   └─ ThirdPartyNotices.txt License notices opened by "License information"
+├─ KeepAlive.Tests           xUnit unit tests
+├─ tools/notices             Script that creates ThirdPartyNotices.txt
+├─ docs/UserGuide.md         User guide (Japanese version: UserGuide_ja.md)
+├─ docs/PrivacyPolicy.md     Privacy policy
+├─ docs/BuildGuide.md        App names, versions, and license notices (in Japanese)
+├─ docs/設計判断.md           Design decisions (in Japanese)
+└─ docs/今後の機能候補.md     Feature ideas (in Japanese)
 ```
 
-設計の背景と、指示書との差異（.NET 10 を採用した理由など）は [docs/設計判断.md](docs/設計判断.md) にまとめています。
-今後実装を検討する機能は [docs/今後の機能候補.md](docs/今後の機能候補.md) にまとめています。
+The background of the design is described in [docs/設計判断.md](docs/設計判断.md) (in Japanese).
+How to handle the app names (Japanese and English), raise the version, and update the license notices is described in [docs/BuildGuide.md](docs/BuildGuide.md) (in Japanese).
 
-## 通信方式を追加するには
+## Adding a Method
 
-1. `KeepAliveMethod` に値を追加します。
-2. `IKeepAliveStrategy` を実装します。通信の失敗は例外にせず `KeepAliveResult.Failed` で返してください。
-3. `AddKeepAliveCore()` に登録します。
-4. `SettingsViewModel.Methods` に表示名を追加します。
+1. Add a value to `KeepAliveMethod`.
+2. Implement `IKeepAliveStrategy`. Return failures as `KeepAliveResult.Failed` instead of throwing exceptions.
+3. Register it in `AddKeepAliveCore()`.
+4. Add a display name to `SettingsViewModel.Methods`.

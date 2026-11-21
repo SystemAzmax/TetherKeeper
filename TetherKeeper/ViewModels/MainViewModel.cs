@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using KeepAlive.Core.Interfaces;
 using KeepAlive.Core.Models;
+using KeepAlive.Core.Services;
 using TetherKeeper.Services;
 
 namespace TetherKeeper.ViewModels;
@@ -141,7 +142,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
             return;
         _initialized = true;
 
-        _log.Info($"TetherKeeper {AppInfo.Current.VersionString} を起動しました。");
+        var (version, isPackaged) = AppInfoProvider.GetVersion();
+        _log.Info($"{AppDisplayName.JAPANESE} {AppAboutInfo.FormatVersion(version)}（{(isPackaged ? "ストア版" : "exe 版")}）を起動しました。");
         var settings = await _settings.LoadAsync();
         await _dataUsage.LoadAsync();
         RefreshAll();

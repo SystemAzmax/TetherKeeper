@@ -33,9 +33,16 @@
 		<!-- App Identifier -->
 		<ApplicationId>com.companyname.tetherkeeper</ApplicationId>
 
-		<!-- Versions -->
-		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
-		<ApplicationVersion>1</ApplicationVersion>
+		<!-- Versions
+		     Windows では、ApplicationDisplayVersion が exe のバージョン (1.1.0 → 1.1.0.0) になり、
+		     「ApplicationDisplayVersion.ApplicationVersion」が MSIX のバージョン (1.1.0.0) になる。
+		     ストアに提出するパッケージは 4 つ目の数字を 0 にする必要があるため、ApplicationVersion は 0 のままにし、
+		     リリースのときは ApplicationDisplayVersion を上げる (docs/BuildGuide.md の「バージョンの上げ方」を参照) -->
+		<ApplicationDisplayVersion>1.1.0</ApplicationDisplayVersion>
+		<ApplicationVersion>0</ApplicationVersion>
+
+		<!-- 「このアプリについて」に表示する著作権表記 -->
+		<Copyright>© 2026 SystemAzmax</Copyright>
 
 		<!-- To develop, package, and publish an app to the Microsoft Store, see: https://aka.ms/MauiTemplateUnpackaged -->
 		<WindowsPackageType>None</WindowsPackageType>
@@ -44,7 +51,17 @@
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
 		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
+
+		<!-- MSIX の既定の言語。パッケージに無い言語 (日本語・英語以外) では、この言語のリソースが使われる。
+		     アプリ名を日本語以外では英語名にするため en-US にする (Platforms\Windows\Strings を参照) -->
+		<DefaultLanguage Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">en-US</DefaultLanguage>
 	</PropertyGroup>
+
+	<ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+		<!-- 「ライセンス情報」で開く、使用しているソフトウェアのライセンス表示。
+		     パッケージを更新したときの作り直し方は docs/BuildGuide.md を参照 -->
+		<Content Include="ThirdPartyNotices.txt" CopyToOutputDirectory="PreserveNewest" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<!-- App Icon -->

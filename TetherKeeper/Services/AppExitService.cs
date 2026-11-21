@@ -1,4 +1,5 @@
 using KeepAlive.Core.Interfaces;
+using KeepAlive.Core.Services;
 
 namespace TetherKeeper.Services;
 
@@ -34,7 +35,7 @@ public sealed class AppExitService
         {
             // 停止が終わらない場合も終了は妨げない
             await Task.WhenAny(_worker.StopAsync(), Task.Delay(TimeSpan.FromSeconds(5)));
-            _log.Info("TetherKeeper を終了します。");
+            _log.Info($"{AppDisplayName.JAPANESE}を終了します。");
 
             // ログファイルへの書き残しが無いようにしてから終了する (ファイル書き込みが詰まっても終了は妨げない)
             await Task.WhenAny(_log.FlushAsync(), Task.Delay(TimeSpan.FromSeconds(3)));

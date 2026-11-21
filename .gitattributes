@@ -1,0 +1,6 @@
+# Git Bash で実行するシェルスクリプトは、Windows でも改行を LF のまま取り出す
+# （CRLF になると bash が実行できない）
+*.sh text eol=lf
+
+# 「ライセンス情報」でメモ帳などで開くファイルは、どの環境で取り出しても改行を CRLF にする
+ThirdPartyNotices.txt text eol=crlf
