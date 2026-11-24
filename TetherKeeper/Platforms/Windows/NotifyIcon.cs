@@ -3,11 +3,24 @@ using System.Runtime.InteropServices;
 namespace TetherKeeper.WinUI;
 
 /// <summary>タスクトレイのコンテキストメニュー項目。</summary>
-internal sealed record TrayMenuItem(string Text, Action? Action, bool IsDefault = false)
+/// <param name="Text">表示する文字列。</param>
+/// <param name="Action">選んだときの処理。</param>
+/// <param name="IsDefault">既定の項目 (太字) にするか。</param>
+/// <param name="IsEnabled">選べるか。false にすると灰色で表示する。</param>
+/// <param name="Children">サブメニューの項目。指定すると、この項目はサブメニューを開く項目になる (<paramref name="Action"/> は使わない)。</param>
+internal sealed record TrayMenuItem(
+    string Text,
+    Action? Action,
+    bool IsDefault = false,
+    bool IsEnabled = true,
+    IReadOnlyList<TrayMenuItem>? Children = null)
 {
     public static TrayMenuItem Separator { get; } = new(string.Empty, null);
 
     public bool IsSeparator => ReferenceEquals(this, Separator);
+
+    /// <summary>選べない、情報を表示するだけの項目 (メニュー上部の状態の表示など)。</summary>
+    public static TrayMenuItem Info(string text) => new(text, null, IsEnabled: false);
 }
 
 /// <summary>通知 (バルーン) に表示するアイコンの種類。</summary>
@@ -207,17 +220,8 @@ internal sealed class NotifyIcon : IDisposable
         var menu = CreatePopupMenu();
         try
         {
-            // メニュー ID は「項目の番号 + 1」(0 は「何も選ばれなかった」を意味するため)
-            for (var i = 0; i < items.Count; i++)
-            {
-                if (items[i].IsSeparator)
-                    AppendMenu(menu, MF_SEPARATOR, 0, null);
-                else
-                    AppendMenu(menu, MF_STRING, (uint)(i + 1), items[i].Text);
-
-                if (items[i].IsDefault)
-                    SetMenuDefaultItem(menu, (uint)(i + 1), 0);
-            }
+            var commands = new List<TrayMenuItem>();
+            AppendItems(menu, items, commands);
 
             GetCursorPos(out var point);
 
@@ -226,12 +230,44 @@ internal sealed class NotifyIcon : IDisposable
             var command = TrackPopupMenuEx(menu, TPM_RETURNCMD | TPM_RIGHTBUTTON | TPM_NONOTIFY, point.X, point.Y, _hwnd, IntPtr.Zero);
             PostMessage(_hwnd, WM_NULL, IntPtr.Zero, IntPtr.Zero);
 
-            if (command > 0)
-                items[command - 1].Action?.Invoke();
+            if (command > 0 && command <= commands.Count)
+                commands[command - 1].Action?.Invoke();
         }
         finally
         {
+            // サブメニューも、親のメニューと一緒に破棄される
             DestroyMenu(menu);
+        }
+    }
+
+    /// <summary>
+    /// メニューに項目を追加する。サブメニューは再帰的に作る。
+    /// 選べる項目のメニュー ID は、<paramref name="commands"/> での番号 + 1 にする (0 は「何も選ばれなかった」を意味するため)。
+    /// </summary>
+    private static void AppendItems(IntPtr menu, IReadOnlyList<TrayMenuItem> items, List<TrayMenuItem> commands)
+    {
+        foreach (var item in items)
+        {
+            if (item.IsSeparator)
+            {
+                AppendMenu(menu, MF_SEPARATOR, 0, null);
+                continue;
+            }
+
+            var state = item.IsEnabled ? 0 : MF_GRAYED;
+            if (item.Children is { Count: > 0 } children)
+            {
+                var subMenu = CreatePopupMenu();
+                AppendItems(subMenu, children, commands);
+                AppendMenu(menu, MF_POPUP | state, (nuint)subMenu, item.Text);
+                continue;
+            }
+
+            commands.Add(item);
+            var id = (uint)commands.Count;
+            AppendMenu(menu, MF_STRING | state, id, item.Text);
+            if (item.IsDefault)
+                SetMenuDefaultItem(menu, id, 0);
         }
     }
 
@@ -260,6 +296,8 @@ internal sealed class NotifyIcon : IDisposable
     private static readonly IntPtr IDI_APPLICATION = new(32512);
 
     private const uint MF_STRING = 0x0000;
+    private const uint MF_GRAYED = 0x0001;
+    private const uint MF_POPUP = 0x0010;
     private const uint MF_SEPARATOR = 0x0800;
     private const uint TPM_RIGHTBUTTON = 0x0002;
     private const uint TPM_NONOTIFY = 0x0080;
@@ -352,7 +390,7 @@ internal sealed class NotifyIcon : IDisposable
     private static extern IntPtr CreatePopupMenu();
 
     [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-    private static extern bool AppendMenu(IntPtr menu, uint flags, uint id, string? text);
+    private static extern bool AppendMenu(IntPtr menu, uint flags, nuint id, string? text); // id は UINT_PTR (サブメニューのハンドルも渡す)
 
     [DllImport("user32.dll")]
     private static extern bool SetMenuDefaultItem(IntPtr menu, uint item, uint byPosition);

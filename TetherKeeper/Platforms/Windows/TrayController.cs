@@ -12,7 +12,7 @@ namespace TetherKeeper.WinUI;
 /// <list type="bullet">
 /// <item>× ボタン (Alt+F4 含む) → ウィンドウを隠してトレイに格納</item>
 /// <item>トレイアイコンをクリック → ウィンドウを再表示</item>
-/// <item>トレイの右クリックメニュー → 表示 / 開始・停止 / 終了</item>
+/// <item>トレイの右クリックメニュー → 上部に今の状態。表示 / 開始・停止 / 今すぐ実行 / 自動停止の予約 / 終了</item>
 /// <item>ログイン時の自動起動 (起動引数 --tray、または MSIX の StartupTask による起動) → ウィンドウを出さずにトレイに格納した状態で起動</item>
 /// <item>通信の失敗が続いたとき・そこから復旧したとき → 通知を出す。失敗が続いている間はアイコンに赤い印を付ける</item>
 /// <item>指定したネットワークから切断して停止したとき → 通知を出す</item>
@@ -26,6 +26,7 @@ internal sealed class TrayController
     private readonly AppWindow _appWindow;
     private readonly IKeepAliveWorker _worker;
     private readonly ISettingsService _settings;
+    private readonly AutoStopScheduler _autoStop;
     private readonly AppExitService _exitService;
     private readonly DispatcherQueue _dispatcher;
     private readonly NotifyIcon _notifyIcon;
@@ -38,8 +39,10 @@ internal sealed class TrayController
         IKeepAliveWorker worker,
         ISettingsService settings,
         NetworkAutoControl networkAutoControl,
+        AutoStopScheduler autoStop,
         AppExitService exitService)
     {
+        _autoStop = autoStop;
         _window = window;
         _appWindow = window.AppWindow;
         _worker = worker;
@@ -138,15 +141,80 @@ internal sealed class TrayController
         _window.Activate();
     }
 
-    private IReadOnlyList<TrayMenuItem> BuildMenu() =>
-    [
-        new("ウィンドウを表示", ShowWindow, IsDefault: true),
-        new(_worker.IsRunning ? "キープアライブを停止" : "キープアライブを開始", ToggleWorker),
-        TrayMenuItem.Separator,
-        new("終了", () => _ = _exitService.ExitAsync()),
-    ];
+    /// <summary>右クリックのたびに作り直す (状態の表示と項目の文言を、その時点のものにするため)。</summary>
+    private IReadOnlyList<TrayMenuItem> BuildMenu()
+    {
+        var isRunning = _worker.IsRunning;
+        var scheduledStop = _autoStop.ScheduledAt;
+        var items = new List<TrayMenuItem>();
 
-    // async void のため、例外を外に出すとアプリが落ちる
+        // 上部: 今の状態 (選べない項目)
+        items.AddRange(BuildStatusLines(isRunning, scheduledStop).Select(TrayMenuItem.Info));
+        items.Add(TrayMenuItem.Separator);
+
+        items.Add(new("ウィンドウを表示", ShowWindow, IsDefault: true));
+        items.Add(new(isRunning ? "キープアライブを停止" : "キープアライブを開始", ToggleWorker));
+        items.Add(new("今すぐ実行", _worker.TriggerNow, IsEnabled: isRunning));
+        items.Add(new("自動停止を予約", null, Children:
+        [
+            new("1 時間後に停止", () => ScheduleAutoStop(TimeSpan.FromHours(1))),
+            new("2 時間後に停止", () => ScheduleAutoStop(TimeSpan.FromHours(2))),
+            TrayMenuItem.Separator,
+            new("予約を解除", CancelAutoStop, IsEnabled: scheduledStop is not null),
+        ]));
+        items.Add(TrayMenuItem.Separator);
+        items.Add(new("終了", () => _ = _exitService.ExitAsync()));
+        return items;
+    }
+
+    /// <summary>メニュー上部に出す、今の状態 (状態、最後の結果、次回実行まで、自動停止の予定)。</summary>
+    private IEnumerable<string> BuildStatusLines(bool isRunning, DateTimeOffset? scheduledStop)
+    {
+        var statistics = _worker.Statistics;
+        yield return !isRunning ? "状態: 停止中"
+            : statistics.ConsecutiveFailures > 0 ? $"状態: 動作中（{statistics.ConsecutiveFailures} 回連続失敗）"
+            : "状態: 動作中";
+
+        if (statistics.LastResult is { } last)
+            yield return $"最後の結果: {last.Timestamp.ToLocalTime():HH:mm:ss} {(last.Success ? "成功" : "失敗")}";
+
+        if (isRunning && _worker.NextRunAt is { } next)
+        {
+            var remaining = next - DateTimeOffset.Now;
+            yield return remaining > TimeSpan.Zero
+                ? $"次回実行まで {Math.Ceiling(remaining.TotalSeconds):F0} 秒"
+                : "実行中…";
+        }
+
+        if (scheduledStop is { } stopAt)
+            yield return $"自動停止: {stopAt:MM/dd HH:mm} に停止予定";
+    }
+
+    // 以下の async void は、例外を外に出すとアプリが落ちるため、すべて受け止める
+    private async void ScheduleAutoStop(TimeSpan after)
+    {
+        try
+        {
+            await _autoStop.ScheduleAfterAsync(after);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"TrayController: 自動停止の予約に失敗しました: {ex}");
+        }
+    }
+
+    private async void CancelAutoStop()
+    {
+        try
+        {
+            await _autoStop.CancelAsync();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"TrayController: 自動停止の解除に失敗しました: {ex}");
+        }
+    }
+
     private async void ToggleWorker()
     {
         try

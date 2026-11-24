@@ -30,7 +30,9 @@ If you can't see it, select "^" (Show hidden icons) on the taskbar. The icon is 
 To keep it visible, drag the icon from "^" to the taskbar near the clock.
 
 - Select the icon to show the window.
-- Right-click the icon to choose "ウィンドウを表示" (Show window), "キープアライブを開始" (Start keep-alive; "キープアライブを停止" (Stop keep-alive) while running), or "終了" (Exit).
+- Right-click the icon to see the current status at the top of the menu (whether it is running, the last result, the seconds until the next run, and the scheduled auto stop).
+  Below that, you can choose "ウィンドウを表示" (Show window), "キープアライブを開始" (Start keep-alive; "キープアライブを停止" (Stop keep-alive) while running), "今すぐ実行" (Run now), "自動停止を予約" (Schedule auto stop: stop in 1 hour, stop in 2 hours, or cancel the schedule), or "終了" (Exit).
+  Choosing a time in "自動停止を予約" (Schedule auto stop) replaces any existing schedule.
 - To exit the app, select "終了" (Exit) on the Monitor screen or in the tray menu.
 
 ### Notice When the Connection Fails

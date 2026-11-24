@@ -28,7 +28,7 @@ The app's screens are in Japanese only.
   - Because it measures every 5 seconds, it stops after exceeding the limit by the amount of traffic in that time. Stopping the keep-alive does not stop traffic from other apps
 - Notifications when failures continue and when the connection recovers (after 3 consecutive failures by default; the number can be changed on the Settings screen). While failures continue, the tray icon shows a red dot
 - Start automatically when the app starts, and start the app when you sign in to Windows (starts in the tray)
-- Runs in the notification area (system tray) ("×" moves the app to the tray. To exit, use the "終了" (Exit) button on the screen or the tray menu)
+- Runs in the notification area (system tray) ("×" moves the app to the tray. To exit, use the "終了" (Exit) button on the screen or the tray menu). The tray menu shows the current status and lets you run now and schedule an auto stop
 - Log files (one file per day, kept for 30 days)
 - "アプリの情報" (App information) on the "設定" (Settings) screen shows About this app (version), License information, and the User guide
 
@@ -134,6 +134,7 @@ powershell -ExecutionPolicy Bypass -File build\Publish-Msix.ps1 -NewCertificate
 │   ├─ Services              KeepAliveWorker / SettingsService / LogService / KeepAliveStrategyResolver / DataUsageTracker
 │   │                        FailureAlertTracker (decides when to notify about failures and recovery)
 │   │                        NetworkAutoControl (starts and stops depending on the connected network)
+│   │                        AutoStopScheduler (schedules and cancels the auto stop)
 │   │                        AppDisplayName (switches between the Japanese and English names) / AppAboutInfo (text for "About this app")
 │   ├─ Strategies            KeepAliveStrategy for Ping / HttpHead / TcpConnect
 │   └─ Configuration         DI registration (AddKeepAliveCore) and KeepAliveOptions

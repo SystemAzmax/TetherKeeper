@@ -38,6 +38,7 @@ public static class ServiceCollectionExtensions
 
         services.AddSingleton<IKeepAliveWorker, KeepAliveWorker>();
         services.AddSingleton<NetworkAutoControl>();
+        services.AddSingleton<AutoStopScheduler>();
         return services;
     }
 

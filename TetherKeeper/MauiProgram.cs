@@ -32,6 +32,7 @@ namespace TetherKeeper
                             services.GetRequiredService<KeepAlive.Core.Interfaces.IKeepAliveWorker>(),
                             services.GetRequiredService<KeepAlive.Core.Interfaces.ISettingsService>(),
                             services.GetRequiredService<KeepAlive.Core.Services.NetworkAutoControl>(),
+                            services.GetRequiredService<KeepAlive.Core.Services.AutoStopScheduler>(),
                             services.GetRequiredService<AppExitService>());
                     }));
 #endif

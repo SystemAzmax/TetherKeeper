@@ -27,7 +27,7 @@ iPhone のインターネット共有（テザリング）、Wi-Fi ルーター�
   - 計測は 5 秒ごとのため、その間の通信の分だけ上限を超えてから止まる。キープアライブを止めても、ほかのアプリの通信は止まらない
 - 連続失敗と復旧の通知（既定は 3 回続けて失敗したら通知。回数は設定画面で変更可能）。失敗が続いている間は、トレイアイコンに赤い丸を付ける
 - アプリ起動時の自動開始、Windows ログイン時の自動起動（トレイに格納した状態で起動）
-- タスクトレイ常駐（× ボタンでトレイに格納。終了は画面の「終了」ボタンかトレイメニューから）
+- タスクトレイ常駐（× ボタンでトレイに格納。終了は画面の「終了」ボタンかトレイメニューから）。トレイメニューで今の状態の確認、今すぐ実行、自動停止の予約ができる
 - ログのファイル出力（1 日 1 ファイル、30 日分を保存）
 - 設定画面の「アプリの情報」から、このアプリについて（バージョン）・ライセンス情報・使い方ガイドを表示
 
@@ -133,6 +133,7 @@ powershell -ExecutionPolicy Bypass -File build\Publish-Msix.ps1 -NewCertificate
 │   ├─ Services              KeepAliveWorker / SettingsService / LogService / KeepAliveStrategyResolver / DataUsageTracker
 │   │                        FailureAlertTracker（連続失敗と復旧を通知するかの判定）
 │   │                        NetworkAutoControl（接続中のネットワークに応じた開始・停止）
+│   │                        AutoStopScheduler（自動停止の予約と解除）
 │   │                        AppDisplayName（日本語名と英語名の切り替え）/ AppAboutInfo（「このアプリについて」の本文）
 │   ├─ Strategies            Ping / HttpHead / TcpConnect の各 KeepAliveStrategy
 │   └─ Configuration         DI 登録（AddKeepAliveCore）と KeepAliveOptions

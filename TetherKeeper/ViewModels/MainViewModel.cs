@@ -29,6 +29,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private readonly IKeepAliveStrategyResolver _resolver;
     private readonly AppExitService _exitService;
     private readonly NetworkAutoControl _networkAutoControl;
+    private readonly AutoStopScheduler _autoStop;
     private bool _initialized;
 
     public MainViewModel(
@@ -38,8 +39,10 @@ public partial class MainViewModel : ObservableObject, IDisposable
         ILogService log,
         IKeepAliveStrategyResolver resolver,
         AppExitService exitService,
-        NetworkAutoControl networkAutoControl)
+        NetworkAutoControl networkAutoControl,
+        AutoStopScheduler autoStop)
     {
+        _autoStop = autoStop;
         _worker = worker;
         _settings = settings;
         _dataUsage = dataUsage;
@@ -208,14 +211,11 @@ public partial class MainViewModel : ObservableObject, IDisposable
             }
 
             stopAt = new DateTimeOffset(DateTime.SpecifyKind(date.Date + time, DateTimeKind.Local));
-            if (stopAt <= DateTimeOffset.Now)
-            {
-                AutoStopError = "現在より後の日時を指定してください。";
-                return;
-            }
         }
 
-        await SaveAutoStopAsync(stopAt);
+        ShowAutoStopResult(stopAt is { } at
+            ? await _autoStop.ScheduleAtAsync(at)
+            : await _autoStop.CancelAsync());
     }
 
     /// <summary>今から指定した時間 (時間単位。コマンドの引数) の後に、自動停止を予約する。</summary>
@@ -226,26 +226,12 @@ public partial class MainViewModel : ObservableObject, IDisposable
         if (!int.TryParse(hours, out var value) || value <= 0)
             return;
 
-        // 表示は分単位のため、秒を切り上げて「指定した時間より前に止まる」ことがないようにする
-        var now = DateTimeOffset.Now;
-        var stopAt = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, 0, now.Offset)
-            .AddMinutes(now.Second > 0 || now.Millisecond > 0 ? 1 : 0)
-            .AddHours(value);
-        await SaveAutoStopAsync(stopAt);
+        ShowAutoStopResult(await _autoStop.ScheduleAfterAsync(TimeSpan.FromHours(value)));
     }
 
-    private async Task SaveAutoStopAsync(DateTimeOffset? stopAt)
+    private void ShowAutoStopResult(IReadOnlyList<string> errors)
     {
-        var errors = await _settings.UpdateAsync(current => current with { AutoStopAt = stopAt });
-        if (errors.Count > 0)
-        {
-            AutoStopError = string.Join(Environment.NewLine, errors);
-            return;
-        }
-
-        _log.Info(stopAt is { } at
-            ? $"自動停止を {at:yyyy/MM/dd HH:mm} に予約しました。"
-            : "自動停止の予約を解除しました。");
+        AutoStopError = string.Join(Environment.NewLine, errors);
         RefreshAutoStop();
     }
 
@@ -352,7 +338,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private void RefreshAutoStop()
     {
         // 過ぎた日時 (停止中に迎えた予約など) は未予約として扱う
-        var stopAt = _settings.Current.AutoStopAt is { } at && at > DateTimeOffset.Now ? at.ToLocalTime() : (DateTimeOffset?)null;
+        var stopAt = _autoStop.ScheduledAt;
         IsAutoStopScheduled = stopAt is not null;
         AutoStopButtonText = IsAutoStopScheduled ? "解除" : "予約";
 
