@@ -1,4 +1,5 @@
 using KeepAlive.Core.Interfaces;
+using KeepAlive.Core.Models;
 using KeepAlive.Core.Services;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
@@ -13,6 +14,7 @@ namespace TetherKeeper.WinUI;
 /// <item>トレイアイコンをクリック → ウィンドウを再表示</item>
 /// <item>トレイの右クリックメニュー → 表示 / 開始・停止 / 終了</item>
 /// <item>ログイン時の自動起動 (起動引数 --tray、または MSIX の StartupTask による起動) → ウィンドウを出さずにトレイに格納した状態で起動</item>
+/// <item>通信の失敗が続いたとき・そこから復旧したとき → 通知を出す。失敗が続いている間はアイコンに赤い印を付ける</item>
 /// </list>
 /// </summary>
 internal sealed class TrayController
@@ -22,17 +24,21 @@ internal sealed class TrayController
     private readonly Microsoft.UI.Xaml.Window _window;
     private readonly AppWindow _appWindow;
     private readonly IKeepAliveWorker _worker;
+    private readonly ISettingsService _settings;
     private readonly AppExitService _exitService;
     private readonly DispatcherQueue _dispatcher;
     private readonly NotifyIcon _notifyIcon;
+    private readonly FailureAlertTracker _failureAlerts = new(); // UI スレッドだけで使う
     private bool _hiddenNoticeShown;
     private bool _startInTray;
 
-    public TrayController(Microsoft.UI.Xaml.Window window, IKeepAliveWorker worker, AppExitService exitService)
+    public TrayController(
+        Microsoft.UI.Xaml.Window window, IKeepAliveWorker worker, ISettingsService settings, AppExitService exitService)
     {
         _window = window;
         _appWindow = window.AppWindow;
         _worker = worker;
+        _settings = settings;
         _exitService = exitService;
         _dispatcher = DispatcherQueue.GetForCurrentThread();
 
@@ -43,12 +49,19 @@ internal sealed class TrayController
             MenuProvider = BuildMenu,
         };
         _notifyIcon.Click += (_, _) => ShowWindow();
+        // 失敗の通知などをクリックしたら、ウィンドウを出して状態とログを見られるようにする
+        _notifyIcon.BalloonClick += (_, _) => ShowWindow();
 
         _appWindow.Closing += OnClosing;
 
         // Worker のイベントはバックグラウンドスレッドから来るため UI スレッドで処理する
-        _worker.StateChanged += (_, _) => _dispatcher.TryEnqueue(UpdateToolTip);
-        _worker.ResultReceived += (_, _) => _dispatcher.TryEnqueue(UpdateToolTip);
+        // 停止のすぐ後に開始された場合も停止を取りこぼさないよう、状態はイベントの時点で取る
+        _worker.StateChanged += (_, _) =>
+        {
+            var isRunning = _worker.IsRunning;
+            _dispatcher.TryEnqueue(() => OnStateChanged(isRunning));
+        };
+        _worker.ResultReceived += (_, result) => _dispatcher.TryEnqueue(() => OnResultReceived(result));
         _exitService.Exiting += (_, _) => _notifyIcon.Dispose();
         // UI スレッドで表示まで終えてから応答する (UI が固まっていれば応答せず、依頼元が利用者に知らせる)
         SingleInstance.ListenForActivation(() => _dispatcher.TryEnqueue(() =>
@@ -141,6 +154,35 @@ internal sealed class TrayController
         {
             System.Diagnostics.Debug.WriteLine($"TrayController: 開始／停止に失敗しました: {ex}");
         }
+    }
+
+    private void OnStateChanged(bool isRunning)
+    {
+        // 停止したら失敗の状態を忘れる (停止中は通信しないため、次の開始時の成功を「復旧」と知らせない)
+        if (!isRunning)
+        {
+            _failureAlerts.Reset();
+            _notifyIcon.ShowsAlert = false;
+        }
+
+        UpdateToolTip();
+    }
+
+    private void OnResultReceived(KeepAliveResult result)
+    {
+        var settings = _settings.Current;
+        var alert = _failureAlerts.Add(result, settings.FailureThreshold);
+        // 印は通知を切っていても付ける (通知を出さない設定でも、アイコンで気づけるようにする)
+        _notifyIcon.ShowsAlert = _failureAlerts.IsFailing;
+        UpdateToolTip();
+
+        if (alert is null || !settings.NotifyOnFailure)
+            return;
+
+        _notifyIcon.ShowBalloon(
+            alert.Title,
+            alert.Message,
+            alert.Kind == FailureAlertKind.Failing ? BalloonIcon.Warning : BalloonIcon.Info);
     }
 
     private void UpdateToolTip() => _notifyIcon.ToolTip = BuildToolTip();

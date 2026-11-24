@@ -33,6 +33,15 @@ To keep it visible, drag the icon from "^" to the taskbar near the clock.
 - Right-click the icon to choose "ウィンドウを表示" (Show window), "キープアライブを開始" (Start keep-alive; "キープアライブを停止" (Stop keep-alive) while running), or "終了" (Exit).
 - To exit the app, select "終了" (Exit) on the Monitor screen or in the tray menu.
 
+### Notice When the Connection Fails
+
+If the traffic fails 3 times in a row (default), the app assumes that the tethering or other connection has dropped and shows a Windows notification.
+While the failures continue, a red dot appears at the lower right of the tray icon.
+When the traffic succeeds again, the app shows "通信が復旧しました" (The connection has recovered), and the red dot disappears.
+
+- Select the notification to show the window.
+- You can change the number of failures and turn the notifications on or off on the "設定" (Settings) screen.
+
 ### Start the Keep-Alive
 
 1. On the "モニター" (Monitor) screen, select "開始" (Start).
@@ -78,6 +87,8 @@ After making changes, select "保存" (Save). "既定値に戻す" (Restore defa
 | 実行間隔（秒） (Interval in seconds) | How often to send traffic, from 5 to 3600 seconds. The default is 30 seconds. If your connection still drops, try 15 to 30 seconds |
 | タイムアウト（ミリ秒） (Timeout in milliseconds) | How long to wait for a response, from 500 to 30000 milliseconds. It must be shorter than the interval. The default is 3000 milliseconds |
 | 通信量の上限（MB） (Data limit in MB) | Stops when the total data usage reaches this value. 0 means no limit (default) |
+| 通知する連続失敗の回数 (Consecutive failures before notifying) | When the traffic fails this many times in a row, the app shows a notification and adds a red dot to the tray icon. From 1 to 100. The default is 3 |
+| 失敗が続いたときと、復旧したときに通知する (Notify when failures continue and when the connection recovers) | When off, the app doesn't show notifications (the red dot still appears on the tray icon). The default is on |
 | アプリ起動時に自動で開始する (Start automatically when the app starts) | When on, the keep-alive starts when the app starts |
 | Windows ログイン時にアプリを起動する (Start the app when you sign in to Windows) | When on, the app starts in the tray when you sign in to Windows |
 
@@ -111,6 +122,12 @@ When the app starts at Windows sign-in, it starts in the tray without showing th
 - If "Ping (ICMP)" fails, the network may be blocking ICMP. Try switching to "HTTP HEAD" on the Settings screen.
 - On networks that use a proxy, such as at work, use "HTTP HEAD".
 - If you changed the destination, check that it is correct. "既定値に戻す" (Restore defaults) brings back the default destinations.
+
+### Failures continue, but no notification appears
+
+- On the Settings screen, check that "失敗が続いたときと、復旧したときに通知する" (Notify when failures continue and when the connection recovers) is on.
+- In Windows Settings > System > Notifications, check that notifications are on, both overall and for TetherKeeper.
+- While "Do not disturb" (Focus) is on, notifications don't pop up. They only go to the notification center.
 
 ### The connection still drops
 

@@ -10,6 +10,13 @@ internal sealed record TrayMenuItem(string Text, Action? Action, bool IsDefault 
     public bool IsSeparator => ReferenceEquals(this, Separator);
 }
 
+/// <summary>通知 (バルーン) に表示するアイコンの種類。</summary>
+internal enum BalloonIcon
+{
+    Info,
+    Warning,
+}
+
 /// <summary>
 /// Win32 API (Shell_NotifyIcon) による通知領域 (タスクトレイ) アイコン。
 /// WinUI 3 / MAUI には標準のトレイアイコン機能が無いため直接実装している。
@@ -28,6 +35,8 @@ internal sealed class NotifyIcon : IDisposable
     private readonly IntPtr _hIcon;
     private readonly bool _ownsIcon;
     private readonly uint _taskbarCreatedMessage;
+    private IntPtr _alertIcon;
+    private bool _showsAlert;
     private string _toolTip;
     private bool _disposed;
 
@@ -64,6 +73,30 @@ internal sealed class NotifyIcon : IDisposable
     /// <summary>アイコンが左クリックされた。</summary>
     public event EventHandler? Click;
 
+    /// <summary><see cref="ShowBalloon"/> で表示した通知がクリックされた。</summary>
+    public event EventHandler? BalloonClick;
+
+    /// <summary>
+    /// アイコンの右下に赤い印を付けるか (通信の失敗が続いていることを示す)。
+    /// 印の付いたアイコンを作れなかった場合は、元のアイコンのままにする。
+    /// </summary>
+    public bool ShowsAlert
+    {
+        get => _showsAlert;
+        set
+        {
+            if (_showsAlert == value || _disposed)
+                return;
+
+            _showsAlert = value;
+            if (value && _alertIcon == IntPtr.Zero)
+                _alertIcon = IconBadge.CreateAlertIcon(_hIcon);
+
+            var data = CreateData(NIF_ICON);
+            Shell_NotifyIcon(NIM_MODIFY, ref data);
+        }
+    }
+
     /// <summary>右クリック時に表示するメニュー項目を返す。表示のたびに呼ばれる (状態に応じて文言を変えられる)。</summary>
     public Func<IReadOnlyList<TrayMenuItem>>? MenuProvider { get; set; }
 
@@ -79,13 +112,16 @@ internal sealed class NotifyIcon : IDisposable
         }
     }
 
-    /// <summary>トレイアイコンから通知 (Windows 11 ではトースト通知) を表示する。</summary>
-    public void ShowBalloon(string title, string message)
+    /// <summary>
+    /// トレイアイコンから通知 (Windows 11 ではトースト通知) を表示する。
+    /// タイトルは 63 文字、本文は 255 文字までで、超えた分は切り捨てる。
+    /// </summary>
+    public void ShowBalloon(string title, string message, BalloonIcon icon = BalloonIcon.Info)
     {
         var data = CreateData(NIF_INFO);
-        data.szInfoTitle = title;
-        data.szInfo = message;
-        data.dwInfoFlags = NIIF_INFO;
+        data.szInfoTitle = title.Length > 63 ? title[..63] : title;
+        data.szInfo = message.Length > 255 ? message[..255] : message;
+        data.dwInfoFlags = icon == BalloonIcon.Warning ? NIIF_WARNING : NIIF_INFO;
         Shell_NotifyIcon(NIM_MODIFY, ref data);
     }
 
@@ -101,6 +137,8 @@ internal sealed class NotifyIcon : IDisposable
         DestroyWindow(_hwnd);
         if (_ownsIcon)
             DestroyIcon(_hIcon);
+        if (_alertIcon != IntPtr.Zero)
+            DestroyIcon(_alertIcon);
     }
 
     private void AddIcon()
@@ -116,7 +154,7 @@ internal sealed class NotifyIcon : IDisposable
         uID = IconId,
         uFlags = flags,
         uCallbackMessage = (int)CallbackMessage,
-        hIcon = _hIcon,
+        hIcon = _showsAlert && _alertIcon != IntPtr.Zero ? _alertIcon : _hIcon,
         szTip = _toolTip.Length > 127 ? _toolTip[..127] : _toolTip,
         szInfo = string.Empty,
         szInfoTitle = string.Empty,
@@ -136,6 +174,9 @@ internal sealed class NotifyIcon : IDisposable
                         break;
                     case WM_RBUTTONUP:
                         ShowContextMenu();
+                        break;
+                    case NIN_BALLOONUSERCLICK:
+                        BalloonClick?.Invoke(this, EventArgs.Empty);
                         break;
                 }
 
@@ -200,6 +241,7 @@ internal sealed class NotifyIcon : IDisposable
     private const uint WM_APP = 0x8000;
     private const int WM_LBUTTONUP = 0x0202;
     private const int WM_RBUTTONUP = 0x0205;
+    private const int NIN_BALLOONUSERCLICK = 0x0405; // WM_USER + 5
 
     private const int NIM_ADD = 0;
     private const int NIM_MODIFY = 1;
@@ -209,6 +251,7 @@ internal sealed class NotifyIcon : IDisposable
     private const int NIF_TIP = 0x04;
     private const int NIF_INFO = 0x10;
     private const int NIIF_INFO = 0x01;
+    private const int NIIF_WARNING = 0x02;
 
     private const uint IMAGE_ICON = 1;
     private const uint LR_LOADFROMFILE = 0x10;

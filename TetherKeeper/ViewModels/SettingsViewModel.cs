@@ -59,6 +59,12 @@ public partial class SettingsViewModel : ObservableObject
     public partial string DataLimitMegabytes { get; set; } = string.Empty;
 
     [ObservableProperty]
+    public partial bool NotifyOnFailure { get; set; }
+
+    [ObservableProperty]
+    public partial string FailureThreshold { get; set; } = string.Empty;
+
+    [ObservableProperty]
     public partial bool StartOnLaunch { get; set; }
 
     [ObservableProperty]
@@ -101,6 +107,7 @@ public partial class SettingsViewModel : ObservableObject
         var dataLimit = string.IsNullOrWhiteSpace(DataLimitMegabytes)
             ? 0
             : ParseInt(DataLimitMegabytes, "通信量の上限", parseErrors);
+        var failureThreshold = ParseInt(FailureThreshold, "通知する連続失敗の回数", parseErrors);
         if (parseErrors.Count > 0)
         {
             ErrorText = string.Join(Environment.NewLine, parseErrors);
@@ -113,6 +120,7 @@ public partial class SettingsViewModel : ObservableObject
         var pingHost = PingHost.Trim();
         var httpUrl = HttpUrl.Trim();
         var tcpHost = TcpHost.Trim();
+        var notifyOnFailure = NotifyOnFailure;
         var startOnLaunch = StartOnLaunch;
         var launchAtLogin = LaunchAtLogin;
         var errors = await _settings.UpdateAsync(current => current with
@@ -125,6 +133,8 @@ public partial class SettingsViewModel : ObservableObject
             TcpHost = tcpHost,
             TcpPort = port,
             DataLimitMegabytes = dataLimit,
+            NotifyOnFailure = notifyOnFailure,
+            FailureThreshold = failureThreshold,
             StartOnLaunch = startOnLaunch,
             LaunchAtLogin = launchAtLogin,
         });
@@ -161,6 +171,8 @@ public partial class SettingsViewModel : ObservableObject
         TcpHost = settings.TcpHost;
         TcpPort = settings.TcpPort.ToString();
         DataLimitMegabytes = settings.DataLimitMegabytes.ToString();
+        NotifyOnFailure = settings.NotifyOnFailure;
+        FailureThreshold = settings.FailureThreshold.ToString();
         StartOnLaunch = settings.StartOnLaunch;
         // LaunchAtLogin は OS 側の実際の状態を正とするため RefreshLaunchAtLoginAsync で別途取得する
     }

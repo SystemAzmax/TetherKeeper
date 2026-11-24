@@ -23,6 +23,7 @@ The app's screens are in Japanese only.
 - Automatic stop at a data limit (set the limit in MB on the Settings screen. The app adds up the data used while the keep-alive is running until you select "リセット" (Reset) on the Monitor screen, and stops when it reaches the limit. You can't start while the limit is reached)
   - The app counts the data sent and received by the network adapter used for internet traffic (if you are connected to both wired LAN and Wi-Fi, the one Windows chooses). This includes traffic from other apps. The log shows which adapter is counted
   - Because it measures every 5 seconds, it stops after exceeding the limit by the amount of traffic in that time. Stopping the keep-alive does not stop traffic from other apps
+- Notifications when failures continue and when the connection recovers (after 3 consecutive failures by default; the number can be changed on the Settings screen). While failures continue, the tray icon shows a red dot
 - Start automatically when the app starts, and start the app when you sign in to Windows (starts in the tray)
 - Runs in the notification area (system tray) ("×" moves the app to the tray. To exit, use the "終了" (Exit) button on the screen or the tray menu)
 - Log files (one file per day, kept for 30 days)
@@ -128,6 +129,7 @@ powershell -ExecutionPolicy Bypass -File build\Publish-Msix.ps1 -NewCertificate
 │   ├─ Models                AppSettings / KeepAliveResult / LogEntry / KeepAliveStatistics / DataUsage
 │   ├─ Interfaces            IKeepAliveStrategy / ISettingsService / ILogService / IKeepAliveWorker / IDataUsageTracker, etc.
 │   ├─ Services              KeepAliveWorker / SettingsService / LogService / KeepAliveStrategyResolver / DataUsageTracker
+│   │                        FailureAlertTracker (decides when to notify about failures and recovery)
 │   │                        AppDisplayName (switches between the Japanese and English names) / AppAboutInfo (text for "About this app")
 │   ├─ Strategies            KeepAliveStrategy for Ping / HttpHead / TcpConnect
 │   └─ Configuration         DI registration (AddKeepAliveCore) and KeepAliveOptions

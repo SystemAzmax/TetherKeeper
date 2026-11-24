@@ -30,6 +30,7 @@ namespace TetherKeeper
                         WinUI.App.Tray ??= new WinUI.TrayController(
                             window,
                             services.GetRequiredService<KeepAlive.Core.Interfaces.IKeepAliveWorker>(),
+                            services.GetRequiredService<KeepAlive.Core.Interfaces.ISettingsService>(),
                             services.GetRequiredService<AppExitService>());
                     }));
 #endif

@@ -183,6 +183,20 @@ public sealed class KeepAliveWorkerTests : IAsyncDisposable
     }
 
     [Fact]
+    public async Task FailureNotificationSettingsChange_DoesNotExecute()
+    {
+        _worker.Start();
+        await TestHelpers.WaitUntilAsync(() => _ping.ExecutionCount == 1);
+
+        // 通知の設定は通信に関わらないため、変えても通信し直さない
+        await _settings.SaveAsync(_settings.Current with { NotifyOnFailure = false, FailureThreshold = 5 });
+        await Task.Delay(100);
+
+        Assert.Equal(1, _ping.ExecutionCount);
+        Assert.DoesNotContain(_log.GetEntries(), e => e.Message.Contains("設定変更を反映します"));
+    }
+
+    [Fact]
     public async Task Resume_TriggersExecutionAfterResumeDelay()
     {
         await _settings.SaveAsync(_settings.Current with { IntervalSeconds = 600 });

@@ -71,6 +71,16 @@
             <Label Text="キープアライブの動作中に数えた通信量の累計がこの値に達したら停止します（0 は上限なし）。ほかのアプリの通信も含みます。累計はモニター画面でリセットするまで、停止やアプリの再起動をまたいで加算します。"
                    Style="{StaticResource Hint}" />
 
+            <!-- 通信の失敗の通知 -->
+            <Label Text="通知する連続失敗の回数" Style="{StaticResource FieldLabel}" />
+            <Entry Text="{Binding FailureThreshold}" Keyboard="Numeric" Placeholder="3" />
+            <Grid ColumnDefinitions="*,Auto">
+                <Label Text="失敗が続いたときと、復旧したときに通知する" VerticalOptions="Center" />
+                <Switch Grid.Column="1" IsToggled="{Binding NotifyOnFailure}" />
+            </Grid>
+            <Label Text="この回数だけ続けて失敗すると、接続が切れているとみなして通知し、タスクトレイのアイコンに赤い印を付けます（1〜100 回）。成功に戻ったら「復旧しました」と通知します。通知をオフにしても、アイコンの印は付きます。"
+                   Style="{StaticResource Hint}" />
+
             <Grid ColumnDefinitions="*,Auto" Margin="0,8,0,0">
                 <Label Text="アプリ起動時に自動で開始する" VerticalOptions="Center" />
                 <Switch Grid.Column="1" IsToggled="{Binding StartOnLaunch}" />

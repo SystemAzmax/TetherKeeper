@@ -148,6 +148,34 @@ public class AppSettingsTests
     }
 
     [Fact]
+    public void FailureNotification_IsOnWithThresholdOfThree_ByDefault()
+    {
+        var settings = new AppSettings();
+
+        Assert.True(settings.NotifyOnFailure);
+        Assert.Equal(3, settings.FailureThreshold);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(AppSettings.MaxFailureThreshold + 1)]
+    public void Validate_RejectsFailureThresholdOutOfRange(int threshold)
+    {
+        var settings = new AppSettings { FailureThreshold = threshold };
+
+        Assert.Contains(settings.Validate(), e => e.Contains("連続失敗の回数"));
+    }
+
+    [Fact]
+    public void Normalize_ClampsFailureThreshold()
+    {
+        Assert.Equal(AppSettings.MinFailureThreshold, new AppSettings { FailureThreshold = 0 }.Normalize().FailureThreshold);
+        Assert.Equal(
+            AppSettings.MaxFailureThreshold,
+            new AppSettings { FailureThreshold = int.MaxValue }.Normalize().FailureThreshold);
+    }
+
+    [Fact]
     public void DataLimitBytes_IsNullWhenDisabled_AndUsesDecimalMegabytes()
     {
         Assert.Null(new AppSettings().DataLimitBytes);

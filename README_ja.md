@@ -22,6 +22,7 @@ iPhone のインターネット共有（テザリング）、Wi-Fi ルーター�
 - 通信量の上限での自動停止（設定画面で上限を MB で指定。キープアライブ動作中の通信量を、モニター画面の「リセット」を押すまで累計し、上限に達したら停止する。上限に達している間は開始できない）
   - 数えるのは、インターネットへの通信に使われているネットワークアダプター（有線 LAN と Wi-Fi の両方につながっている場合は Windows が通信に選んだ方）の送受信量で、ほかのアプリの通信も含む。どのアダプターを数えているかはログに「通信量の計測対象」として出る
   - 計測は 5 秒ごとのため、その間の通信の分だけ上限を超えてから止まる。キープアライブを止めても、ほかのアプリの通信は止まらない
+- 連続失敗と復旧の通知（既定は 3 回続けて失敗したら通知。回数は設定画面で変更可能）。失敗が続いている間は、トレイアイコンに赤い丸を付ける
 - アプリ起動時の自動開始、Windows ログイン時の自動起動（トレイに格納した状態で起動）
 - タスクトレイ常駐（× ボタンでトレイに格納。終了は画面の「終了」ボタンかトレイメニューから）
 - ログのファイル出力（1 日 1 ファイル、30 日分を保存）
@@ -127,6 +128,7 @@ powershell -ExecutionPolicy Bypass -File build\Publish-Msix.ps1 -NewCertificate
 │   ├─ Models                AppSettings / KeepAliveResult / LogEntry / KeepAliveStatistics / DataUsage
 │   ├─ Interfaces            IKeepAliveStrategy / ISettingsService / ILogService / IKeepAliveWorker / IDataUsageTracker など
 │   ├─ Services              KeepAliveWorker / SettingsService / LogService / KeepAliveStrategyResolver / DataUsageTracker
+│   │                        FailureAlertTracker（連続失敗と復旧を通知するかの判定）
 │   │                        AppDisplayName（日本語名と英語名の切り替え）/ AppAboutInfo（「このアプリについて」の本文）
 │   ├─ Strategies            Ping / HttpHead / TcpConnect の各 KeepAliveStrategy
 │   └─ Configuration         DI 登録（AddKeepAliveCore）と KeepAliveOptions

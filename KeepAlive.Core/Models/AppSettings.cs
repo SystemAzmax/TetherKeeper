@@ -10,6 +10,8 @@ public sealed record AppSettings
     public const int MinTimeoutMilliseconds = 500;
     public const int MaxTimeoutMilliseconds = 30_000;
     public const int MaxDataLimitMegabytes = 1_000_000;
+    public const int MinFailureThreshold = 1;
+    public const int MaxFailureThreshold = 100;
 
     /// <summary>
     /// 通信量の 1 MB のバイト数。上限が少なめ (早めに止まる側) になるよう、1 MB = 1,000,000 バイトとする。
@@ -60,6 +62,17 @@ public sealed record AppSettings
     /// </summary>
     public int DataLimitMegabytes { get; init; }
 
+    /// <summary>
+    /// 通信の失敗が続いたとき (<see cref="FailureThreshold"/> 回連続) と、そこから復旧したときに通知するか (対応 OS のみ)。
+    /// </summary>
+    public bool NotifyOnFailure { get; init; } = true;
+
+    /// <summary>
+    /// この回数だけ続けて失敗したら、接続が切れているとみなして通知し、トレイアイコンに印を付ける。
+    /// 1 回の失敗は一時的なことがあるため、既定は 3 回にする。
+    /// </summary>
+    public int FailureThreshold { get; init; } = 3;
+
     public TimeSpan Interval => TimeSpan.FromSeconds(IntervalSeconds);
 
     /// <summary>通信量の上限 (バイト)。無効なら null。</summary>
@@ -84,6 +97,8 @@ public sealed record AppSettings
             errors.Add("タイムアウトは実行間隔より短くしてください。");
         if (DataLimitMegabytes is < 0 or > MaxDataLimitMegabytes)
             errors.Add($"通信量の上限は 0〜{MaxDataLimitMegabytes} MB で指定してください。");
+        if (FailureThreshold is < MinFailureThreshold or > MaxFailureThreshold)
+            errors.Add($"通知する連続失敗の回数は {MinFailureThreshold}〜{MaxFailureThreshold} 回で指定してください。");
 
         switch (Method)
         {
@@ -129,6 +144,7 @@ public sealed record AppSettings
             TcpHost = string.IsNullOrWhiteSpace(TcpHost) ? defaults.TcpHost : TcpHost.Trim(),
             TcpPort = TcpPort is >= 1 and <= 65535 ? TcpPort : defaults.TcpPort,
             DataLimitMegabytes = Math.Clamp(DataLimitMegabytes, 0, MaxDataLimitMegabytes),
+            FailureThreshold = Math.Clamp(FailureThreshold, MinFailureThreshold, MaxFailureThreshold),
         };
     }
 

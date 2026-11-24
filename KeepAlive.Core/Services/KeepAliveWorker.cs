@@ -426,7 +426,7 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
         if (!IsRunning)
             return;
 
-        if (WithoutAutoStopConditions(previous) == WithoutAutoStopConditions(settings))
+        if (WithoutNonCommunicationSettings(previous) == WithoutNonCommunicationSettings(settings))
         {
             _wake.Writer.TryWrite(true);
             return;
@@ -436,9 +436,12 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
         TriggerNow();
     }
 
-    /// <summary>自動停止の条件を除いた設定 (通信に関わる設定が変わったかの判定用)。</summary>
-    private static AppSettings WithoutAutoStopConditions(AppSettings settings) =>
-        settings with { AutoStopAt = null, DataLimitMegabytes = 0 };
+    /// <summary>
+    /// 自動停止の条件と、失敗の通知の設定を除いた設定 (通信に関わる設定が変わったかの判定用)。
+    /// 自動停止の条件だけが変わったときは、通信せずに停止の判定だけをやり直す。通知の設定は Worker では使わない。
+    /// </summary>
+    private static AppSettings WithoutNonCommunicationSettings(AppSettings settings) =>
+        settings with { AutoStopAt = null, DataLimitMegabytes = 0, NotifyOnFailure = false, FailureThreshold = 0 };
 
     private void OnSuspending(object? sender, EventArgs e) => _log.Info("OS がスリープに入ります。");
 
