@@ -158,6 +158,7 @@ powershell -ExecutionPolicy Bypass -File build\Publish-Msix.ps1 -NewCertificate
 ├─ docs/UserGuide_ja.md      使い方ガイド（英語版は UserGuide.md）
 ├─ docs/PrivacyPolicy.md     プライバシーポリシー
 ├─ docs/BuildGuide.md        アプリ名・バージョン・ライセンス表示の扱い
+├─ docs/StoreListing.md      Microsoft Store の申請で Partner Center に入れる内容
 ├─ docs/設計判断.md           方式比較・スリープ時の挙動・フレームワーク選定
 └─ docs/今後の機能候補.md     今後実装を検討する機能と改善点
 ```

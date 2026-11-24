@@ -159,6 +159,7 @@ powershell -ExecutionPolicy Bypass -File build\Publish-Msix.ps1 -NewCertificate
 ├─ docs/UserGuide.md         User guide (Japanese version: UserGuide_ja.md)
 ├─ docs/PrivacyPolicy.md     Privacy policy
 ├─ docs/BuildGuide.md        App names, versions, and license notices (in Japanese)
+├─ docs/StoreListing.md      Content to enter in Partner Center for the Microsoft Store submission (in Japanese, with English listing text)
 ├─ docs/設計判断.md           Design decisions (in Japanese)
 └─ docs/今後の機能候補.md     Feature ideas (in Japanese)
 ```

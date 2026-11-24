@@ -4,7 +4,7 @@
 
 ## 日本語
 
-制定日: 2026 年 11 月 21 日
+制定日: 2026 年 11 月 24 日
 
 SystemAzmax（以下「開発者」）は、Windows 用アプリ「テザリングキーパー」（英語名: TetherKeeper、以下「本アプリ」）における
 利用者の情報の取り扱いについて、次のとおり定めます。
@@ -73,7 +73,7 @@ Windows や Microsoft Store など、Microsoft の製品やサービスが扱う
 
 ## English
 
-Effective date: November 21, 2026
+Effective date: November 24, 2026
 
 This privacy policy describes how SystemAzmax (the "developer") handles user information
 in TetherKeeper (Japanese name: テザリングキーパー; the "app"), an app for Windows.
