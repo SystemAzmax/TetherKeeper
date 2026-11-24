@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using KeepAlive.Core.Interfaces;
 using KeepAlive.Core.Models;
+using KeepAlive.Core.Services;
 
 namespace TetherKeeper.ViewModels;
 
@@ -104,6 +105,35 @@ public partial class SettingsViewModel : ObservableObject
         // 通信方式と同じ方式は予備にできないため、同じになったら「使わない」に戻す
         if (SelectedFallback?.Method == value.Method)
             SelectedFallback = FallbackOptions[0];
+        UpdateTrafficEstimate();
+    }
+
+    partial void OnIntervalSecondsChanged(string value) => UpdateTrafficEstimate();
+
+    partial void OnHttpUrlChanged(string value) => UpdateTrafficEstimate();
+
+    /// <summary>
+    /// 入力中の通信方式と実行間隔での、通信量の目安 (例: 通信量の目安: 1 時間あたり 約 14〜19 KB（24 時間で 約 0.35〜0.46 MB）)。
+    /// 実行間隔が正しくなければ空。
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasTrafficEstimate))]
+    public partial string TrafficEstimateText { get; set; } = string.Empty;
+
+    public bool HasTrafficEstimate => TrafficEstimateText.Length > 0;
+
+    private void UpdateTrafficEstimate()
+    {
+        if (SelectedMethod is null
+            || !int.TryParse(IntervalSeconds?.Trim(), out var interval)
+            || interval is < AppSettings.MinIntervalSeconds or > AppSettings.MaxIntervalSeconds
+            || TrafficEstimate.PerHour(SelectedMethod.Method, interval, HttpUrl) is not { } perHour)
+        {
+            TrafficEstimateText = string.Empty;
+            return;
+        }
+
+        TrafficEstimateText = $"通信量の目安: 1 時間あたり {perHour.Format()}（24 時間で {perHour.Multiply(24).Format()}）";
     }
 
     [ObservableProperty]

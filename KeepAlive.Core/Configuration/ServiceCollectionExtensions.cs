@@ -47,8 +47,8 @@ public static class ServiceCollectionExtensions
         var handler = new SocketsHttpHandler
         {
             // テザリング再接続後に古い接続を使い続けないよう短めに
-            PooledConnectionLifetime = TimeSpan.FromMinutes(2),
-            PooledConnectionIdleTimeout = TimeSpan.FromSeconds(90),
+            PooledConnectionLifetime = HttpHeadKeepAliveStrategy.ConnectionLifetime,
+            PooledConnectionIdleTimeout = HttpHeadKeepAliveStrategy.ConnectionIdleTimeout,
             AllowAutoRedirect = false,
             AutomaticDecompression = DecompressionMethods.None,
         };

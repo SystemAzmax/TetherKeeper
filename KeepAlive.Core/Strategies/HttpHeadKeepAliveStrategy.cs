@@ -10,6 +10,15 @@ namespace KeepAlive.Core.Strategies;
 /// </summary>
 public sealed class HttpHeadKeepAliveStrategy : IKeepAliveStrategy
 {
+    /// <summary>
+    /// 1 つの接続を使い続ける最長の時間。テザリングの再接続後に古い接続を使い続けないよう短めにする。
+    /// 通信量の目安 (<see cref="Services.TrafficEstimate"/>) の計算にも使う。
+    /// </summary>
+    public static readonly TimeSpan ConnectionLifetime = TimeSpan.FromMinutes(2);
+
+    /// <summary>使っていない接続を閉じるまでの時間。実行間隔がこれより長いと、毎回新しく接続する。</summary>
+    public static readonly TimeSpan ConnectionIdleTimeout = TimeSpan.FromSeconds(90);
+
     private readonly HttpClient _httpClient;
     private readonly ISettingsService _settings;
     private readonly TimeProvider _timeProvider;

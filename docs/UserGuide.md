@@ -102,7 +102,7 @@ After making changes, select "保存" (Save). "既定値に戻す" (Restore defa
 | Ping 送信先（ホスト名 / IP アドレス） (Ping destination: host name or IP address) | Where to send pings. The default is `1.1.1.1` |
 | HTTP HEAD 送信先 URL (HTTP HEAD destination URL) | Where to send HTTP HEAD requests. The default is `http://www.msftconnecttest.com/connecttest.txt` |
 | TCP 接続先ホスト / ポート (TCP host / port) | Where to connect with TCP Connect. The defaults are `1.1.1.1` and `443` |
-| 実行間隔（秒） (Interval in seconds) | How often to send traffic, from 5 to 3600 seconds. The default is 30 seconds. If your connection still drops, try 15 to 30 seconds |
+| 実行間隔（秒） (Interval in seconds) | How often to send traffic, from 5 to 3600 seconds. The default is 30 seconds. If your connection still drops, try 15 to 30 seconds. Below it, the app shows an estimate of the data used with the selected method and interval (per hour and per 24 hours) |
 | タイムアウト（ミリ秒） (Timeout in milliseconds) | How long to wait for a response, from 500 to 30000 milliseconds. It must be shorter than the interval. The default is 3000 milliseconds |
 | 通信量の上限（MB） (Data limit in MB) | Stops when the total data usage reaches this value. 0 means no limit (default) |
 | 毎週決まった時刻に停止する (Stop at a set time every week) | When on, the keep-alive stops at the set time on the days you choose (only while it is running). Unlike a scheduled date and time, this setting is not cleared when it stops. The default is off |
@@ -115,11 +115,17 @@ After making changes, select "保存" (Save). "既定値に戻す" (Restore defa
 | アプリ起動時に自動で開始する (Start automatically when the app starts) | When on, the keep-alive starts when the app starts |
 | Windows ログイン時にアプリを起動する (Start the app when you sign in to Windows) | When on, the app starts in the tray when you sign in to Windows |
 
+About the data estimate:
+
+- It estimates only the keep-alive's own traffic. The actual amount varies with the connection and with IPv4 or IPv6.
+- It doesn't include traffic from other apps, name resolution (when the destination is a host name), or retries with the fallback method.
+- The amount counted for "通信量の上限（MB）" (Data limit in MB) includes traffic from other apps, so it is larger than the estimate.
+
 Differences between the methods:
 
 | Method | Best for |
 | --- | --- |
-| Ping (ICMP) | Uses the least data (about 0.35 MB per day at 30-second intervals). Fails on networks that block ICMP |
+| Ping (ICMP) | Uses the least data (at 30-second intervals, about 14 to 19 KB per hour, or about 0.35 to 0.46 MB per 24 hours). Fails on networks that block ICMP |
 | HTTP HEAD | More likely to work behind a proxy or on networks that block ICMP. Uses more data than Ping |
 | TCP Connect | Connects and immediately disconnects. Connections to the port (such as 443) must be allowed |
 

@@ -73,6 +73,12 @@
             </Grid>
             <Label Text="間隔 5〜3600 秒、タイムアウト 500〜30000 ミリ秒（間隔より短く）。切断される場合は間隔を 15〜30 秒程度に。"
                    Style="{StaticResource Hint}" />
+            <!-- 通信方式と実行間隔から計算した、キープアライブ自身の通信量の目安 -->
+            <VerticalStackLayout IsVisible="{Binding HasTrafficEstimate}" Spacing="0">
+                <Label Text="{Binding TrafficEstimateText}" FontAttributes="Bold" FontSize="13" />
+                <Label Text="キープアライブ自身の通信だけの目安です（回線や IPv4・IPv6 の違いで変わります）。ほかのアプリの通信、名前解決、予備の通信方式でやり直した分は含みません。「通信量の上限」は、ほかのアプリの通信も含めて数えます。"
+                       Style="{StaticResource Hint}" />
+            </VerticalStackLayout>
 
             <Label Text="通信量の上限（MB）" Style="{StaticResource FieldLabel}" />
             <Entry Text="{Binding DataLimitMegabytes}" Keyboard="Numeric" Placeholder="0" />
