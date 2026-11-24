@@ -2,6 +2,7 @@ using System.Collections;
 using System.Globalization;
 using System.Resources;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 using KeepAlive.Core.Models;
 using KeepAlive.Core.Resources;
 using KeepAlive.Core.Services;
@@ -41,6 +42,46 @@ public partial class LocalizationTests
                 Assert.True(Placeholders(text) == Placeholders(translated[key]), $"{culture.Name} {key}: {text} / {translated[key]}");
             }
         }
+    }
+
+    /// <summary>
+    /// 画面の文言 (Windows 版の AppStrings と macOS 版の MacStrings)。
+    /// どちらもテストから参照できないプロジェクトにあるため、.resx のファイルを直接読んで確かめる。
+    /// </summary>
+    [Theory]
+    [InlineData("TetherKeeper/Resources/Strings/AppStrings")]
+    [InlineData("TetherKeeper.Mac/Strings/MacStrings")]
+    public void UiStrings_AllLanguages_HaveSameKeysAndPlaceholdersAsEnglish(string baseName)
+    {
+        var root = FindRepositoryRoot();
+        var english = LoadResx(Path.Combine(root, baseName + ".resx"));
+
+        foreach (var language in AppLanguages.Supported.Where(l => l.Code != AppLanguages.DefaultCode))
+        {
+            var translated = LoadResx(Path.Combine(root, $"{baseName}.{language.Code}.resx"));
+            Assert.Equal(english.Keys.Order(), translated.Keys.Order());
+            foreach (var (key, text) in english)
+            {
+                Assert.False(string.IsNullOrWhiteSpace(text), key);
+                Assert.True(Placeholders(text) == Placeholders(translated[key]), $"{language.Code} {key}: {text} / {translated[key]}");
+            }
+        }
+    }
+
+    private static Dictionary<string, string> LoadResx(string path) =>
+        XDocument.Load(path).Root!.Elements("data")
+            .ToDictionary(e => (string)e.Attribute("name")!, e => (string?)e.Element("value") ?? string.Empty);
+
+    /// <summary>リポジトリのルート (テストの出力フォルダからさかのぼって、TetherKeeper.slnx のあるフォルダ)。</summary>
+    private static string FindRepositoryRoot()
+    {
+        for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
+        {
+            if (File.Exists(Path.Combine(directory.FullName, "TetherKeeper.slnx")))
+                return directory.FullName;
+        }
+
+        throw new InvalidOperationException("TetherKeeper.slnx が見つかりません。");
     }
 
     [Fact]

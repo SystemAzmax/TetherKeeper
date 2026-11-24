@@ -1,0 +1,2 @@
+/* Finder・Launchpad・メニューなどに出すアプリ名 (日本語)。KeepAlive.Core の AppDisplayName と合わせる */
+"CFBundleDisplayName" = "テザリングキーパー";

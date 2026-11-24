@@ -2,31 +2,35 @@ using System.Globalization;
 using System.Text.Json;
 using KeepAlive.Core.Models;
 
-namespace TetherKeeper.Services;
+namespace KeepAlive.Core.Services;
 
 /// <summary>
 /// 設定で選んだ表示言語 (<see cref="AppSettings.Language"/>) を、起動のいちばん初めに反映する。
-/// 画面の文言はページを作るときに読み込むため、設定の読み込み (非同期) を待たずに、設定ファイルから直接読む。
+/// 画面の文言は画面を作るときに読み込むため、設定の読み込み (非同期) を待たずに、設定ファイルから直接読む。
+/// Windows 版と macOS 版の両方で使う。
 /// </summary>
 public static class AppLanguageStartup
 {
-    /// <summary>保存されている言語を反映する。言語が空 (Windows の表示言語に合わせる) や読めない場合は何もしない。</summary>
-    public static void ApplySavedLanguage()
+    /// <summary>
+    /// 保存されている言語を反映する。言語が空 (OS の表示言語に合わせる) や読めない場合は何もしない。
+    /// </summary>
+    /// <param name="settingsFile">設定ファイルのフルパス。</param>
+    public static void ApplySavedLanguage(string settingsFile)
     {
         try
         {
-            Apply(ReadSavedLanguage(AppPaths.SettingsFile));
+            Apply(ReadSavedLanguage(settingsFile));
         }
         catch (Exception ex)
         {
-            // 言語を反映できなくても、Windows の表示言語で起動を続ける
+            // 言語を反映できなくても、OS の表示言語で起動を続ける
             System.Diagnostics.Debug.WriteLine($"AppLanguageStartup: 表示言語を反映できませんでした: {ex}");
         }
     }
 
     /// <summary>
     /// 指定した言語を、このあと作るすべてのスレッドの表示言語にする。用意していない言語なら何もしない。
-    /// 数値や日時の書式 (<see cref="CultureInfo.CurrentCulture"/>) は、Windows の地域の設定のままにする。
+    /// 数値や日時の書式 (<see cref="CultureInfo.CurrentCulture"/>) は、OS の地域の設定のままにする。
     /// </summary>
     public static void Apply(string? code)
     {
@@ -38,7 +42,7 @@ public static class AppLanguageStartup
     }
 
     /// <summary>設定ファイルの Language の値。ファイルが無い、壊れている場合は null。</summary>
-    internal static string? ReadSavedLanguage(string settingsFile)
+    public static string? ReadSavedLanguage(string settingsFile)
     {
         if (!File.Exists(settingsFile))
             return null;

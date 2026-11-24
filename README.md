@@ -56,6 +56,8 @@ dotnet test KeepAlive.Tests
 
 In Visual Studio, open `TetherKeeper.slnx` and choose "Windows Machine" as the debug target.
 
+> A macOS version (a menu bar app) is in development. How to build it on a Mac and submit it to the Mac App Store is described in [docs/MacBuildGuide.md](docs/MacBuildGuide.md) (in Japanese).
+
 Settings are saved to `%LOCALAPPDATA%\TetherKeeper\settings.json`, and the total data usage is saved to `data-usage.json` in the same folder.
 Logs are written to `logs\TetherKeeper_yyyyMMdd.log` in the same folder, one file per day, and files older than 30 days are deleted automatically.
 The history of results is written to `history\TetherKeeper_yyyyMMdd.csv` in the same way.
@@ -140,6 +142,7 @@ powershell -ExecutionPolicy Bypass -File build\Publish-Msix.ps1 -NewCertificate
 │   │                        AutoStopScheduler (schedules and cancels the auto stop)
 │   │                        ResultHistory / ResultCsv (records, counts, and exports the history of results)
 │   │                        AppDisplayName (switches between the Japanese and English names) / AppAboutInfo (text for "About this app")
+│   │                        AppLanguageStartup (applies the language chosen in the settings at startup)
 │   ├─ Strategies            KeepAliveStrategy for Ping / HttpHead / TcpConnect
 │   ├─ Configuration         DI registration (AddKeepAliveCore) and KeepAliveOptions
 │   └─ Resources             CoreStrings.resx (English) / CoreStrings.ja.resx (Japanese): text for logs, errors, and notifications
@@ -154,12 +157,16 @@ powershell -ExecutionPolicy Bypass -File build\Publish-Msix.ps1 -NewCertificate
 │   ├─ Resources/Strings     AppStrings.resx (English) / AppStrings.ja.resx (Japanese): text for the screens
 │   ├─ Platforms/Windows     Tray, single instance, connected networks (WindowsNetworkMonitor), Package.appxmanifest and the display name resources (Strings)
 │   └─ ThirdPartyNotices.txt License notices opened by "License information"
+├─ TetherKeeper.Mac          macOS version (in development): an AppKit menu bar app. Build it on a Mac with TetherKeeper.Mac.slnx
+│   ├─ Services              MacAppPaths / MacAutoStartService (login items) / MacNotifier (Notification Center)
+│   └─ Strings               MacStrings.resx (English) / MacStrings.ja.resx (Japanese): text used only on macOS (the rest is shared from AppStrings)
 ├─ KeepAlive.Tests           xUnit unit tests
 ├─ tools/notices             Script that creates ThirdPartyNotices.txt
 ├─ docs/UserGuide.md         User guide (Japanese version: UserGuide_ja.md)
 ├─ docs/PrivacyPolicy.md     Privacy policy
 ├─ docs/BuildGuide.md        App names, versions, and license notices (in Japanese)
 ├─ docs/StoreListing.md      Content to enter in Partner Center for the Microsoft Store submission (in Japanese, with English listing text)
+├─ docs/MacBuildGuide.md     Building the macOS version and submitting it to the Mac App Store (in Japanese)
 ├─ docs/設計判断.md           Design decisions (in Japanese)
 └─ docs/今後の機能候補.md     Feature ideas (in Japanese)
 ```

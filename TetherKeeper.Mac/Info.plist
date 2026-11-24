@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- バンドル ID、バージョン、表示名は TetherKeeper.Mac.csproj の ApplicationId などから入る -->
+	<key>CFBundleName</key>
+	<string>TetherKeeper</string>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<!-- 用意している言語。macOS の「言語と地域」(アプリごとの言語を含む) から、この中で合うものが選ばれる -->
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>en</string>
+		<string>ja</string>
+	</array>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.utilities</string>
+	<!-- メニューバーに常駐し、Dock には出さない -->
+	<key>LSUIElement</key>
+	<true/>
+	<key>NSHumanReadableCopyright</key>
+	<string>© 2026 SystemAzmax</string>
+	<!-- 暗号は OS の標準の機能 (HTTPS の URL を送信先にしたときの TLS) だけを使う。
+	     App Store Connect の輸出コンプライアンスの質問を、提出のたびに聞かれないようにする -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>NSPrincipalClass</key>
+	<string>NSApplication</string>
+</dict>
+</plist>

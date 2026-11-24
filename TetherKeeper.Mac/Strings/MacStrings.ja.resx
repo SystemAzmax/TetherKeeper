@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Menu_Settings" xml:space="preserve">
+    <value>設定…</value>
+  </data>
+  <data name="Menu_OpenLogFolder" xml:space="preserve">
+    <value>ログのフォルダを開く</value>
+  </data>
+  <data name="Menu_Quit" xml:space="preserve">
+    <value>{0} を終了</value>
+  </data>
+  <data name="Settings_LaunchAtLogin" xml:space="preserve">
+    <value>Mac にログインしたときにアプリを起動する</value>
+  </data>
+  <data name="Language_System" xml:space="preserve">
+    <value>macOS の言語に合わせる</value>
+  </data>
+  <data name="Settings_Close" xml:space="preserve">
+    <value>閉じる</value>
+  </data>
+  <data name="AutoStart_RequiresApproval" xml:space="preserve">
+    <value>システム設定の「一般」→「ログイン項目」で {0} を許可してください。</value>
+  </data>
+  <data name="AutoStart_NotFound" xml:space="preserve">
+    <value>ログイン項目に登録するアプリが見つかりませんでした。{0} を「アプリケーション」フォルダに入れてから、もう一度お試しください。</value>
+  </data>
+  <data name="Notification_PermissionDenied" xml:space="preserve">
+    <value>システム設定の「通知」で、{0} の通知がオフになっています。</value>
+  </data>
+  <data name="About_DevEdition" xml:space="preserve">
+    <value>開発版</value>
+  </data>
+</root>

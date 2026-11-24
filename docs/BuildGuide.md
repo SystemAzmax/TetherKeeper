@@ -53,11 +53,12 @@
 | ファイル | 内容 |
 | --- | --- |
 | `KeepAlive.Core\Resources\CoreStrings.resx` / `CoreStrings.ja.resx` | ログ、入力エラー、失敗・復旧の通知、曜日、履歴の CSV の見出しなど、Core が作る文言 |
-| `TetherKeeper\Resources\Strings\AppStrings.resx` / `AppStrings.ja.resx` | 画面、トレイのメニューと通知、ダイアログなど、アプリが作る文言 |
+| `TetherKeeper\Resources\Strings\AppStrings.resx` / `AppStrings.ja.resx` | 画面、トレイのメニューと通知、ダイアログなど、アプリが作る文言。macOS 版も同じファイルを取り込んで使う |
+| `TetherKeeper.Mac\Strings\MacStrings.resx` / `MacStrings.ja.resx` | macOS 版だけで使う文言（メニューの項目、「Windows」を「Mac」に読み替えた文言など） |
 
 - `.resx`（拡張子の前に言語が無いもの）が英語で、既定の言語です。日本語と英語以外の言語では英語になります。
 - 文言を足すときは、英語と日本語の両方のファイルに同じ名前で足します。
-  `KeepAlive.Tests` の `LocalizationTests` が、両方の名前と、`{0}` などの埋め込み先の番号がそろっているかを確かめます。
+  `KeepAlive.Tests` の `LocalizationTests` が、両方の名前と、`{0}` などの埋め込み先の番号がそろっているかを確かめます（`AppStrings` と `MacStrings` は、.resx のファイルを直接読んで確かめます）。
 - `CoreStrings` と `AppStrings` のクラスは、ビルドのときに `.resx` から作ります（`.csproj` の `StronglyTyped*` の設定）。
   Visual Studio の「カスタム ツール」は使いません。
 - 値を埋め込む文言は、`Text.Format(CoreStrings.名前, 値, …)` のように使います。
@@ -70,17 +71,20 @@
 例としてフランス語（`fr`）を足す場合です。
 
 1. `CoreStrings.resx` を複製して `CoreStrings.fr.resx` を作り、値を訳します（名前はそのまま）。
-2. 同じように `AppStrings.fr.resx` を作ります。
+2. 同じように `AppStrings.fr.resx` と、macOS 版の `MacStrings.fr.resx` を作ります。
 3. `KeepAlive.Core\Models\AppLanguages.cs` の `Supported` に `new("fr", "Français")` を足します（言語名は、その言語自身で書きます）。
    設定画面の一覧に出るようになり、`LocalizationTests` がその言語のリソースも確かめるようになります。
 4. スタート メニューなどに出るアプリ名も訳す場合は、`TetherKeeper\Platforms\Windows\Strings\fr-FR\Resources.resw` を足します。
    アプリの中の名前（`AppDisplayName`）は、日本語以外は英語名のままです。
+5. macOS 版では、`TetherKeeper.Mac\Info.plist` の `CFBundleLocalizations` に `fr` を足し、`TetherKeeper.Mac\Resources\fr.lproj\InfoPlist.strings`（Finder などに出るアプリ名）を作ります。
+   `CFBundleLocalizations` に無い言語は、macOS の言語に合わせる設定のときに選ばれません。
 
 ## バージョンの上げ方
 
 バージョンは、`TetherKeeper\TetherKeeper.csproj` の `ApplicationDisplayVersion` の 1 か所で決めます。
 MAUI のビルドが、ここから exe 版とストア版（MSIX）の両方のバージョンを作るため、2 つの版はいつも同じバージョンになります。
 Microsoft Store で最初に公開するバージョンは `1.0.0` です。
+macOS 版（`TetherKeeper.Mac\TetherKeeper.Mac.csproj`）は別のプロジェクトのため、`ApplicationDisplayVersion` を同じ番号に合わせます（[MacBuildGuide.md](MacBuildGuide.md) の「バージョン」を参照）。
 
 | | 作られるバージョン | `ApplicationDisplayVersion` が `1.0.0` のとき |
 | --- | --- | --- |

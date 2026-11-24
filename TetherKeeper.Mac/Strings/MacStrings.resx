@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Menu_Settings" xml:space="preserve">
+    <value>Settings…</value>
+    <comment>メニューバーのメニュー: 設定のウィンドウを開く</comment>
+  </data>
+  <data name="Menu_OpenLogFolder" xml:space="preserve">
+    <value>Open Log Folder</value>
+    <comment>メニューバーのメニュー: ログの保存先を Finder で開く</comment>
+  </data>
+  <data name="Menu_Quit" xml:space="preserve">
+    <value>Quit {0}</value>
+    <comment>メニューバーのメニュー: {0} はアプリ名</comment>
+  </data>
+  <data name="Settings_LaunchAtLogin" xml:space="preserve">
+    <value>Open the app when you log in to your Mac</value>
+    <comment>Windows 版の Settings_LaunchAtLogin の Mac 版</comment>
+  </data>
+  <data name="Language_System" xml:space="preserve">
+    <value>Use the macOS language</value>
+    <comment>Windows 版の Language_System の Mac 版</comment>
+  </data>
+  <data name="Settings_Close" xml:space="preserve">
+    <value>Close</value>
+    <comment>設定のウィンドウを閉じるボタン</comment>
+  </data>
+  <data name="AutoStart_RequiresApproval" xml:space="preserve">
+    <value>Allow {0} in System Settings &gt; General &gt; Login Items.</value>
+    <comment>ログイン項目の登録に利用者の許可が要るとき。{0} はアプリ名</comment>
+  </data>
+  <data name="AutoStart_NotFound" xml:space="preserve">
+    <value>macOS couldn't find the app to register as a login item. Move {0} to the Applications folder and try again.</value>
+    <comment>ログイン項目の登録で、アプリが見つからないとき。{0} はアプリ名</comment>
+  </data>
+  <data name="Notification_PermissionDenied" xml:space="preserve">
+    <value>Notifications are turned off for {0} in System Settings &gt; Notifications.</value>
+    <comment>通知の許可が無いとき (ログに出す)。{0} はアプリ名</comment>
+  </data>
+  <data name="About_DevEdition" xml:space="preserve">
+    <value>development build</value>
+    <comment>起動のログに出す版の種類 (Mac App Store から入れていない、開発中のビルド)。ストア版は CoreStrings.About_StoreEdition</comment>
+  </data>
+</root>

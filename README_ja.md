@@ -55,6 +55,8 @@ dotnet test KeepAlive.Tests
 
 Visual Studio では `TetherKeeper.slnx` を開き、デバッグ対象に「Windows Machine」を選びます。
 
+> macOS 版（メニューバー常駐アプリ）を作成中です。Mac でビルドする手順と、Mac App Store への提出の手順は [docs/MacBuildGuide.md](docs/MacBuildGuide.md) にまとめています。
+
 設定ファイルは `%LOCALAPPDATA%\TetherKeeper\settings.json` に、通信量の累計は同じフォルダの `data-usage.json` に保存されます。
 ログは同じフォルダ内の `logs\TetherKeeper_yyyyMMdd.log` に 1 日 1 ファイルで出力され、30 日を過ぎたファイルは自動で削除されます。
 通信の結果の履歴も、同じように `history\TetherKeeper_yyyyMMdd.csv` に出力されます。
@@ -139,6 +141,7 @@ powershell -ExecutionPolicy Bypass -File build\Publish-Msix.ps1 -NewCertificate
 │   │                        AutoStopScheduler（自動停止の予約と解除）
 │   │                        ResultHistory / ResultCsv（通信の結果の履歴の記録・集計・書き出し）
 │   │                        AppDisplayName（日本語名と英語名の切り替え）/ AppAboutInfo（「このアプリについて」の本文）
+│   │                        AppLanguageStartup（設定で選んだ表示言語を起動時に反映）
 │   ├─ Strategies            Ping / HttpHead / TcpConnect の各 KeepAliveStrategy
 │   ├─ Configuration         DI 登録（AddKeepAliveCore）と KeepAliveOptions
 │   └─ Resources             CoreStrings.resx（英語）/ CoreStrings.ja.resx（日本語）: ログ・エラー・通知の文言
@@ -153,12 +156,16 @@ powershell -ExecutionPolicy Bypass -File build\Publish-Msix.ps1 -NewCertificate
 │   ├─ Resources/Strings     AppStrings.resx（英語）/ AppStrings.ja.resx（日本語）: 画面の文言
 │   ├─ Platforms/Windows     トレイ常駐、多重起動の防止、接続中のネットワークの取得（WindowsNetworkMonitor）、Package.appxmanifest と表示名のリソース（Strings）
 │   └─ ThirdPartyNotices.txt 「ライセンス情報」で開くライセンス表示
+├─ TetherKeeper.Mac          macOS 版（作成中）。AppKit のメニューバー常駐アプリ。Mac で TetherKeeper.Mac.slnx からビルドする
+│   ├─ Services              MacAppPaths / MacAutoStartService（ログイン項目）/ MacNotifier（通知センター）
+│   └─ Strings               MacStrings.resx（英語）/ MacStrings.ja.resx（日本語）: macOS だけの文言（ほかは AppStrings を共有）
 ├─ KeepAlive.Tests           xUnit の単体テスト
 ├─ tools/notices             ThirdPartyNotices.txt を作るスクリプト
 ├─ docs/UserGuide_ja.md      使い方ガイド（英語版は UserGuide.md）
 ├─ docs/PrivacyPolicy.md     プライバシーポリシー
 ├─ docs/BuildGuide.md        アプリ名・バージョン・ライセンス表示の扱い
 ├─ docs/StoreListing.md      Microsoft Store の申請で Partner Center に入れる内容
+├─ docs/MacBuildGuide.md     macOS 版のビルドと Mac App Store への提出
 ├─ docs/設計判断.md           方式比較・スリープ時の挙動・フレームワーク選定
 └─ docs/今後の機能候補.md     今後実装を検討する機能と改善点
 ```

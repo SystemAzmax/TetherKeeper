@@ -1,0 +1,65 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<!-- macOS 版 (メニューバー常駐アプリ)。AppKit で画面を作り、キープアライブの処理は KeepAlive.Core / KeepAlive.Infrastructure を共有する。
+	     ビルドには Mac (Xcode と .NET の macos ワークロード) が必要。手順は docs/MacBuildGuide.md を参照 -->
+	<PropertyGroup>
+		<TargetFramework>net10.0-macos</TargetFramework>
+		<OutputType>Exe</OutputType>
+		<RootNamespace>TetherKeeper.Mac</RootNamespace>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+
+		<!-- ログイン項目の登録 (SMAppService) が macOS 13 からのため -->
+		<SupportedOSPlatformVersion>13.0</SupportedOSPlatformVersion>
+
+		<!-- Info.plist の CFBundleIdentifier / CFBundleShortVersionString / CFBundleVersion になる。
+		     バンドル ID は App Store Connect で登録したものと合わせる。
+		     バージョンは Windows 版 (TetherKeeper.csproj の ApplicationDisplayVersion) と同じ番号にする -->
+		<ApplicationId>com.systemazmax.tetherkeeper</ApplicationId>
+		<ApplicationTitle>TetherKeeper</ApplicationTitle>
+		<ApplicationDisplayVersion>1.0.0</ApplicationDisplayVersion>
+		<ApplicationVersion>1</ApplicationVersion>
+
+		<!-- Mac App Store に出すため、サンドボックスで動かす (Entitlements.plist) -->
+		<CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
+	</PropertyGroup>
+
+	<!-- Mac App Store に出す版は、Intel と Apple シリコンの両方で動くユニバーサル版にし、署名したインストーラー (.pkg) を作る。
+	     署名に使う証明書とプロビジョニング プロファイルは、ビルドするときにコマンドラインで渡す (docs/MacBuildGuide.md) -->
+	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
+		<RuntimeIdentifiers>osx-x64;osx-arm64</RuntimeIdentifiers>
+		<CreatePackage>true</CreatePackage>
+		<EnablePackageSigning>true</EnablePackageSigning>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\KeepAlive.Core\KeepAlive.Core.csproj" />
+		<ProjectReference Include="..\KeepAlive.Infrastructure\KeepAlive.Infrastructure.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.12" />
+	</ItemGroup>
+
+	<!-- 画面の文言。
+	     Windows 版と同じ意味の文言は、Windows 版の AppStrings.resx をそのまま使う (訳を二重に持たないため)。
+	     macOS だけで使う文言 (メニューの項目、「Windows」を「Mac」に読み替えた文言など) は MacStrings.resx に置く -->
+	<ItemGroup>
+		<EmbeddedResource Include="..\TetherKeeper\Resources\Strings\AppStrings.resx" Link="Strings\AppStrings.resx">
+			<StronglyTypedFileName>$(IntermediateOutputPath)AppStrings.Designer.cs</StronglyTypedFileName>
+			<StronglyTypedLanguage>CSharp</StronglyTypedLanguage>
+			<StronglyTypedNamespace>TetherKeeper.Mac.Strings</StronglyTypedNamespace>
+			<StronglyTypedClassName>AppStrings</StronglyTypedClassName>
+		</EmbeddedResource>
+		<EmbeddedResource Include="..\TetherKeeper\Resources\Strings\AppStrings.ja.resx" Link="Strings\AppStrings.ja.resx" />
+		<EmbeddedResource Update="Strings\MacStrings.resx">
+			<StronglyTypedFileName>$(IntermediateOutputPath)MacStrings.Designer.cs</StronglyTypedFileName>
+			<StronglyTypedLanguage>CSharp</StronglyTypedLanguage>
+			<StronglyTypedNamespace>TetherKeeper.Mac.Strings</StronglyTypedNamespace>
+			<StronglyTypedClassName>MacStrings</StronglyTypedClassName>
+		</EmbeddedResource>
+		<Using Include="TetherKeeper.Mac.Strings" />
+		<Using Include="KeepAlive.Core.Resources" />
+	</ItemGroup>
+
+</Project>

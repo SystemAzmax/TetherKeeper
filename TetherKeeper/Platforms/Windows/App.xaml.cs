@@ -17,7 +17,7 @@ namespace TetherKeeper.WinUI
         public App()
         {
             // 設定で選んだ表示言語を、文言を使う前 (多重起動のメッセージを含む) に反映する
-            TetherKeeper.Services.AppLanguageStartup.ApplySavedLanguage();
+            KeepAlive.Core.Services.AppLanguageStartup.ApplySavedLanguage(TetherKeeper.Services.AppPaths.SettingsFile);
 
             // 既に起動中 (トレイ常駐中を含む) なら、そちらのウィンドウを表示させて自分は終了する
             if (!SingleInstance.TryAcquire())

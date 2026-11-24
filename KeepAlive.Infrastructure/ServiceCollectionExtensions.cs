@@ -57,7 +57,8 @@ public static class ServiceCollectionExtensions
         }
         else
         {
-            // TODO: macOS は SMAppService (Login Items) で実装する
+            // macOS 版のログイン時の起動 (SMAppService) は、TetherKeeper.Mac で差し替える。
+            // スリープ・復帰の検知とスリープの抑止は、macOS 版にはまだ無い
             services.AddSingleton<IPowerEventSource, NullPowerEventSource>();
             services.AddSingleton<ISleepInhibitor, UnsupportedSleepInhibitor>();
             services.AddSingleton<IAutoStartService, UnsupportedAutoStartService>();
