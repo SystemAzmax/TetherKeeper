@@ -179,6 +179,39 @@ public class AppSettingsTests
     }
 
     [Fact]
+    public void Validate_RequiresWeeklyStopDays_WhenWeeklyStopIsOn()
+    {
+        Assert.Contains(
+            new AppSettings { WeeklyStopEnabled = true, WeeklyStopDays = WeeklyDays.None }.Validate(),
+            e => e.Contains("曜日"));
+        Assert.Empty(new AppSettings { WeeklyStopEnabled = true, WeeklyStopDays = WeeklyDays.Weekdays }.Validate());
+    }
+
+    [Fact]
+    public void Normalize_DropsSecondsFromWeeklyStopTime_AndDisablesWithoutDays()
+    {
+        var settings = new AppSettings
+        {
+            WeeklyStopEnabled = true,
+            WeeklyStopTime = new TimeOnly(18, 30, 45),
+            WeeklyStopDays = WeeklyDays.None,
+        }.Normalize();
+
+        Assert.Equal(new TimeOnly(18, 30), settings.WeeklyStopTime);
+        Assert.False(settings.WeeklyStopEnabled);
+    }
+
+    [Fact]
+    public void AutoStopExtensions_AreOffByDefault()
+    {
+        var settings = new AppSettings();
+
+        Assert.False(settings.WeeklyStopEnabled);
+        Assert.False(settings.ExitAppOnAutoStop);
+        Assert.Equal(WeeklyDays.Everyday, settings.WeeklyStopDays);
+    }
+
+    [Fact]
     public void PreventSleepWhileRunning_IsOffByDefault()
     {
         // 電源の設定を尊重するため、既定ではスリープを妨げない

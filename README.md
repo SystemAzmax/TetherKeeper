@@ -21,7 +21,8 @@ The app's screens are in Japanese only.
 - When the PC wakes from sleep, runs again after 5 seconds
 - Optionally prevents automatic sleep while the keep-alive is running (off by default. The screen still turns off)
 - Optionally starts when you connect to a specified network (such as your iPhone's tethering) and stops when you disconnect (off by default)
-- Automatic stop at a specified date and time (choose the date and time on the "モニター" (Monitor) screen and select "予約" (Schedule). The schedule is cleared automatically after it stops)
+- Automatic stop at a specified date and time (choose the date and time on the "モニター" (Monitor) screen and select "予約" (Schedule), or select "1 時間後" (In 1 hour) / "2 時間後" (In 2 hours). The schedule is cleared automatically after it stops)
+- Automatic stop at a set time on the days of the week you choose, and an option to exit the app when it stops automatically
 - Automatic stop at a data limit (set the limit in MB on the Settings screen. The app adds up the data used while the keep-alive is running until you select "リセット" (Reset) on the Monitor screen, and stops when it reaches the limit. You can't start while the limit is reached)
   - The app counts the data sent and received by the network adapter used for internet traffic (if you are connected to both wired LAN and Wi-Fi, the one Windows chooses). This includes traffic from other apps. The log shows which adapter is counted
   - Because it measures every 5 seconds, it stops after exceeding the limit by the amount of traffic in that time. Stopping the keep-alive does not stop traffic from other apps

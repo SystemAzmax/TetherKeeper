@@ -1,4 +1,5 @@
 using KeepAlive.Core.Interfaces;
+using KeepAlive.Core.Models;
 using KeepAlive.Core.Services;
 
 namespace TetherKeeper.Services;
@@ -6,16 +7,20 @@ namespace TetherKeeper.Services;
 /// <summary>
 /// アプリの「本当の終了」を担う。
 /// Windows では × ボタンはタスクトレイへの格納になるため、終了はこのサービス経由でのみ行う。
+/// 設定 (<see cref="AppSettings.ExitAppOnAutoStop"/>) がオンなら、自動停止したときにも終了する。
 /// </summary>
 public sealed class AppExitService
 {
     private readonly IKeepAliveWorker _worker;
+    private readonly ISettingsService _settings;
     private readonly ILogService _log;
 
-    public AppExitService(IKeepAliveWorker worker, ILogService log)
+    public AppExitService(IKeepAliveWorker worker, ISettingsService settings, ILogService log)
     {
         _worker = worker;
+        _settings = settings;
         _log = log;
+        _worker.AutoStopped += OnAutoStopped;
     }
 
     /// <summary>終了処理中か。ウィンドウを閉じる操作をトレイ格納ではなく終了として扱うかの判定に使う。</summary>
@@ -53,5 +58,19 @@ public sealed class AppExitService
         {
             Application.Current?.Quit();
         }
+    }
+
+    /// <summary>
+    /// 日時の予約か毎週の自動停止で停止したら、設定に従ってアプリも終了する。
+    /// 通信量の上限で停止したときは、理由を画面で確かめられるよう終了しない。
+    /// </summary>
+    private void OnAutoStopped(object? sender, AutoStopReason reason)
+    {
+        if (reason == AutoStopReason.DataLimit || !_settings.Current.ExitAppOnAutoStop)
+            return;
+
+        _log.Info("自動停止したため、アプリを終了します。");
+        // Worker のスレッドから呼ばれるため、終了は UI スレッドで行う
+        MainThread.BeginInvokeOnMainThread(() => _ = ExitAsync());
     }
 }

@@ -35,6 +35,10 @@ public sealed class JsonFileSettingsStoreTests : IDisposable
             TcpPort = 8443,
             StartOnLaunch = true,
             AutoStopAt = new DateTimeOffset(2026, 10, 11, 18, 30, 0, TimeSpan.FromHours(9)),
+            WeeklyStopEnabled = true,
+            WeeklyStopTime = new TimeOnly(17, 45),
+            WeeklyStopDays = WeeklyDays.Monday | WeeklyDays.Wednesday | WeeklyDays.Friday,
+            ExitAppOnAutoStop = true,
         };
 
         await store.SaveAsync(settings);

@@ -39,14 +39,14 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
     /// <summary>待機の打ち切りが通信の要求か (1)、自動停止の条件の再計算のみか (0)。</summary>
     private int _runRequested;
 
-    private enum AutoStopReason
-    {
-        /// <summary>自動停止日時 (<see cref="AppSettings.AutoStopAt"/>) になった。</summary>
-        ScheduledTime,
+    /// <summary>
+    /// 毎週の自動停止の次回を、この日時より後から探す。開始時と、毎週の自動停止の設定を変えたときに更新する
+    /// (動作中に時刻を変えたとき、変える前に過ぎた時刻ですぐ止まらないようにするため)。
+    /// </summary>
+    private DateTimeOffset _weeklyStopBase;
 
-        /// <summary>通信量の累計が上限 (<see cref="AppSettings.DataLimitMegabytes"/>) に達した。</summary>
-        DataLimit,
-    }
+    /// <summary>自動停止の日時とその理由。</summary>
+    private readonly record struct ScheduledStop(DateTimeOffset At, AutoStopReason Reason);
 
     public KeepAliveWorker(
         IKeepAliveStrategyResolver resolver,
@@ -92,6 +92,8 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
 
     public event EventHandler<KeepAliveResult>? ResultReceived;
 
+    public event EventHandler<AutoStopReason>? AutoStopped;
+
     public void Start()
     {
         var s = _settings.Current;
@@ -113,6 +115,7 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
 
             while (_wake.Reader.TryRead(out _)) { }
             _runRequested = 0;
+            _weeklyStopBase = startedAt;
             var runCts = _runCts = new CancellationTokenSource();
             var token = runCts.Token;
             // 「開始」ログが初回結果より先に出るよう、ループ本体は開始通知の後に走らせる
@@ -143,6 +146,8 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
                 else
                     _log.Warning($"自動停止日時 ({stopAt.ToLocalTime():yyyy/MM/dd HH:mm}) を過ぎているため、自動停止は行いません。");
             }
+
+            LogWeeklyStop(s, startedAt);
 
             if (s.DataLimitBytes is not null)
                 _log.Info($"通信量の累計が {s.DataLimitMegabytes} MB に達したら自動停止します (現在 {DataUsage.Format(_dataUsage.Current.TotalBytes)})。");
@@ -294,8 +299,8 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
                 var now = _timeProvider.GetUtcNow();
 
                 // スリープ中に日時を過ぎた場合も、復帰後のこの判定で通信せずに停止する
-                if (GetActiveAutoStopAt(settings, startedAt) is { } stopAt && now >= stopAt)
-                    return AutoStopReason.ScheduledTime;
+                if (GetNextAutoStop(settings, startedAt) is { } stop && now >= stop.At)
+                    return stop.Reason;
                 if (IsDataLimitReached(settings))
                     return AutoStopReason.DataLimit;
 
@@ -337,32 +342,94 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
     private static DateTimeOffset? GetActiveAutoStopAt(AppSettings settings, DateTimeOffset startedAt) =>
         settings.AutoStopAt is { } stopAt && stopAt > startedAt ? stopAt : null;
 
+    /// <summary>この実行で次に来る、毎週の自動停止の日時。無効なら null。</summary>
+    private DateTimeOffset? GetNextWeeklyStop(AppSettings settings)
+    {
+        if (!settings.WeeklyStopEnabled)
+            return null;
+
+        DateTimeOffset after;
+        lock (_gate) after = _weeklyStopBase;
+        return WeeklySchedule.GetNextOccurrence(
+            settings.WeeklyStopDays, settings.WeeklyStopTime, after, _timeProvider.LocalTimeZone);
+    }
+
+    /// <summary>
+    /// この実行で次に来る自動停止 (日時の予約と毎週の自動停止のうち早い方)。
+    /// 同じ日時のときは、予約を解除できるよう日時の予約として扱う。
+    /// </summary>
+    private ScheduledStop? GetNextAutoStop(AppSettings settings, DateTimeOffset startedAt)
+    {
+        var scheduled = GetActiveAutoStopAt(settings, startedAt);
+        var weekly = GetNextWeeklyStop(settings);
+        if (scheduled is { } s && (weekly is null || s <= weekly))
+            return new ScheduledStop(s, AutoStopReason.ScheduledTime);
+        if (weekly is { } w)
+            return new ScheduledStop(w, AutoStopReason.WeeklySchedule);
+        return null;
+    }
+
+    private string ToLocalText(DateTimeOffset at) =>
+        $"{TimeZoneInfo.ConvertTime(at, _timeProvider.LocalTimeZone):yyyy/MM/dd HH:mm}";
+
+    private void LogWeeklyStop(AppSettings settings, DateTimeOffset startedAt)
+    {
+        if (!settings.WeeklyStopEnabled)
+            return;
+
+        var next = WeeklySchedule.GetNextOccurrence(
+            settings.WeeklyStopDays, settings.WeeklyStopTime, startedAt, _timeProvider.LocalTimeZone);
+        if (next is { } at)
+            _log.Info($"毎週の自動停止 ({WeeklySchedule.Format(settings.WeeklyStopDays)} {settings.WeeklyStopTime:HH\\:mm}) により、{ToLocalText(at)} に停止します。");
+    }
+
     private async Task AutoStopAsync(CancellationTokenSource runCts, AutoStopReason reason)
     {
         try
         {
-            if (reason == AutoStopReason.DataLimit)
+            switch (reason)
             {
-                // 上限は解除しない (累計をリセットするまで、開始できないままにする)
-                _log.Info(
-                    $"通信量の累計 ({DataUsage.Format(_dataUsage.Current.TotalBytes)}) が上限 ({_settings.Current.DataLimitMegabytes} MB) に達しました。");
-                await StopCoreAsync(runCts).ConfigureAwait(false);
-                return;
+                case AutoStopReason.DataLimit:
+                    // 上限は解除しない (累計をリセットするまで、開始できないままにする)
+                    _log.Info(
+                        $"通信量の累計 ({DataUsage.Format(_dataUsage.Current.TotalBytes)}) が上限 ({_settings.Current.DataLimitMegabytes} MB) に達しました。");
+                    await StopCoreAsync(runCts).ConfigureAwait(false);
+                    break;
+
+                case AutoStopReason.WeeklySchedule:
+                    // 毎週の設定は解除しない (次の週も同じ時刻に止める)
+                    var weekly = _settings.Current;
+                    _log.Info($"毎週の自動停止の時刻 ({WeeklySchedule.Format(weekly.WeeklyStopDays)} {weekly.WeeklyStopTime:HH\\:mm}) になりました。");
+                    await StopCoreAsync(runCts).ConfigureAwait(false);
+                    break;
+
+                default:
+                    var stopAt = _settings.Current.AutoStopAt;
+                    _log.Info($"自動停止日時 ({stopAt?.ToLocalTime():yyyy/MM/dd HH:mm}) になりました。");
+                    await StopCoreAsync(runCts).ConfigureAwait(false);
+
+                    // 使い終わった日時を解除し、次回の開始時に再適用されないようにする
+                    // (その間に利用者が別の日時を予約していれば、そちらは残す)
+                    await _settings.UpdateAsync(
+                        current => current.AutoStopAt == stopAt ? current with { AutoStopAt = null } : current)
+                        .ConfigureAwait(false);
+                    break;
             }
-
-            var stopAt = _settings.Current.AutoStopAt;
-            _log.Info($"自動停止日時 ({stopAt?.ToLocalTime():yyyy/MM/dd HH:mm}) になりました。");
-            await StopCoreAsync(runCts).ConfigureAwait(false);
-
-            // 使い終わった日時を解除し、次回の開始時に再適用されないようにする
-            // (その間に利用者が別の日時を予約していれば、そちらは残す)
-            await _settings.UpdateAsync(
-                current => current.AutoStopAt == stopAt ? current with { AutoStopAt = null } : current)
-                .ConfigureAwait(false);
         }
         catch (Exception ex)
         {
             _log.Error($"自動停止の処理に失敗しました: {ex.Message}");
+            return;
+        }
+
+        try
+        {
+            AutoStopped?.Invoke(this, reason);
+        }
+        catch (Exception ex)
+        {
+            // 通知先 (アプリの終了など) の不具合で、Worker を巻き込まない
+            _log.Error($"自動停止の通知先でエラーが発生しました: {ex.GetType().Name}: {ex.Message}");
         }
     }
 
@@ -438,9 +505,9 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
         {
             var now = _timeProvider.GetUtcNow();
             var settings = _settings.Current;
-            var stopAt = GetActiveAutoStopAt(settings, startedAt);
-            if (now >= stopAt)
-                return AutoStopReason.ScheduledTime;
+            var stop = GetNextAutoStop(settings, startedAt);
+            if (stop is { } due && now >= due.At)
+                return due.Reason;
 
             // 上限に達したら、次回実行を待たずに停止する
             await dataUsage.SampleAsync().ConfigureAwait(false);
@@ -457,8 +524,8 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
             // 次回実行・次の通信量の計測・自動停止日時のうち、最も早い時刻に起きる
             var sampleAt = now + _options.DataUsageSampleInterval;
             var wakeAt = sampleAt < nextRunAt ? sampleAt : nextRunAt;
-            if (stopAt < wakeAt)
-                wakeAt = stopAt.Value;
+            if (stop is { } next && next.At < wakeAt)
+                wakeAt = next.At;
 
             using var waitCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             var delay = Task.Delay(wakeAt - now, _timeProvider, waitCts.Token);
@@ -487,6 +554,16 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
         if (previous.PreventSleepWhileRunning != settings.PreventSleepWhileRunning)
             UpdateSleepInhibition();
 
+        if (previous.WeeklyStopEnabled != settings.WeeklyStopEnabled
+            || previous.WeeklyStopTime != settings.WeeklyStopTime
+            || previous.WeeklyStopDays != settings.WeeklyStopDays)
+        {
+            // 変えた時点より後の時刻から数え直す (変える前に過ぎた時刻で、すぐに止まらないようにする)
+            var now = _timeProvider.GetUtcNow();
+            lock (_gate) _weeklyStopBase = now;
+            LogWeeklyStop(settings, now);
+        }
+
         if (WithoutNonCommunicationSettings(previous) == WithoutNonCommunicationSettings(settings))
         {
             _wake.Writer.TryWrite(true);
@@ -507,6 +584,10 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
         settings with
         {
             AutoStopAt = null,
+            WeeklyStopEnabled = false,
+            WeeklyStopTime = default,
+            WeeklyStopDays = WeeklyDays.None,
+            ExitAppOnAutoStop = false,
             DataLimitMegabytes = 0,
             NotifyOnFailure = false,
             FailureThreshold = 0,

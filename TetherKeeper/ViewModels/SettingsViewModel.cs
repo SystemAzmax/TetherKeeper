@@ -7,6 +7,17 @@ namespace TetherKeeper.ViewModels;
 
 public sealed record MethodOption(KeepAliveMethod Method, string DisplayName, string Description);
 
+/// <summary>毎週の自動停止の曜日のチェックボックス 1 つ分。</summary>
+public sealed partial class WeeklyDayOption(DayOfWeek day) : ObservableObject
+{
+    public DayOfWeek Day { get; } = day;
+
+    public string Name { get; } = WeeklySchedule.GetDayName(day);
+
+    [ObservableProperty]
+    public partial bool IsSelected { get; set; }
+}
+
 public partial class SettingsViewModel : ObservableObject
 {
     private readonly ISettingsService _settings;
@@ -100,6 +111,19 @@ public partial class SettingsViewModel : ObservableObject
     public partial string FailureThreshold { get; set; } = string.Empty;
 
     [ObservableProperty]
+    public partial bool WeeklyStopEnabled { get; set; }
+
+    [ObservableProperty]
+    public partial TimeSpan? WeeklyStopTime { get; set; }
+
+    /// <summary>毎週の自動停止の曜日 (月曜始まり)。</summary>
+    public IReadOnlyList<WeeklyDayOption> WeeklyStopDays { get; } =
+        [.. Enumerable.Range(1, 7).Select(i => new WeeklyDayOption((DayOfWeek)(i % 7)))];
+
+    [ObservableProperty]
+    public partial bool ExitAppOnAutoStop { get; set; }
+
+    [ObservableProperty]
     public partial bool PreventSleepWhileRunning { get; set; }
 
     [ObservableProperty]
@@ -180,6 +204,14 @@ public partial class SettingsViewModel : ObservableObject
         var tcpHost = TcpHost.Trim();
         var notifyOnFailure = NotifyOnFailure;
         var preventSleep = PreventSleepWhileRunning;
+        var weeklyStopEnabled = WeeklyStopEnabled;
+        var weeklyStopTime = WeeklyStopTime is { } time
+            ? new TimeOnly(time.Hours, time.Minutes)
+            : new AppSettings().WeeklyStopTime;
+        var weeklyStopDays = WeeklyStopDays
+            .Where(d => d.IsSelected)
+            .Aggregate(WeeklyDays.None, (days, d) => days | d.Day.ToWeeklyDays());
+        var exitAppOnAutoStop = ExitAppOnAutoStop;
         var autoControlByNetwork = AutoControlByNetwork;
         var autoControlNetworkName = AutoControlNetworkName.Trim();
         var startOnLaunch = StartOnLaunch;
@@ -197,6 +229,10 @@ public partial class SettingsViewModel : ObservableObject
             NotifyOnFailure = notifyOnFailure,
             FailureThreshold = failureThreshold,
             PreventSleepWhileRunning = preventSleep,
+            WeeklyStopEnabled = weeklyStopEnabled,
+            WeeklyStopTime = weeklyStopTime,
+            WeeklyStopDays = weeklyStopDays,
+            ExitAppOnAutoStop = exitAppOnAutoStop,
             AutoControlByNetwork = autoControlByNetwork,
             AutoControlNetworkName = autoControlNetworkName,
             StartOnLaunch = startOnLaunch,
@@ -238,6 +274,11 @@ public partial class SettingsViewModel : ObservableObject
         NotifyOnFailure = settings.NotifyOnFailure;
         FailureThreshold = settings.FailureThreshold.ToString();
         PreventSleepWhileRunning = settings.PreventSleepWhileRunning;
+        WeeklyStopEnabled = settings.WeeklyStopEnabled;
+        WeeklyStopTime = settings.WeeklyStopTime.ToTimeSpan();
+        foreach (var day in WeeklyStopDays)
+            day.IsSelected = settings.WeeklyStopDays.HasFlag(day.Day.ToWeeklyDays());
+        ExitAppOnAutoStop = settings.ExitAppOnAutoStop;
         AutoControlByNetwork = settings.AutoControlByNetwork;
         AutoControlNetworkName = settings.AutoControlNetworkName;
         StartOnLaunch = settings.StartOnLaunch;

@@ -70,9 +70,30 @@
                     <TimePicker Time="{Binding AutoStopTime}"
                                 Format="HH:mm"
                                 IsEnabled="{Binding CanEditAutoStop}"
-                                Margin="0,0,0,4" />
+                                Margin="0,0,8,4" />
+                    <!-- 今からの時間で予約する。予約済みのときは「解除」してから選び直す -->
+                    <Button Text="1 時間後"
+                            Padding="10,4"
+                            MinimumHeightRequest="32"
+                            Margin="0,0,8,4"
+                            IsVisible="{Binding CanEditAutoStop}"
+                            Command="{Binding ScheduleAutoStopAfterCommand}"
+                            CommandParameter="1"
+                            ToolTipProperties.Text="今から 1 時間後に停止するよう予約します" />
+                    <Button Text="2 時間後"
+                            Padding="10,4"
+                            MinimumHeightRequest="32"
+                            Margin="0,0,0,4"
+                            IsVisible="{Binding CanEditAutoStop}"
+                            Command="{Binding ScheduleAutoStopAfterCommand}"
+                            CommandParameter="2"
+                            ToolTipProperties.Text="今から 2 時間後に停止するよう予約します" />
                 </FlexLayout>
                 <Label Text="{Binding AutoStopText}"
+                       FontSize="12"
+                       TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray300}}" />
+                <Label Text="{Binding WeeklyStopText}"
+                       IsVisible="{Binding IsWeeklyStopEnabled}"
                        FontSize="12"
                        TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray300}}" />
                 <Label Text="{Binding AutoStopError}"

@@ -313,6 +313,69 @@ public sealed class KeepAliveWorkerTests : IAsyncDisposable
     }
 
     [Fact]
+    public async Task AutoStopAt_RaisesAutoStoppedWithScheduledTime()
+    {
+        var reasons = new List<AutoStopReason>();
+        _worker.AutoStopped += (_, reason) => { lock (reasons) reasons.Add(reason); };
+        await _settings.SaveAsync(_settings.Current with { IntervalSeconds = 600, AutoStopAt = _time.GetUtcNow().AddSeconds(30) });
+        _worker.Start();
+
+        await TestHelpers.WaitUntilAsync(() => { lock (reasons) return reasons.Count == 1; }, AdvanceOneSecond);
+
+        Assert.Equal(AutoStopReason.ScheduledTime, reasons[0]);
+        Assert.False(_worker.IsRunning);
+    }
+
+    [Fact]
+    public async Task WeeklyStop_StopsAtTime_AndKeepsSetting()
+    {
+        // FakeTimeProvider の現在は 00:00 (UTC)。00:01 に停止する
+        var reasons = new List<AutoStopReason>();
+        _worker.AutoStopped += (_, reason) => { lock (reasons) reasons.Add(reason); };
+        await _settings.SaveAsync(_settings.Current with
+        {
+            IntervalSeconds = 600,
+            WeeklyStopEnabled = true,
+            WeeklyStopTime = TimeOnly.FromDateTime(_time.GetUtcNow().UtcDateTime).AddMinutes(1),
+            WeeklyStopDays = WeeklyDays.Everyday,
+        });
+        _worker.Start();
+        await TestHelpers.WaitUntilAsync(() => _ping.ExecutionCount == 1);
+        Assert.Contains(_log.GetEntries(), e => e.Message.Contains("毎週の自動停止 (毎日"));
+
+        await TestHelpers.WaitUntilAsync(() => !_worker.IsRunning, AdvanceOneSecond);
+        await TestHelpers.WaitUntilAsync(() => { lock (reasons) return reasons.Count == 1; });
+
+        Assert.Equal(AutoStopReason.WeeklySchedule, reasons[0]);
+        Assert.Equal(1, _ping.ExecutionCount);
+        Assert.True(_settings.Current.WeeklyStopEnabled);
+        Assert.Contains(_log.GetEntries(), e => e.Message.Contains("毎週の自動停止の時刻"));
+    }
+
+    [Fact]
+    public async Task WeeklyStop_SetToPassedTimeWhileRunning_DoesNotStopImmediately_OrExecute()
+    {
+        await _settings.SaveAsync(_settings.Current with { IntervalSeconds = 600 });
+        _worker.Start();
+        await TestHelpers.WaitUntilAsync(() => _ping.ExecutionCount == 1);
+        // 次回の実行 (10 分後) より前まで進める
+        _time.Advance(TimeSpan.FromMinutes(9));
+
+        // 開始後に過ぎた時刻 (開始の 1 分後) を指定しても、すぐには止めない (次は翌日のその時刻)
+        var passed = TimeOnly.FromDateTime(_time.GetUtcNow().UtcDateTime).AddMinutes(-8);
+        await _settings.SaveAsync(_settings.Current with
+        {
+            WeeklyStopEnabled = true,
+            WeeklyStopTime = passed,
+            WeeklyStopDays = WeeklyDays.Everyday,
+        });
+        await Task.Delay(100);
+
+        Assert.True(_worker.IsRunning);
+        Assert.Equal(1, _ping.ExecutionCount);
+    }
+
+    [Fact]
     public async Task AutoStopAt_PassedDuringSleep_StopsWithoutExecuting()
     {
         await _settings.SaveAsync(_settings.Current with { IntervalSeconds = 600, AutoStopAt = _time.GetUtcNow().AddMinutes(30) });

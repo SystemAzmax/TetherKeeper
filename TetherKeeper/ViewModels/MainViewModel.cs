@@ -111,6 +111,13 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     public bool HasAutoStopError => AutoStopError.Length > 0;
 
+    [ObservableProperty]
+    public partial bool IsWeeklyStopEnabled { get; set; }
+
+    /// <summary>毎週の自動停止の予定 (例: 毎週の自動停止: 平日 18:00（次回 11/24（火）18:00）)。</summary>
+    [ObservableProperty]
+    public partial string WeeklyStopText { get; set; } = string.Empty;
+
     /// <summary>通信量の累計と上限 (例: 12.3 MB / 500 MB)。</summary>
     [ObservableProperty]
     public partial string DataUsageText { get; set; } = string.Empty;
@@ -208,6 +215,27 @@ public partial class MainViewModel : ObservableObject, IDisposable
             }
         }
 
+        await SaveAutoStopAsync(stopAt);
+    }
+
+    /// <summary>今から指定した時間 (時間単位。コマンドの引数) の後に、自動停止を予約する。</summary>
+    [RelayCommand]
+    private async Task ScheduleAutoStopAfterAsync(string hours)
+    {
+        AutoStopError = string.Empty;
+        if (!int.TryParse(hours, out var value) || value <= 0)
+            return;
+
+        // 表示は分単位のため、秒を切り上げて「指定した時間より前に止まる」ことがないようにする
+        var now = DateTimeOffset.Now;
+        var stopAt = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, 0, now.Offset)
+            .AddMinutes(now.Second > 0 || now.Millisecond > 0 ? 1 : 0)
+            .AddHours(value);
+        await SaveAutoStopAsync(stopAt);
+    }
+
+    private async Task SaveAutoStopAsync(DateTimeOffset? stopAt)
+    {
         var errors = await _settings.UpdateAsync(current => current with { AutoStopAt = stopAt });
         if (errors.Count > 0)
         {
@@ -338,8 +366,31 @@ public partial class MainViewModel : ObservableObject, IDisposable
         }
         else
         {
-            AutoStopText = "指定した日時にキープアライブを停止します（アプリは終了しません）";
+            AutoStopText = _settings.Current.ExitAppOnAutoStop
+                ? "指定した日時にキープアライブを停止し、アプリも終了します"
+                : "指定した日時にキープアライブを停止します（アプリは終了しません）";
         }
+
+        RefreshWeeklyStop();
+    }
+
+    /// <summary>毎週の自動停止の予定を表示する (設定は設定画面で行う)。</summary>
+    private void RefreshWeeklyStop()
+    {
+        var settings = _settings.Current;
+        IsWeeklyStopEnabled = settings.WeeklyStopEnabled;
+        if (!settings.WeeklyStopEnabled)
+        {
+            WeeklyStopText = string.Empty;
+            return;
+        }
+
+        var next = WeeklySchedule.GetNextOccurrence(
+            settings.WeeklyStopDays, settings.WeeklyStopTime, DateTimeOffset.Now, TimeZoneInfo.Local);
+        var nextText = next is { } at
+            ? $"（次回 {at.ToLocalTime():MM/dd}（{WeeklySchedule.GetDayName(at.ToLocalTime().DayOfWeek)}）{at.ToLocalTime():HH:mm}）"
+            : string.Empty;
+        WeeklyStopText = $"毎週の自動停止: {WeeklySchedule.Format(settings.WeeklyStopDays)} {settings.WeeklyStopTime:HH\\:mm}{nextText}";
     }
 
     private void RefreshDataUsage()

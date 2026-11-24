@@ -72,6 +72,34 @@
             <Label Text="キープアライブの動作中に数えた通信量の累計がこの値に達したら停止します（0 は上限なし）。ほかのアプリの通信も含みます。累計はモニター画面でリセットするまで、停止やアプリの再起動をまたいで加算します。"
                    Style="{StaticResource Hint}" />
 
+            <!-- 毎週の自動停止 -->
+            <Grid ColumnDefinitions="*,Auto" Margin="0,8,0,0">
+                <Label Text="毎週決まった時刻に停止する" VerticalOptions="Center" />
+                <Switch Grid.Column="1" IsToggled="{Binding WeeklyStopEnabled}" />
+            </Grid>
+            <VerticalStackLayout IsVisible="{Binding WeeklyStopEnabled}" Spacing="4">
+                <FlexLayout Wrap="Wrap" AlignItems="Center" BindableLayout.ItemsSource="{Binding WeeklyStopDays}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="vm:WeeklyDayOption">
+                            <HorizontalStackLayout Margin="0,0,8,0">
+                                <CheckBox IsChecked="{Binding IsSelected}" />
+                                <Label Text="{Binding Name}" VerticalOptions="Center" />
+                            </HorizontalStackLayout>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </FlexLayout>
+                <TimePicker Time="{Binding WeeklyStopTime}" Format="HH:mm" HorizontalOptions="Start" />
+                <Label Text="選んだ曜日のこの時刻に、キープアライブを停止します（動作中のときだけ）。日時の予約と違い、停止しても解除しません。開始するのは自分か、ネットワークに応じた自動開始です。"
+                       Style="{StaticResource Hint}" />
+            </VerticalStackLayout>
+
+            <Grid ColumnDefinitions="*,Auto">
+                <Label Text="自動停止したらアプリも終了する" VerticalOptions="Center" />
+                <Switch Grid.Column="1" IsToggled="{Binding ExitAppOnAutoStop}" />
+            </Grid>
+            <Label Text="日時の予約か毎週の自動停止で停止したときに、アプリも終了します。通信量の上限やネットワークの切断で停止したときは終了しません。"
+                   Style="{StaticResource Hint}" />
+
             <!-- 通信の失敗の通知 -->
             <Label Text="通知する連続失敗の回数" Style="{StaticResource FieldLabel}" />
             <Entry Text="{Binding FailureThreshold}" Keyboard="Numeric" Placeholder="3" />

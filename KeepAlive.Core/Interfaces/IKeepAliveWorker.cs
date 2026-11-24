@@ -5,6 +5,7 @@ namespace KeepAlive.Core.Interfaces;
 /// <summary>
 /// 設定間隔でキープアライブ通信を繰り返すバックグラウンド処理。
 /// <see cref="AppSettings.AutoStopAt"/> が設定されていれば、その日時に自動で停止する。
+/// <see cref="AppSettings.WeeklyStopEnabled"/> がオンなら、毎週決まった曜日・時刻に自動で停止する。
 /// <see cref="AppSettings.DataLimitMegabytes"/> が設定されていれば、通信量の累計 (<see cref="IDataUsageTracker"/>) が
 /// 上限に達したときに自動で停止し、達している間は <see cref="Start"/> しても開始しない。
 /// </summary>
@@ -22,6 +23,12 @@ public interface IKeepAliveWorker
 
     /// <summary>通信が 1 回完了した。バックグラウンドスレッドから発火する。</summary>
     event EventHandler<KeepAliveResult>? ResultReceived;
+
+    /// <summary>
+    /// 自動停止の条件 (日時の予約、毎週の自動停止、通信量の上限) で停止した。停止の処理を終えてから発火する。
+    /// バックグラウンドスレッドから発火する。
+    /// </summary>
+    event EventHandler<AutoStopReason>? AutoStopped;
 
     void Start();
 

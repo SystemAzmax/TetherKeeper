@@ -166,6 +166,8 @@ internal sealed class FakeKeepAliveWorker : IKeepAliveWorker
 
 #pragma warning disable CS0067 // 発火しないイベント
     public event EventHandler<KeepAliveResult>? ResultReceived;
+
+    public event EventHandler<AutoStopReason>? AutoStopped;
 #pragma warning restore CS0067
 
     public void Start()

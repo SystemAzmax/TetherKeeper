@@ -77,7 +77,7 @@ Use "モニター" (Monitor) and "設定" (Settings) at the bottom of the window
 | 開始 / 停止 (Start / Stop) | Starts or stops the keep-alive |
 | 今すぐ実行 (Run now) | Sends traffic once right away, without waiting for the interval |
 | 終了 (Exit) | Exits the app ("×" only moves the app to the tray; it does not exit) |
-| 自動停止 (Auto stop) | Choose a date and time and select "予約" (Schedule) to stop the keep-alive at that time. The app does not exit. The schedule is cleared when it stops. Select "解除" (Cancel) to cancel the schedule |
+| 自動停止 (Auto stop) | Choose a date and time and select "予約" (Schedule) to stop the keep-alive at that time. Select "1 時間後" (In 1 hour) or "2 時間後" (In 2 hours) to schedule a stop that long from now. The schedule is cleared when it stops. Select "解除" (Cancel) to cancel the schedule. The app does not exit (it exits if you turn on "自動停止したらアプリも終了する" (Exit the app when it stops automatically) on the Settings screen). If you use the weekly auto stop, its schedule is also shown |
 | 通信量 (Data usage) | The total data counted while the keep-alive is running. If you set a limit on the Settings screen, the keep-alive stops when it reaches the limit. Select "リセット" (Reset) to set it back to 0 |
 | 合計 / 成功 / 失敗 / 連続失敗 (Total / Succeeded / Failed / Consecutive failures) | Number of runs. Select "統計リセット" (Reset statistics) to set them back to 0 |
 | ログ (Log) | Records such as the results of each run. "ログ消去" (Clear log) clears only the log on the screen (the log files remain). "保存先" (Location) opens the folder where the logs and settings are saved |
@@ -102,6 +102,8 @@ After making changes, select "保存" (Save). "既定値に戻す" (Restore defa
 | 実行間隔（秒） (Interval in seconds) | How often to send traffic, from 5 to 3600 seconds. The default is 30 seconds. If your connection still drops, try 15 to 30 seconds |
 | タイムアウト（ミリ秒） (Timeout in milliseconds) | How long to wait for a response, from 500 to 30000 milliseconds. It must be shorter than the interval. The default is 3000 milliseconds |
 | 通信量の上限（MB） (Data limit in MB) | Stops when the total data usage reaches this value. 0 means no limit (default) |
+| 毎週決まった時刻に停止する (Stop at a set time every week) | When on, the keep-alive stops at the set time on the days you choose (only while it is running). Unlike a scheduled date and time, this setting is not cleared when it stops. The default is off |
+| 自動停止したらアプリも終了する (Exit the app when it stops automatically) | When on, the app also exits when the keep-alive stops at a scheduled date and time or at the weekly time. It doesn't exit when it stops because of the data limit or a network disconnection. The default is off |
 | 通知する連続失敗の回数 (Consecutive failures before notifying) | When the traffic fails this many times in a row, the app shows a notification and adds a red dot to the tray icon. From 1 to 100. The default is 3 |
 | 失敗が続いたときと、復旧したときに通知する (Notify when failures continue and when the connection recovers) | When off, the app doesn't show notifications (the red dot still appears on the tray icon). The default is on |
 | キープアライブの動作中はスリープしない (Don't sleep while the keep-alive is running) | When on, the PC doesn't go to sleep automatically while the keep-alive is running, even if you leave it idle. The default is off (see [After the PC wakes from sleep](#after-the-pc-wakes-from-sleep)) |

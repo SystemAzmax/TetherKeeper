@@ -56,6 +56,24 @@ public sealed record AppSettings
     public DateTimeOffset? AutoStopAt { get; init; }
 
     /// <summary>
+    /// 毎週決まった曜日 (<see cref="WeeklyStopDays"/>) の決まった時刻 (<see cref="WeeklyStopTime"/>) に、キープアライブを停止するか。
+    /// <see cref="AutoStopAt"/> と違い、停止しても解除しない。
+    /// </summary>
+    public bool WeeklyStopEnabled { get; init; }
+
+    /// <summary>毎週の自動停止の時刻 (PC の時刻)。</summary>
+    public TimeOnly WeeklyStopTime { get; init; } = new(18, 0);
+
+    /// <summary>毎週の自動停止の曜日。</summary>
+    public WeeklyDays WeeklyStopDays { get; init; } = WeeklyDays.Everyday;
+
+    /// <summary>
+    /// 日時の予約 (<see cref="AutoStopAt"/>) か毎週の自動停止で停止したときに、アプリも終了するか。
+    /// 通信量の上限やネットワークの切断で停止したときは、理由を確かめられるよう終了しない。
+    /// </summary>
+    public bool ExitAppOnAutoStop { get; init; }
+
+    /// <summary>
     /// 通信量の上限 (MB)。0 は無効。
     /// 通信量の累計 (<see cref="Interfaces.IDataUsageTracker"/>) がこの値に達するとキープアライブを停止し、
     /// 累計をリセットするまでは開始できなくなる。自動停止日時と違い、停止しても値は解除しない。
@@ -116,6 +134,8 @@ public sealed record AppSettings
             errors.Add($"通信量の上限は 0〜{MaxDataLimitMegabytes} MB で指定してください。");
         if (FailureThreshold is < MinFailureThreshold or > MaxFailureThreshold)
             errors.Add($"通知する連続失敗の回数は {MinFailureThreshold}〜{MaxFailureThreshold} 回で指定してください。");
+        if (WeeklyStopEnabled && (WeeklyStopDays & WeeklyDays.Everyday) == WeeklyDays.None)
+            errors.Add("毎週の自動停止の曜日を 1 つ以上選んでください。");
         if (AutoControlByNetwork && string.IsNullOrWhiteSpace(AutoControlNetworkName))
             errors.Add("自動で開始・停止するネットワークを選んでください。");
 
@@ -164,6 +184,10 @@ public sealed record AppSettings
             TcpPort = TcpPort is >= 1 and <= 65535 ? TcpPort : defaults.TcpPort,
             DataLimitMegabytes = Math.Clamp(DataLimitMegabytes, 0, MaxDataLimitMegabytes),
             FailureThreshold = Math.Clamp(FailureThreshold, MinFailureThreshold, MaxFailureThreshold),
+            // 秒以下は画面で扱わないため切り捨て、曜日が無い場合は無効にする
+            WeeklyStopTime = new TimeOnly(WeeklyStopTime.Hour, WeeklyStopTime.Minute),
+            WeeklyStopDays = WeeklyStopDays & WeeklyDays.Everyday,
+            WeeklyStopEnabled = WeeklyStopEnabled && (WeeklyStopDays & WeeklyDays.Everyday) != WeeklyDays.None,
             // 名前が無いと判定できないため、手編集などで空になっていたら無効にする
             AutoControlNetworkName = AutoControlNetworkName?.Trim() ?? string.Empty,
             AutoControlByNetwork = AutoControlByNetwork && !string.IsNullOrWhiteSpace(AutoControlNetworkName),
