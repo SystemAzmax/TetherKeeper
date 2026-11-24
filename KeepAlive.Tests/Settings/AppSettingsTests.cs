@@ -179,6 +179,34 @@ public class AppSettingsTests
     }
 
     [Fact]
+    public void Validate_RejectsFallbackSameAsMethod()
+    {
+        var settings = new AppSettings { Method = KeepAliveMethod.Ping, FallbackMethod = KeepAliveMethod.Ping };
+
+        Assert.Contains(settings.Validate(), e => e.Contains("別の方式"));
+    }
+
+    [Fact]
+    public void Validate_ChecksDestinationOfFallbackMethod()
+    {
+        var settings = new AppSettings { Method = KeepAliveMethod.Ping, FallbackMethod = KeepAliveMethod.HttpHead, HttpUrl = "" };
+
+        Assert.Contains(settings.Validate(), e => e.Contains("URL"));
+        Assert.Empty((settings with { HttpUrl = "http://example.com/" }).Validate());
+    }
+
+    [Fact]
+    public void Normalize_ClearsInvalidFallback()
+    {
+        Assert.Null(new AppSettings { Method = KeepAliveMethod.Ping, FallbackMethod = KeepAliveMethod.Ping }.Normalize().FallbackMethod);
+        Assert.Null(new AppSettings { FallbackMethod = (KeepAliveMethod)99 }.Normalize().FallbackMethod);
+        Assert.Equal(
+            KeepAliveMethod.HttpHead,
+            new AppSettings { Method = KeepAliveMethod.Ping, FallbackMethod = KeepAliveMethod.HttpHead }.Normalize().FallbackMethod);
+        Assert.Null(new AppSettings().FallbackMethod);
+    }
+
+    [Fact]
     public void Validate_RequiresWeeklyStopDays_WhenWeeklyStopIsOn()
     {
         Assert.Contains(

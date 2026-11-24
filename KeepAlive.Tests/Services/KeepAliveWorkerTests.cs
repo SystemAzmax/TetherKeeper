@@ -185,6 +185,80 @@ public sealed class KeepAliveWorkerTests : IAsyncDisposable
     }
 
     [Fact]
+    public async Task Fallback_SucceedsAfterPrimaryFailure_CountsAsSuccess()
+    {
+        await _settings.SaveAsync(_settings.Current with { FallbackMethod = KeepAliveMethod.TcpConnect });
+        _ping.NextSuccess = false;
+        KeepAliveResult? received = null;
+        _worker.ResultReceived += (_, r) => received = r;
+
+        _worker.Start();
+        await TestHelpers.WaitUntilAsync(() => _worker.Statistics.TotalCount == 1);
+
+        var stats = _worker.Statistics;
+        Assert.Equal(1, _tcp.ExecutionCount);
+        Assert.Equal(1, stats.SuccessCount);
+        Assert.Equal(1, stats.FallbackSuccessCount);
+        Assert.Equal(0, stats.ConsecutiveFailures);
+        Assert.True(stats.LastResult?.UsedFallback);
+        Assert.Equal("FakeTcpConnect", stats.LastResult?.StrategyName);
+        await TestHelpers.WaitUntilAsync(() => received is not null);
+        Assert.True(received!.Success);
+        Assert.Contains(_log.GetEntries(), e => e.Message.Contains("予備の通信方式でやり直します"));
+        Assert.Contains(_log.GetEntries(), e => e.Message.StartsWith("予備で成功: FakeTcpConnect"));
+    }
+
+    [Fact]
+    public async Task Fallback_BothFail_CountsAsOneFailure()
+    {
+        await _settings.SaveAsync(_settings.Current with { FallbackMethod = KeepAliveMethod.TcpConnect });
+        _ping.NextSuccess = false;
+        _tcp.NextSuccess = false;
+
+        _worker.Start();
+        await TestHelpers.WaitUntilAsync(() => _worker.Statistics.TotalCount == 1);
+
+        var stats = _worker.Statistics;
+        Assert.Equal(1, stats.FailureCount);
+        Assert.Equal(1, stats.ConsecutiveFailures);
+        Assert.Equal(0, stats.FallbackSuccessCount);
+        Assert.Equal("FakePing", stats.LastResult?.StrategyName);
+        Assert.Contains("予備の FakeTcpConnect も失敗", stats.LastResult?.Message);
+        Assert.Contains(_log.GetEntries(), e => e.Level == LogLevelKind.Warning && e.Message.StartsWith("予備も失敗"));
+    }
+
+    [Fact]
+    public async Task Fallback_IsNotUsed_WhenPrimarySucceeds_OrNotConfigured()
+    {
+        await _settings.SaveAsync(_settings.Current with { FallbackMethod = KeepAliveMethod.TcpConnect });
+        _worker.Start();
+        await TestHelpers.WaitUntilAsync(() => _worker.Statistics.TotalCount == 1);
+        Assert.Equal(0, _tcp.ExecutionCount);
+        await _worker.StopAsync();
+
+        await _settings.SaveAsync(_settings.Current with { FallbackMethod = null });
+        _ping.NextSuccess = false;
+        _worker.Start();
+        await TestHelpers.WaitUntilAsync(() => _worker.Statistics.TotalCount == 2);
+
+        Assert.Equal(0, _tcp.ExecutionCount);
+        Assert.Equal(1, _worker.Statistics.ConsecutiveFailures);
+    }
+
+    [Fact]
+    public async Task FallbackSettingChange_DoesNotExecute()
+    {
+        _worker.Start();
+        await TestHelpers.WaitUntilAsync(() => _ping.ExecutionCount == 1);
+
+        await _settings.SaveAsync(_settings.Current with { FallbackMethod = KeepAliveMethod.TcpConnect });
+        await Task.Delay(100);
+
+        Assert.Equal(1, _ping.ExecutionCount);
+        Assert.Equal(0, _tcp.ExecutionCount);
+    }
+
+    [Fact]
     public async Task FailureNotificationSettingsChange_DoesNotExecute()
     {
         _worker.Start();

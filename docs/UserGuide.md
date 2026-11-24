@@ -81,7 +81,7 @@ Use "モニター" (Monitor) and "設定" (Settings) at the bottom of the window
 | 終了 (Exit) | Exits the app ("×" only moves the app to the tray; it does not exit) |
 | 自動停止 (Auto stop) | Choose a date and time and select "予約" (Schedule) to stop the keep-alive at that time. Select "1 時間後" (In 1 hour) or "2 時間後" (In 2 hours) to schedule a stop that long from now. The schedule is cleared when it stops. Select "解除" (Cancel) to cancel the schedule. The app does not exit (it exits if you turn on "自動停止したらアプリも終了する" (Exit the app when it stops automatically) on the Settings screen). If you use the weekly auto stop, its schedule is also shown |
 | 通信量 (Data usage) | The total data counted while the keep-alive is running. If you set a limit on the Settings screen, the keep-alive stops when it reaches the limit. Select "リセット" (Reset) to set it back to 0 |
-| 合計 / 成功 / 失敗 / 連続失敗 (Total / Succeeded / Failed / Consecutive failures) | Number of runs. Select "統計リセット" (Reset statistics) to set them back to 0 |
+| 合計 / 成功 / 失敗 / 連続失敗 (Total / Succeeded / Failed / Consecutive failures) | Number of runs. A run that succeeds with the fallback method counts as succeeded, and that number is shown below. Select "統計リセット" (Reset statistics) to set them back to 0 |
 | ログ (Log) | Records such as the results of each run. "ログ消去" (Clear log) clears only the log on the screen (the log files remain). "保存先" (Location) opens the folder where the logs and settings are saved |
 
 About data usage:
@@ -98,6 +98,7 @@ After making changes, select "保存" (Save). "既定値に戻す" (Restore defa
 | Item | Description |
 | --- | --- |
 | 通信方式 (Method) | Choose "Ping (ICMP)", "HTTP HEAD", or "TCP Connect". The default is "Ping (ICMP)" |
+| 予備の通信方式 (Fallback method) | Only when the method fails, the app tries once more with this method. A run counts as failed only when both fail. The destination is taken from that method's field. The default is "使わない" (Don't use) (see ["失敗" (Failed) keeps appearing](#失敗-failed-keeps-appearing)) |
 | Ping 送信先（ホスト名 / IP アドレス） (Ping destination: host name or IP address) | Where to send pings. The default is `1.1.1.1` |
 | HTTP HEAD 送信先 URL (HTTP HEAD destination URL) | Where to send HTTP HEAD requests. The default is `http://www.msftconnecttest.com/connecttest.txt` |
 | TCP 接続先ホスト / ポート (TCP host / port) | Where to connect with TCP Connect. The defaults are `1.1.1.1` and `443` |
@@ -144,6 +145,7 @@ When the app starts at Windows sign-in, it starts in the tray without showing th
 - If "Ping (ICMP)" fails, the network may be blocking ICMP. Try switching to "HTTP HEAD" on the Settings screen.
 - On networks that use a proxy, such as at work, use "HTTP HEAD".
 - If you changed the destination, check that it is correct. "既定値に戻す" (Restore defaults) brings back the default destinations.
+- Sometimes only one method fails, because of a problem at the destination or because the network blocks it. If you choose a "予備の通信方式" (Fallback method), the app tries again with another method when a run fails, and the run counts as succeeded if the connection is working (the log shows "予備で成功" (Succeeded with fallback)). If the fallback keeps succeeding, switching the method to the fallback method reduces the extra traffic from retrying.
 
 ### Failures continue, but no notification appears
 

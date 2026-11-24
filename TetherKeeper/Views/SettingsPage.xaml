@@ -32,6 +32,13 @@
                     SelectedItem="{Binding SelectedMethod}" />
             <Label Text="{Binding MethodDescription}" Style="{StaticResource Hint}" />
 
+            <Label Text="予備の通信方式" Style="{StaticResource FieldLabel}" />
+            <Picker ItemsSource="{Binding FallbackOptions}"
+                    ItemDisplayBinding="{Binding DisplayName, x:DataType=vm:FallbackOption}"
+                    SelectedItem="{Binding SelectedFallback}" />
+            <Label Text="通信方式で失敗したときだけ、この方式（送信先は下のこの方式の欄）で 1 回やり直し、どちらも失敗したときだけ「失敗」とします。送信先の障害や ICMP の遮断で 1 つの方式だけが失敗する場合に、回線の切断と区別できます。やり直した分だけ通信量が増えます。"
+                   Style="{StaticResource Hint}" />
+
             <VerticalStackLayout IsVisible="{Binding IsPing}" Spacing="4">
                 <Label Text="Ping 送信先（ホスト名 / IP アドレス）" Style="{StaticResource FieldLabel}" />
                 <Entry Text="{Binding PingHost}" Placeholder="1.1.1.1" />

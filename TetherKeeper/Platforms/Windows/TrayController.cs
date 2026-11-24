@@ -176,7 +176,7 @@ internal sealed class TrayController
             : "状態: 動作中";
 
         if (statistics.LastResult is { } last)
-            yield return $"最後の結果: {last.Timestamp.ToLocalTime():HH:mm:ss} {(last.Success ? "成功" : "失敗")}";
+            yield return $"最後の結果: {last.Timestamp.ToLocalTime():HH:mm:ss} {ViewModels.MainViewModel.FormatOutcome(last)}";
 
         if (isRunning && _worker.NextRunAt is { } next)
         {

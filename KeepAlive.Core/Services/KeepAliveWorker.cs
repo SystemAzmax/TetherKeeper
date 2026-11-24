@@ -45,6 +45,13 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
     /// </summary>
     private DateTimeOffset _weeklyStopBase;
 
+    /// <summary>
+    /// <see cref="_weeklyStopBase"/> を決めたときの毎週の自動停止の設定。
+    /// ループが新しい設定を読んだ時点で違っていれば、その時点を基準にし直す
+    /// (設定の変更通知より先にループが新しい設定を読んでも、古い基準で判定しないようにするため)。
+    /// </summary>
+    private (bool Enabled, TimeOnly Time, WeeklyDays Days) _weeklyStopKey;
+
     /// <summary>自動停止の日時とその理由。</summary>
     private readonly record struct ScheduledStop(DateTimeOffset At, AutoStopReason Reason);
 
@@ -116,6 +123,7 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
             while (_wake.Reader.TryRead(out _)) { }
             _runRequested = 0;
             _weeklyStopBase = startedAt;
+            _weeklyStopKey = WeeklyStopKey(s);
             var runCts = _runCts = new CancellationTokenSource();
             var token = runCts.Token;
             // 「開始」ログが初回結果より先に出るよう、ループ本体は開始通知の後に走らせる
@@ -349,10 +357,26 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
             return null;
 
         DateTimeOffset after;
-        lock (_gate) after = _weeklyStopBase;
+        lock (_gate)
+        {
+            // 動作中に毎週の設定が変わったら、変わったのを見た時点から数え直す
+            // (変える前に過ぎた時刻で、すぐに止まらないようにする)
+            var key = WeeklyStopKey(settings);
+            if (key != _weeklyStopKey)
+            {
+                _weeklyStopKey = key;
+                _weeklyStopBase = _timeProvider.GetUtcNow();
+            }
+
+            after = _weeklyStopBase;
+        }
+
         return WeeklySchedule.GetNextOccurrence(
             settings.WeeklyStopDays, settings.WeeklyStopTime, after, _timeProvider.LocalTimeZone);
     }
+
+    private static (bool Enabled, TimeOnly Time, WeeklyDays Days) WeeklyStopKey(AppSettings settings) =>
+        (settings.WeeklyStopEnabled, settings.WeeklyStopTime, settings.WeeklyStopDays);
 
     /// <summary>
     /// この実行で次に来る自動停止 (日時の予約と毎週の自動停止のうち早い方)。
@@ -433,40 +457,44 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
         }
     }
 
+    /// <summary>
+    /// 1 回分の通信をする。通信方式で失敗し、予備の通信方式 (<see cref="AppSettings.FallbackMethod"/>) があれば、
+    /// それで 1 回やり直す。どちらも失敗したときだけ失敗として数える。
+    /// </summary>
     private async Task ExecuteOnceAsync(AppSettings settings, CancellationToken cancellationToken)
     {
-        IKeepAliveStrategy? strategy = null;
-        var timestamp = _timeProvider.GetLocalNow();
-        var started = _timeProvider.GetTimestamp();
-        KeepAliveResult result;
+        var result = await RunStrategyAsync(settings.Method, cancellationToken).ConfigureAwait(false);
+        var fallbackMethod = settings.FallbackMethod is { } method && method != settings.Method ? method : (KeepAliveMethod?)null;
 
-        try
+        if (result.Success)
         {
-            strategy = _resolver.Resolve(settings.Method);
-            result = await strategy.ExecuteAsync(cancellationToken).ConfigureAwait(false);
+            _log.Info($"成功: {Describe(result)}");
         }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        else if (fallbackMethod is null)
         {
-            throw;
+            _log.Warning($"失敗: {Describe(result)}");
         }
-        catch (Exception ex)
+        else
         {
-            // Strategy の想定外例外でループ全体を止めない
-            result = KeepAliveResult.Failed(
-                strategy?.Name ?? settings.Method.ToString(), "-", timestamp, _timeProvider.GetElapsedTime(started),
-                $"予期しないエラー: {ex.GetType().Name}: {ex.Message}");
+            // 予備で成功すれば、回線はつながっている (送信先や方式だけの問題) とみなし、成功として数える
+            _log.Warning($"失敗: {Describe(result)}。予備の通信方式でやり直します。");
+            var fallback = await RunStrategyAsync(fallbackMethod.Value, cancellationToken).ConfigureAwait(false);
+            if (fallback.Success)
+            {
+                _log.Info($"予備で成功: {Describe(fallback)}");
+                result = fallback with { UsedFallback = true };
+            }
+            else
+            {
+                _log.Warning($"予備も失敗: {Describe(fallback)}");
+                result = result with { Message = $"{result.Message}（予備の {fallback.StrategyName} も失敗: {fallback.Message}）" };
+            }
         }
 
         lock (_gate)
         {
             _statistics = _statistics.Add(result);
         }
-
-        var detail = $"{result.StrategyName} {result.Target} ({result.Elapsed.TotalMilliseconds:F0} ms)";
-        if (result.Success)
-            _log.Info($"成功: {detail} {result.Message}".TrimEnd());
-        else
-            _log.Warning($"失敗: {detail} {result.Message}".TrimEnd());
 
         try
         {
@@ -478,6 +506,34 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
             _log.Error($"実行結果の通知先でエラーが発生しました: {ex.GetType().Name}: {ex.Message}");
         }
     }
+
+    /// <summary>指定した方式で 1 回通信する。Strategy の想定外の例外は、失敗の結果にする。</summary>
+    private async Task<KeepAliveResult> RunStrategyAsync(KeepAliveMethod method, CancellationToken cancellationToken)
+    {
+        IKeepAliveStrategy? strategy = null;
+        var timestamp = _timeProvider.GetLocalNow();
+        var started = _timeProvider.GetTimestamp();
+
+        try
+        {
+            strategy = _resolver.Resolve(method);
+            return await strategy.ExecuteAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            // Strategy の想定外例外でループ全体を止めない
+            return KeepAliveResult.Failed(
+                strategy?.Name ?? method.ToString(), "-", timestamp, _timeProvider.GetElapsedTime(started),
+                $"予期しないエラー: {ex.GetType().Name}: {ex.Message}");
+        }
+    }
+
+    private static string Describe(KeepAliveResult result) =>
+        $"{result.StrategyName} {result.Target} ({result.Elapsed.TotalMilliseconds:F0} ms) {result.Message}".TrimEnd();
 
     private void RaiseStateChanged()
     {
@@ -554,15 +610,9 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
         if (previous.PreventSleepWhileRunning != settings.PreventSleepWhileRunning)
             UpdateSleepInhibition();
 
-        if (previous.WeeklyStopEnabled != settings.WeeklyStopEnabled
-            || previous.WeeklyStopTime != settings.WeeklyStopTime
-            || previous.WeeklyStopDays != settings.WeeklyStopDays)
-        {
-            // 変えた時点より後の時刻から数え直す (変える前に過ぎた時刻で、すぐに止まらないようにする)
-            var now = _timeProvider.GetUtcNow();
-            lock (_gate) _weeklyStopBase = now;
-            LogWeeklyStop(settings, now);
-        }
+        // 数え直しの基準は GetNextWeeklyStop で更新する。ここでは次の停止日時をログに残すだけ
+        if (WeeklyStopKey(previous) != WeeklyStopKey(settings))
+            LogWeeklyStop(settings, _timeProvider.GetUtcNow());
 
         if (WithoutNonCommunicationSettings(previous) == WithoutNonCommunicationSettings(settings))
         {
@@ -584,6 +634,8 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
         settings with
         {
             AutoStopAt = null,
+            // 予備の方式は失敗したときだけ使うため、変えても今すぐ通信し直す必要はない
+            FallbackMethod = null,
             WeeklyStopEnabled = false,
             WeeklyStopTime = default,
             WeeklyStopDays = WeeklyDays.None,

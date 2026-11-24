@@ -20,6 +20,12 @@ public sealed record KeepAliveResult
     /// <summary>補足情報 (応答ステータス、エラー内容など)。</summary>
     public string? Message { get; init; }
 
+    /// <summary>
+    /// 通信方式で失敗したあと、予備の通信方式 (<see cref="AppSettings.FallbackMethod"/>) でやり直した結果か。
+    /// このとき <see cref="StrategyName"/> などは予備の方式のもの。
+    /// </summary>
+    public bool UsedFallback { get; init; }
+
     public static KeepAliveResult Succeeded(
         string strategyName, string target, DateTimeOffset timestamp, TimeSpan elapsed, string? message = null) =>
         new()

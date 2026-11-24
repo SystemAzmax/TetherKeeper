@@ -146,6 +146,13 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     public partial string LastResultText { get; set; } = "まだ実行していません";
 
+    /// <summary>予備の通信方式で成功した回数 (0 回のときは空)。</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasFallbackSuccess))]
+    public partial string FallbackSuccessText { get; set; } = string.Empty;
+
+    public bool HasFallbackSuccess => FallbackSuccessText.Length > 0;
+
     /// <summary>
     /// 初回表示時に 1 度だけ呼ぶ。設定を読み込み、必要なら自動開始する。
     /// </summary>
@@ -402,8 +409,11 @@ public partial class MainViewModel : ObservableObject, IDisposable
         ConsecutiveFailures = stats.ConsecutiveFailures;
 
         LastResultText = stats.LastResult is { } last
-            ? $"{last.Timestamp:HH:mm:ss} {(last.Success ? "成功" : "失敗")} — {last.Message}"
+            ? $"{last.Timestamp:HH:mm:ss} {FormatOutcome(last)} — {last.Message}"
             : "まだ実行していません";
+        FallbackSuccessText = stats.FallbackSuccessCount > 0
+            ? $"成功のうち、予備の通信方式で成功: {stats.FallbackSuccessCount} 回"
+            : string.Empty;
 
         if (!IsRunning)
         {
@@ -421,6 +431,12 @@ public partial class MainViewModel : ObservableObject, IDisposable
             StatusColor = RunningColor;
         }
     }
+
+    /// <summary>結果の成否 (予備の通信方式で成功した場合は、その方式も出す)。</summary>
+    public static string FormatOutcome(KeepAliveResult result) =>
+        !result.Success ? "失敗"
+        : result.UsedFallback ? $"成功（予備の {result.StrategyName}）"
+        : "成功";
 
     private static LogLine ToLogLine(LogEntry entry) => new(
         entry,

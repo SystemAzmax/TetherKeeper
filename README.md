@@ -15,6 +15,7 @@ The app's screens are in Japanese only.
   - **Ping (ICMP)**: Uses the least data and doesn't require administrator rights (default)
   - **HTTP HEAD**: For networks that block ICMP or use a proxy
   - **TCP Connect**: Disconnects as soon as the connection is established
+- Optional fallback method: only when the method fails, the app tries once more with another method, and records a failure only when both fail
 - Configurable interval (5 to 3600 seconds) and timeout
 - Shows the number of successes and failures, consecutive failures, and the log
 - "今すぐ実行" (Run now) button

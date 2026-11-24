@@ -21,6 +21,13 @@ public sealed record AppSettings
     /// <summary>使用する通信方式。</summary>
     public KeepAliveMethod Method { get; init; } = KeepAliveMethod.Ping;
 
+    /// <summary>
+    /// 予備の通信方式。<see cref="Method"/> で失敗したときだけ、この方式 (送信先はこの方式の設定) で 1 回やり直し、
+    /// どちらも失敗したときだけ失敗とする。null は予備を使わない。
+    /// 送信先の障害や ICMP の遮断などで 1 つの方式だけが失敗する場合と、回線そのものの切断を区別するため。
+    /// </summary>
+    public KeepAliveMethod? FallbackMethod { get; init; }
+
     /// <summary>実行間隔 (秒)。</summary>
     public int IntervalSeconds { get; init; } = 30;
 
@@ -139,7 +146,24 @@ public sealed record AppSettings
         if (AutoControlByNetwork && string.IsNullOrWhiteSpace(AutoControlNetworkName))
             errors.Add("自動で開始・停止するネットワークを選んでください。");
 
-        switch (Method)
+        // 送信先は、使う方式 (通信方式と予備の通信方式) の分だけ確かめる
+        ValidateDestination(Method, errors);
+        if (FallbackMethod is { } fallback)
+        {
+            if (!Enum.IsDefined(fallback))
+                errors.Add("予備の通信方式が不正です。");
+            else if (fallback == Method)
+                errors.Add("予備の通信方式には、通信方式と別の方式を選んでください。");
+            else
+                ValidateDestination(fallback, errors);
+        }
+
+        return errors;
+    }
+
+    private void ValidateDestination(KeepAliveMethod method, List<string> errors)
+    {
+        switch (method)
         {
             case KeepAliveMethod.Ping when string.IsNullOrWhiteSpace(PingHost):
                 errors.Add("Ping の送信先を入力してください。");
@@ -158,8 +182,6 @@ public sealed record AppSettings
                 errors.Add("TCP のポートは 1〜65535 で指定してください。");
                 break;
         }
-
-        return errors;
     }
 
     /// <summary>
@@ -173,9 +195,12 @@ public sealed record AppSettings
         if (timeout >= interval * 1000)
             timeout = Math.Max(MinTimeoutMilliseconds, interval * 1000 / 2);
 
+        var method = Enum.IsDefined(Method) ? Method : defaults.Method;
         return this with
         {
-            Method = Enum.IsDefined(Method) ? Method : defaults.Method,
+            Method = method,
+            // 不正な値や、通信方式と同じ方式は、予備なしにする
+            FallbackMethod = FallbackMethod is { } fallback && Enum.IsDefined(fallback) && fallback != method ? fallback : null,
             IntervalSeconds = interval,
             TimeoutMilliseconds = timeout,
             PingHost = string.IsNullOrWhiteSpace(PingHost) ? defaults.PingHost : PingHost.Trim(),

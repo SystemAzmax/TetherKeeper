@@ -7,6 +7,9 @@ namespace TetherKeeper.ViewModels;
 
 public sealed record MethodOption(KeepAliveMethod Method, string DisplayName, string Description);
 
+/// <summary>予備の通信方式の選択肢。<see cref="Method"/> が null なら「使わない」。</summary>
+public sealed record FallbackOption(KeepAliveMethod? Method, string DisplayName);
+
 /// <summary>毎週の自動停止の曜日のチェックボックス 1 つ分。</summary>
 public sealed partial class WeeklyDayOption(DayOfWeek day) : ObservableObject
 {
@@ -38,6 +41,7 @@ public partial class SettingsViewModel : ObservableObject
         _log = log;
         _sleepInhibitor = sleepInhibitor;
         _networkMonitor = networkMonitor;
+        SelectedFallback = FallbackOptions[0];
         SelectedMethod = Methods[0];
         Load(_settings.Current);
         _ = RefreshLaunchAtLoginAsync();
@@ -81,6 +85,26 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsPing), nameof(IsHttpHead), nameof(IsTcpConnect), nameof(MethodDescription))]
     public partial MethodOption SelectedMethod { get; set; }
+
+    /// <summary>予備の通信方式の選択肢 (先頭は「使わない」)。</summary>
+    public IReadOnlyList<FallbackOption> FallbackOptions { get; } =
+    [
+        new(null, "使わない"),
+        new(KeepAliveMethod.Ping, "Ping (ICMP)"),
+        new(KeepAliveMethod.HttpHead, "HTTP HEAD"),
+        new(KeepAliveMethod.TcpConnect, "TCP Connect"),
+    ];
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsPing), nameof(IsHttpHead), nameof(IsTcpConnect))]
+    public partial FallbackOption SelectedFallback { get; set; }
+
+    partial void OnSelectedMethodChanged(MethodOption value)
+    {
+        // 通信方式と同じ方式は予備にできないため、同じになったら「使わない」に戻す
+        if (SelectedFallback?.Method == value.Method)
+            SelectedFallback = FallbackOptions[0];
+    }
 
     [ObservableProperty]
     public partial string IntervalSeconds { get; set; } = string.Empty;
@@ -141,11 +165,15 @@ public partial class SettingsViewModel : ObservableObject
 
     public bool HasErrors => ErrorText.Length > 0;
 
-    public bool IsPing => SelectedMethod.Method == KeepAliveMethod.Ping;
+    // 送信先の入力欄は、通信方式か予備の通信方式で使う方式の分だけ表示する
+    public bool IsPing => UsesMethod(KeepAliveMethod.Ping);
 
-    public bool IsHttpHead => SelectedMethod.Method == KeepAliveMethod.HttpHead;
+    public bool IsHttpHead => UsesMethod(KeepAliveMethod.HttpHead);
 
-    public bool IsTcpConnect => SelectedMethod.Method == KeepAliveMethod.TcpConnect;
+    public bool IsTcpConnect => UsesMethod(KeepAliveMethod.TcpConnect);
+
+    private bool UsesMethod(KeepAliveMethod method) =>
+        SelectedMethod?.Method == method || SelectedFallback?.Method == method;
 
     public string MethodDescription => SelectedMethod.Description;
 
@@ -199,6 +227,7 @@ public partial class SettingsViewModel : ObservableObject
         // この画面で扱う項目だけを、保存直前の最新の設定に上書きする
         // (自動停止日時などモニター画面側で変わる項目を、画面を開いた時点の古い値で戻さないため)
         var method = SelectedMethod.Method;
+        var fallbackMethod = SelectedFallback.Method;
         var pingHost = PingHost.Trim();
         var httpUrl = HttpUrl.Trim();
         var tcpHost = TcpHost.Trim();
@@ -219,6 +248,7 @@ public partial class SettingsViewModel : ObservableObject
         var errors = await _settings.UpdateAsync(current => current with
         {
             Method = method,
+            FallbackMethod = fallbackMethod,
             IntervalSeconds = interval,
             TimeoutMilliseconds = timeout,
             PingHost = pingHost,
@@ -264,6 +294,7 @@ public partial class SettingsViewModel : ObservableObject
     private void Load(AppSettings settings)
     {
         SelectedMethod = Methods.FirstOrDefault(m => m.Method == settings.Method) ?? Methods[0];
+        SelectedFallback = FallbackOptions.FirstOrDefault(f => f.Method == settings.FallbackMethod) ?? FallbackOptions[0];
         IntervalSeconds = settings.IntervalSeconds.ToString();
         TimeoutMilliseconds = settings.TimeoutMilliseconds.ToString();
         PingHost = settings.PingHost;

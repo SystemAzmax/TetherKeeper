@@ -31,6 +31,7 @@ SystemAzmax（以下「開発者」）は、Windows 用アプリ「テザリン�
 - インターネットの通信の仕組み上、送信先には、利用者の IP アドレスと通信した日時が伝わります。
   送信先での情報の取り扱いは、送信先の運営者の方針に従います。
 - 送信先は、利用者が「設定」画面で変更できます。送信先にホスト名を指定した場合は、その名前を DNS で問い合わせます。
+- 利用者が「予備の通信方式」を選んだ場合は、通信方式で失敗したときだけ、予備の方式の送信先にも同じように通信します。
 
 「使い方」ボタンを押すと、使い方ガイド（GitHub のページ）を Web ブラウザーで開きます。
 
@@ -97,6 +98,7 @@ The destinations and the content of the traffic are as follows.
 - Because of how internet communication works, the destination receives your IP address and the time of the communication.
   The destination handles this information in accordance with its operator's policies.
 - You can change the destinations on the "設定" (Settings) screen. If you specify a host name as the destination, the app looks up that name using DNS.
+- If you choose a "予備の通信方式" (Fallback method), the app also sends the same kind of traffic to the destination of the fallback method, but only when the main method fails.
 
 When you select the "使い方" (User guide) button, the app opens the user guide (a GitHub page) in your web browser.
 
