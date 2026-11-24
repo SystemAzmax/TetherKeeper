@@ -12,6 +12,9 @@ namespace TetherKeeper
     {
         public static MauiApp CreateMauiApp()
         {
+            // 設定で選んだ表示言語を、画面を作る前に反映する (Windows では App のコンストラクターでも反映済み)
+            AppLanguageStartup.ApplySavedLanguage();
+
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()

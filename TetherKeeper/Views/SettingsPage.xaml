@@ -27,6 +27,14 @@
     <ScrollView>
         <VerticalStackLayout Padding="16" Spacing="4" MaximumWidthRequest="640">
 
+            <!-- 表示言語。見出しには英語の「Language」を添え、選択肢は各言語自身の名前にする
+                 (読めない言語を選んでしまっても、元に戻せるようにするため) -->
+            <Label Text="{x:Static res:AppStrings.Settings_Language}" Style="{StaticResource FieldLabel}" />
+            <Picker ItemsSource="{Binding LanguageOptions}"
+                    ItemDisplayBinding="{Binding DisplayName, x:DataType=vm:LanguageOption}"
+                    SelectedItem="{Binding SelectedLanguage}" />
+            <Label Text="{x:Static res:AppStrings.Settings_LanguageHint}" Style="{StaticResource Hint}" />
+
             <Label Text="{x:Static res:AppStrings.Settings_Method}" Style="{StaticResource FieldLabel}" />
             <Picker ItemsSource="{Binding Methods}"
                     ItemDisplayBinding="{Binding DisplayName, x:DataType=vm:MethodOption}"

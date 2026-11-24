@@ -515,4 +515,33 @@ URL: {0}
   <data name="StartupTask_EnableFailed" xml:space="preserve">
     <value>自動起動を有効にできませんでした (状態: {0})。</value>
   </data>
+  <data name="Settings_Language" xml:space="preserve">
+    <value>言語（Language）</value>
+  </data>
+  <data name="Settings_LanguageHint" xml:space="preserve">
+    <value>アプリを再起動すると切り替わります。スタート メニューなどに出るアプリ名は、Windows の表示言語に従います。</value>
+  </data>
+  <data name="Language_System" xml:space="preserve">
+    <value>Windows の表示言語に合わせる</value>
+  </data>
+  <data name="Language_RestartTitle" xml:space="preserve">
+    <value>言語</value>
+  </data>
+  <data name="Language_RestartMessage" xml:space="preserve">
+    <value>言語は、アプリを再起動すると切り替わります。今すぐ再起動しますか？
+
+動作中のキープアライブは、いったん停止します。自動で開始する設定なら、再起動後に開始します。</value>
+  </data>
+  <data name="Language_RestartNow" xml:space="preserve">
+    <value>今すぐ再起動</value>
+  </data>
+  <data name="Language_RestartLater" xml:space="preserve">
+    <value>あとで</value>
+  </data>
+  <data name="Language_AppliesNextStart" xml:space="preserve">
+    <value>保存しました。言語は次に起動したときに切り替わります。</value>
+  </data>
+  <data name="Language_RestartFailed" xml:space="preserve">
+    <value>アプリを再起動できませんでした ({0})。手動で起動し直してください。</value>
+  </data>
 </root>

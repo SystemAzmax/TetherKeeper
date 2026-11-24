@@ -15,9 +15,6 @@ public static class ResultCsv
 {
     private const string TimestampFormat = "yyyy/MM/dd HH:mm:ss";
 
-    /// <summary>リソースを用意している言語 (既定の英語と日本語)。</summary>
-    private static readonly CultureInfo[] ResourceCultures = [CultureInfo.InvariantCulture, CultureInfo.GetCultureInfo("ja")];
-
     private static readonly HashSet<string> SuccessTexts = AllTranslations(nameof(CoreStrings.Csv_Success));
     private static readonly HashSet<string> FailureTexts = AllTranslations(nameof(CoreStrings.Csv_Failure));
     private static readonly HashSet<string> FallbackTexts = AllTranslations(nameof(CoreStrings.Csv_Fallback));
@@ -26,7 +23,7 @@ public static class ResultCsv
     public static string Header => CoreStrings.Csv_Header;
 
     private static HashSet<string> AllTranslations(string name) =>
-        ResourceCultures
+        AppLanguages.ResourceCultures
             .Select(culture => CoreStrings.ResourceManager.GetString(name, culture))
             .OfType<string>()
             .ToHashSet(StringComparer.Ordinal);

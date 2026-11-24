@@ -5,7 +5,7 @@ English | [日本語](README_ja.md)
 iPhone Personal Hotspot (tethering), Wi-Fi routers, mobile connections, and some VPNs may drop the connection when there is no traffic for a while.
 TetherKeeper sends a small amount of traffic at regular intervals so that these idle disconnections are less likely to happen. Its Japanese name is テザリングキーパー, which Windows shows when the display language is Japanese.
 
-The app's screens are in English, or in Japanese when the Windows display language is Japanese.
+The app's screens are in English or Japanese. By default they follow the Windows display language, and you can change the language on the Settings screen.
 
 > There is no guarantee that tethering never drops.
 

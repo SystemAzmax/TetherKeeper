@@ -29,7 +29,18 @@ public sealed class AppExitService
     /// <summary>終了直前に発生する (タスクトレイアイコンの削除など後片付け用)。</summary>
     public event EventHandler? Exiting;
 
-    public async Task ExitAsync()
+    /// <summary>自分を再起動したときに、新しいプロセスに渡す起動引数。</summary>
+    public const string RestartArgument = "--restarted";
+
+    public Task ExitAsync() => ExitCoreAsync(restart: false);
+
+    /// <summary>
+    /// アプリを再起動する (表示言語を切り替えたときなど)。終了と同じ後片付け (停止、ログの書き出し、トレイアイコンの削除) をしてから再起動する。
+    /// 再起動できなかった場合は、ログに残して終了する。
+    /// </summary>
+    public Task RestartAsync() => ExitCoreAsync(restart: true);
+
+    private async Task ExitCoreAsync(bool restart)
     {
         if (IsExiting)
             return;
@@ -56,8 +67,32 @@ public sealed class AppExitService
         }
         finally
         {
+            if (restart)
+                await TryRestartAsync();
             Application.Current?.Quit();
         }
+    }
+
+    /// <summary>自分を再起動する。成功すると、このプロセスはここで終わる (戻らない)。失敗した場合は戻る。</summary>
+    private async Task TryRestartAsync()
+    {
+        string reason;
+        try
+        {
+#if WINDOWS
+            // パッケージ版・非パッケージ版のどちらでも使える Windows App SDK の再起動
+            reason = Microsoft.Windows.AppLifecycle.AppInstance.Restart(RestartArgument).ToString();
+#else
+            reason = "not supported";
+#endif
+        }
+        catch (Exception ex)
+        {
+            reason = ex.Message;
+        }
+
+        _log.Error(Text.Format(AppStrings.Language_RestartFailed, reason));
+        await Task.WhenAny(_log.FlushAsync(), Task.Delay(TimeSpan.FromSeconds(3)));
     }
 
     /// <summary>

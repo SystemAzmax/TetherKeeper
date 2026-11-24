@@ -515,4 +515,33 @@ If you can&apos;t find it, restart your PC.</value>
   <data name="StartupTask_EnableFailed" xml:space="preserve">
     <value>Couldn&apos;t turn on starting at sign-in (state: {0}).</value>
   </data>
+  <data name="Settings_Language" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="Settings_LanguageHint" xml:space="preserve">
+    <value>Changes take effect after the app restarts. The app name in the Start menu and other places follows the Windows display language.</value>
+  </data>
+  <data name="Language_System" xml:space="preserve">
+    <value>Use the Windows display language</value>
+  </data>
+  <data name="Language_RestartTitle" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="Language_RestartMessage" xml:space="preserve">
+    <value>The language changes when the app restarts. Restart now?
+
+The keep-alive stops for a moment. If it is set to start automatically, it starts again after the restart.</value>
+  </data>
+  <data name="Language_RestartNow" xml:space="preserve">
+    <value>Restart now</value>
+  </data>
+  <data name="Language_RestartLater" xml:space="preserve">
+    <value>Later</value>
+  </data>
+  <data name="Language_AppliesNextStart" xml:space="preserve">
+    <value>Saved. The language changes the next time the app starts.</value>
+  </data>
+  <data name="Language_RestartFailed" xml:space="preserve">
+    <value>Couldn&apos;t restart the app ({0}). Start it again yourself.</value>
+  </data>
 </root>

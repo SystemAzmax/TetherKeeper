@@ -8,6 +8,9 @@ namespace TetherKeeper.ViewModels;
 
 public sealed record MethodOption(KeepAliveMethod Method, string DisplayName, string Description);
 
+/// <summary>表示言語の選択肢。<see cref="Code"/> が空なら「Windows の表示言語に合わせる」。</summary>
+public sealed record LanguageOption(string Code, string DisplayName);
+
 /// <summary>予備の通信方式の選択肢。<see cref="Method"/> が null なら「使わない」。</summary>
 public sealed record FallbackOption(KeepAliveMethod? Method, string DisplayName);
 
@@ -42,6 +45,7 @@ public partial class SettingsViewModel : ObservableObject
         _log = log;
         _sleepInhibitor = sleepInhibitor;
         _networkMonitor = networkMonitor;
+        SelectedLanguage = LanguageOptions[0];
         SelectedFallback = FallbackOptions[0];
         SelectedMethod = Methods[0];
         Load(_settings.Current);
@@ -55,6 +59,22 @@ public partial class SettingsViewModel : ObservableObject
         new(KeepAliveMethod.HttpHead, "HTTP HEAD", AppStrings.Method_HttpDescription),
         new(KeepAliveMethod.TcpConnect, "TCP Connect", AppStrings.Method_TcpDescription),
     ];
+
+    /// <summary>
+    /// 表示言語の選択肢。先頭は「Windows の表示言語に合わせる」、続いて用意している言語を、その言語自身の名前で並べる
+    /// (今の表示言語が読めなくても、元の言語を選び直せるようにするため)。
+    /// </summary>
+    public IReadOnlyList<LanguageOption> LanguageOptions { get; } =
+    [
+        new(string.Empty, AppStrings.Language_System),
+        .. AppLanguages.Supported.Select(l => new LanguageOption(l.Code, l.NativeName)),
+    ];
+
+    [ObservableProperty]
+    public partial LanguageOption SelectedLanguage { get; set; }
+
+    /// <summary>表示言語を変えて保存した。アプリを再起動すると切り替わる。</summary>
+    public event EventHandler? LanguageChanged;
 
     public bool IsAutoStartSupported => _autoStart.IsSupported;
 
@@ -258,6 +278,8 @@ public partial class SettingsViewModel : ObservableObject
         // (自動停止日時などモニター画面側で変わる項目を、画面を開いた時点の古い値で戻さないため)
         var method = SelectedMethod.Method;
         var fallbackMethod = SelectedFallback.Method;
+        var language = SelectedLanguage.Code;
+        var previousLanguage = _settings.Current.Language;
         var pingHost = PingHost.Trim();
         var httpUrl = HttpUrl.Trim();
         var tcpHost = TcpHost.Trim();
@@ -277,6 +299,7 @@ public partial class SettingsViewModel : ObservableObject
         var launchAtLogin = LaunchAtLogin;
         var errors = await _settings.UpdateAsync(current => current with
         {
+            Language = language,
             Method = method,
             FallbackMethod = fallbackMethod,
             IntervalSeconds = interval,
@@ -311,6 +334,10 @@ public partial class SettingsViewModel : ObservableObject
         StatusMessage = Text.Format(AppStrings.Settings_SavedAt, DateTime.Now);
         Load(_settings.Current);
         await RefreshLaunchAtLoginAsync();
+
+        // 言語は再起動で切り替わるため、画面側で再起動するかを尋ねる
+        if (_settings.Current.Language != previousLanguage)
+            LanguageChanged?.Invoke(this, EventArgs.Empty);
     }
 
     [RelayCommand]
@@ -323,6 +350,7 @@ public partial class SettingsViewModel : ObservableObject
 
     private void Load(AppSettings settings)
     {
+        SelectedLanguage = LanguageOptions.FirstOrDefault(l => l.Code == settings.Language) ?? LanguageOptions[0];
         SelectedMethod = Methods.FirstOrDefault(m => m.Method == settings.Method) ?? Methods[0];
         SelectedFallback = FallbackOptions.FirstOrDefault(f => f.Method == settings.FallbackMethod) ?? FallbackOptions[0];
         IntervalSeconds = settings.IntervalSeconds.ToString();

@@ -5,7 +5,7 @@ English | [日本語](UserGuide_ja.md)
 TetherKeeper sends a small amount of traffic at regular intervals so that iPhone Personal Hotspot (tethering), Wi-Fi routers, mobile connections, and similar connections are less likely to drop when idle.
 It cannot guarantee that the connection never drops.
 
-The app's screens are in English. When the Windows display language is Japanese, they are in Japanese (see the [Japanese guide](UserGuide_ja.md)).
+By default, the app's screens follow the Windows display language (English, or Japanese when the display language is Japanese; see the [Japanese guide](UserGuide_ja.md)). You can change it in "Language" on the Settings screen.
 
 - [1. Getting Started](#1-getting-started)
 - [2. Screens and Features](#2-screens-and-features)
@@ -112,6 +112,7 @@ After making changes, select "Save". "Restore defaults" restores the default val
 
 | Item | Description |
 | --- | --- |
+| Language | The language of the screens. Choose "Use the Windows display language" (default), "English", or "日本語" (Japanese). When you save, the app asks whether to restart, and the language changes after the restart. The app name in the Start menu and other places follows the Windows display language |
 | Method | Choose "Ping (ICMP)", "HTTP HEAD", or "TCP Connect". The default is "Ping (ICMP)" |
 | Fallback method | Only when the method fails, the app tries once more with this method. A run counts as failed only when both fail. The destination is taken from that method's field. The default is "Don't use" (see ["Failed" keeps appearing](#failed-keeps-appearing)) |
 | Ping destination (host name / IP address) | Where to send pings. The default is `1.1.1.1` |

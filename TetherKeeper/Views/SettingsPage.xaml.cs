@@ -8,12 +8,40 @@ public partial class SettingsPage : ContentPage
 {
     private readonly SettingsViewModel _viewModel;
     private readonly ILogService _log;
+    private readonly AppExitService _exitService;
 
-    public SettingsPage(SettingsViewModel viewModel, ILogService log)
+    public SettingsPage(SettingsViewModel viewModel, ILogService log, AppExitService exitService)
     {
         InitializeComponent();
         BindingContext = _viewModel = viewModel;
         _log = log;
+        _exitService = exitService;
+        _viewModel.LanguageChanged += OnLanguageChanged;
+    }
+
+    /// <summary>
+    /// 表示言語を変えて保存したときに、今すぐ再起動するかを尋ねる。
+    /// 画面の文言はページを作るときに読み込むため、切り替えには再起動が必要になる。
+    /// </summary>
+    private async void OnLanguageChanged(object? sender, EventArgs e)
+    {
+        try
+        {
+            var restart = await DisplayAlertAsync(
+                AppStrings.Language_RestartTitle,
+                AppStrings.Language_RestartMessage,
+                AppStrings.Language_RestartNow,
+                AppStrings.Language_RestartLater);
+            if (restart)
+                await _exitService.RestartAsync();
+            else
+                _viewModel.StatusMessage = AppStrings.Language_AppliesNextStart;
+        }
+        catch (Exception ex)
+        {
+            // async void のため、例外を外に出すとアプリが落ちる
+            _log.Error(Text.Format(AppStrings.Language_RestartFailed, ex.Message));
+        }
     }
 
     protected override async void OnAppearing()

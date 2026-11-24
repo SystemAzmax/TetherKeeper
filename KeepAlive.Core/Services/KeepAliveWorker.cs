@@ -636,6 +636,7 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
         settings with
         {
             AutoStopAt = null,
+            Language = string.Empty,
             // 予備の方式は失敗したときだけ使うため、変えても今すぐ通信し直す必要はない
             FallbackMethod = null,
             WeeklyStopEnabled = false,

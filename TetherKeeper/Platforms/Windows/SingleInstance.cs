@@ -28,15 +28,30 @@ internal static class SingleInstance
     private static EventWaitHandle? _ackEvent;
     private static RegisteredWaitHandle? _registeredWait;
 
+    /// <summary>
+    /// 再起動のときに、前のプロセスが終わるのを待つ最長の時間。
+    /// 前のプロセスがまだ終わっていないと、多重起動とみなして新しいプロセスが終了してしまうため。
+    /// </summary>
+    private static readonly TimeSpan RestartWait = TimeSpan.FromSeconds(10);
+
     /// <summary>最初のインスタンスであれば true。</summary>
     public static bool TryAcquire()
     {
-        _mutex = new Mutex(initiallyOwned: true, MutexName, out var createdNew);
-        if (!createdNew)
+        // 言語の切り替えなどで自分を再起動した場合は、前のプロセスが終わるまで待つ
+        var restarted = Environment.GetCommandLineArgs().Contains(AppExitService.RestartArgument, StringComparer.OrdinalIgnoreCase);
+        var deadline = DateTime.UtcNow + (restarted ? RestartWait : TimeSpan.Zero);
+
+        while (true)
         {
+            _mutex = new Mutex(initiallyOwned: true, MutexName, out var createdNew);
+            if (createdNew)
+                break;
+
             _mutex.Dispose();
             _mutex = null;
-            return false;
+            if (DateTime.UtcNow >= deadline)
+                return false;
+            Thread.Sleep(200);
         }
 
         _activateEvent = new EventWaitHandle(false, EventResetMode.AutoReset, ActivateEventName);

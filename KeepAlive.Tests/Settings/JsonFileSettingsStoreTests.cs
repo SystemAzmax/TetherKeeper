@@ -39,6 +39,7 @@ public sealed class JsonFileSettingsStoreTests : IDisposable
             WeeklyStopTime = new TimeOnly(17, 45),
             WeeklyStopDays = WeeklyDays.Monday | WeeklyDays.Wednesday | WeeklyDays.Friday,
             ExitAppOnAutoStop = true,
+            Language = "ja",
         };
 
         await store.SaveAsync(settings);

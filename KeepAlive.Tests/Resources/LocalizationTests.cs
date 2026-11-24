@@ -10,8 +10,6 @@ namespace KeepAlive.Tests.Resources;
 
 public partial class LocalizationTests
 {
-    private static readonly CultureInfo Japanese = CultureInfo.GetCultureInfo("ja");
-
     [GeneratedRegex(@"\{(\d+)(:[^}]*)?\}")]
     private static partial Regex PlaceholderPattern();
 
@@ -27,25 +25,48 @@ public partial class LocalizationTests
         string.Join(",", PlaceholderPattern().Matches(text).Select(m => m.Groups[1].Value).Distinct().Order());
 
     [Fact]
-    public void CoreStrings_EnglishAndJapanese_HaveSameKeysAndPlaceholders()
+    public void CoreStrings_AllLanguages_HaveSameKeysAndPlaceholdersAsEnglish()
     {
         var english = Load(CoreStrings.ResourceManager, CultureInfo.InvariantCulture);
-        var japanese = Load(CoreStrings.ResourceManager, Japanese);
 
-        Assert.Equal(english.Keys.Order(), japanese.Keys.Order());
-        foreach (var (key, text) in english)
+        // 言語を足したら、その言語も自動で確かめる (AppLanguages.Supported)
+        foreach (var culture in AppLanguages.ResourceCultures.Where(c => !Equals(c, CultureInfo.InvariantCulture)))
         {
-            Assert.False(string.IsNullOrWhiteSpace(text), key);
-            // 埋め込む値の番号がずれていると、言語によって表示が崩れたり例外になったりする
-            Assert.True(Placeholders(text) == Placeholders(japanese[key]), $"{key}: {text} / {japanese[key]}");
+            var translated = Load(CoreStrings.ResourceManager, culture);
+            Assert.Equal(english.Keys.Order(), translated.Keys.Order());
+            foreach (var (key, text) in english)
+            {
+                Assert.False(string.IsNullOrWhiteSpace(text), key);
+                // 埋め込む値の番号がずれていると、言語によって表示が崩れたり例外になったりする
+                Assert.True(Placeholders(text) == Placeholders(translated[key]), $"{culture.Name} {key}: {text} / {translated[key]}");
+            }
         }
     }
 
     [Fact]
     public void DayNames_HaveSevenDaysInEachLanguage()
     {
-        foreach (var culture in new[] { CultureInfo.InvariantCulture, Japanese })
+        foreach (var culture in AppLanguages.ResourceCultures)
             Assert.Equal(7, CoreStrings.ResourceManager.GetString(nameof(CoreStrings.Weekly_DayNames), culture)!.Split(',').Length);
+    }
+
+    [Fact]
+    public void AppLanguages_StartWithDefaultLanguage_AndResolveOnlySupportedCodes()
+    {
+        Assert.Equal(AppLanguages.DefaultCode, AppLanguages.Supported[0].Code);
+        Assert.Equal("ja", AppLanguages.Resolve("ja")?.Name);
+        Assert.Equal("ja", AppLanguages.Resolve("JA")?.Name);
+        Assert.Null(AppLanguages.Resolve(""));
+        Assert.Null(AppLanguages.Resolve("fr"));
+        Assert.Null(AppLanguages.Resolve(null));
+    }
+
+    [Fact]
+    public void Settings_Normalize_ClearsUnsupportedLanguage()
+    {
+        Assert.Equal(string.Empty, new AppSettings().Language);
+        Assert.Equal("ja", new AppSettings { Language = " JA " }.Normalize().Language);
+        Assert.Equal(string.Empty, new AppSettings { Language = "fr" }.Normalize().Language);
     }
 
     [Fact]

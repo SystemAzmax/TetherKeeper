@@ -18,6 +18,12 @@ public sealed record AppSettings
     /// </summary>
     public const long BytesPerMegabyte = 1_000_000;
 
+    /// <summary>
+    /// 表示言語のコード (<see cref="AppLanguages.Supported"/> のどれか)。空は Windows の表示言語に合わせる。
+    /// 画面の文言は作るときに読み込むため、変えたらアプリを再起動して反映する。
+    /// </summary>
+    public string Language { get; init; } = string.Empty;
+
     /// <summary>使用する通信方式。</summary>
     public KeepAliveMethod Method { get; init; } = KeepAliveMethod.Ping;
 
@@ -198,6 +204,8 @@ public sealed record AppSettings
         var method = Enum.IsDefined(Method) ? Method : defaults.Method;
         return this with
         {
+            // 用意していない言語 (手編集や、言語を減らした場合) は、Windows の表示言語に合わせる
+            Language = AppLanguages.IsSupported(Language?.Trim()) ? Language!.Trim().ToLowerInvariant() : string.Empty,
             Method = method,
             // 不正な値や、通信方式と同じ方式は、予備なしにする
             FallbackMethod = FallbackMethod is { } fallback && Enum.IsDefined(fallback) && fallback != method ? fallback : null,
