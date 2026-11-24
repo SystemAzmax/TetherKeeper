@@ -15,6 +15,7 @@ namespace TetherKeeper.WinUI;
 /// <item>トレイの右クリックメニュー → 表示 / 開始・停止 / 終了</item>
 /// <item>ログイン時の自動起動 (起動引数 --tray、または MSIX の StartupTask による起動) → ウィンドウを出さずにトレイに格納した状態で起動</item>
 /// <item>通信の失敗が続いたとき・そこから復旧したとき → 通知を出す。失敗が続いている間はアイコンに赤い印を付ける</item>
+/// <item>指定したネットワークから切断して停止したとき → 通知を出す</item>
 /// </list>
 /// </summary>
 internal sealed class TrayController
@@ -33,7 +34,11 @@ internal sealed class TrayController
     private bool _startInTray;
 
     public TrayController(
-        Microsoft.UI.Xaml.Window window, IKeepAliveWorker worker, ISettingsService settings, AppExitService exitService)
+        Microsoft.UI.Xaml.Window window,
+        IKeepAliveWorker worker,
+        ISettingsService settings,
+        NetworkAutoControl networkAutoControl,
+        AppExitService exitService)
     {
         _window = window;
         _appWindow = window.AppWindow;
@@ -62,6 +67,7 @@ internal sealed class TrayController
             _dispatcher.TryEnqueue(() => OnStateChanged(isRunning));
         };
         _worker.ResultReceived += (_, result) => _dispatcher.TryEnqueue(() => OnResultReceived(result));
+        networkAutoControl.StoppedByDisconnection += (_, name) => _dispatcher.TryEnqueue(() => OnStoppedByDisconnection(name));
         _exitService.Exiting += (_, _) => _notifyIcon.Dispose();
         // UI スレッドで表示まで終えてから応答する (UI が固まっていれば応答せず、依頼元が利用者に知らせる)
         SingleInstance.ListenForActivation(() => _dispatcher.TryEnqueue(() =>
@@ -183,6 +189,21 @@ internal sealed class TrayController
             alert.Title,
             alert.Message,
             alert.Kind == FailureAlertKind.Failing ? BalloonIcon.Warning : BalloonIcon.Info);
+    }
+
+    /// <summary>
+    /// 指定したネットワークから切断して停止したことを知らせる。
+    /// 停止すると失敗の通知は出なくなるため、切断に気づけるよう、失敗の通知と同じ設定で通知する。
+    /// </summary>
+    private void OnStoppedByDisconnection(string networkName)
+    {
+        if (!_settings.Current.NotifyOnFailure)
+            return;
+
+        _notifyIcon.ShowBalloon(
+            "ネットワークから切断しました",
+            $"「{networkName}」から切断したため、キープアライブを停止しました。",
+            BalloonIcon.Warning);
     }
 
     private void UpdateToolTip() => _notifyIcon.ToolTip = BuildToolTip();

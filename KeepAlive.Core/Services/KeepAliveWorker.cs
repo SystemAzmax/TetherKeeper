@@ -498,9 +498,10 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
     }
 
     /// <summary>
-    /// 自動停止の条件、失敗の通知、スリープの抑止の設定を除いた設定 (通信に関わる設定が変わったかの判定用)。
-    /// 自動停止の条件だけが変わったときは、通信せずに停止の判定だけをやり直す。通知の設定は Worker では使わない。
-    /// スリープの抑止は、設定の変更時に別に切り替える。
+    /// 自動停止の条件、失敗の通知、スリープの抑止、ネットワークに応じた開始・停止の設定を除いた設定
+    /// (通信に関わる設定が変わったかの判定用)。
+    /// 自動停止の条件だけが変わったときは、通信せずに停止の判定だけをやり直す。
+    /// 通知とネットワークの設定は Worker では使わない。スリープの抑止は、設定の変更時に別に切り替える。
     /// </summary>
     private static AppSettings WithoutNonCommunicationSettings(AppSettings settings) =>
         settings with
@@ -510,6 +511,8 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
             NotifyOnFailure = false,
             FailureThreshold = 0,
             PreventSleepWhileRunning = false,
+            AutoControlByNetwork = false,
+            AutoControlNetworkName = string.Empty,
         };
 
     private void OnSuspending(object? sender, EventArgs e) => _log.Info("OS がスリープに入ります。");

@@ -28,6 +28,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private readonly ILogService _log;
     private readonly IKeepAliveStrategyResolver _resolver;
     private readonly AppExitService _exitService;
+    private readonly NetworkAutoControl _networkAutoControl;
     private bool _initialized;
 
     public MainViewModel(
@@ -36,7 +37,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
         IDataUsageTracker dataUsage,
         ILogService log,
         IKeepAliveStrategyResolver resolver,
-        AppExitService exitService)
+        AppExitService exitService,
+        NetworkAutoControl networkAutoControl)
     {
         _worker = worker;
         _settings = settings;
@@ -44,6 +46,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         _log = log;
         _resolver = resolver;
         _exitService = exitService;
+        _networkAutoControl = networkAutoControl;
 
         _worker.StateChanged += OnWorkerChanged;
         _worker.ResultReceived += OnResultReceived;
@@ -150,6 +153,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         if (settings.StartOnLaunch)
             _worker.Start();
+
+        // 指定したネットワークにつながっていれば開始し、以降は接続の変化に合わせて開始・停止する
+        await _networkAutoControl.ActivateAsync();
     }
 
     /// <summary>次回実行までのカウントダウン表示を更新する (UI タイマーから毎秒呼ぶ)。</summary>

@@ -127,6 +127,71 @@ internal sealed class FakePowerEventSource : IPowerEventSource
     public void RaiseResumed() => Resumed?.Invoke(this, EventArgs.Empty);
 }
 
+internal sealed class FakeNetworkMonitor : INetworkMonitor
+{
+    private volatile IReadOnlyList<ConnectedNetwork> _networks = [];
+
+    public bool IsSupported { get; init; } = true;
+
+    public event EventHandler? NetworksChanged;
+
+    public IReadOnlyList<ConnectedNetwork> GetConnectedNetworks() => _networks;
+
+    /// <summary>接続中のネットワークを変え、変化を通知する。</summary>
+    public void SetConnected(params string[] names)
+    {
+        _networks = names.Select(n => new ConnectedNetwork(n, NetworkKind.WiFi)).ToList();
+        NetworksChanged?.Invoke(this, EventArgs.Empty);
+    }
+}
+
+/// <summary>開始・停止の呼び出しだけを記録する IKeepAliveWorker。</summary>
+internal sealed class FakeKeepAliveWorker : IKeepAliveWorker
+{
+    private int _startCount;
+    private int _stopCount;
+    private volatile bool _isRunning;
+
+    public bool IsRunning => _isRunning;
+
+    public int StartCount => Volatile.Read(ref _startCount);
+
+    public int StopCount => Volatile.Read(ref _stopCount);
+
+    public KeepAliveStatistics Statistics => KeepAliveStatistics.Empty;
+
+    public DateTimeOffset? NextRunAt => null;
+
+    public event EventHandler? StateChanged;
+
+#pragma warning disable CS0067 // 発火しないイベント
+    public event EventHandler<KeepAliveResult>? ResultReceived;
+#pragma warning restore CS0067
+
+    public void Start()
+    {
+        Interlocked.Increment(ref _startCount);
+        _isRunning = true;
+        StateChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public Task StopAsync()
+    {
+        Interlocked.Increment(ref _stopCount);
+        _isRunning = false;
+        StateChanged?.Invoke(this, EventArgs.Empty);
+        return Task.CompletedTask;
+    }
+
+    public void TriggerNow()
+    {
+    }
+
+    public void ResetStatistics()
+    {
+    }
+}
+
 internal sealed class FakeSleepInhibitor : ISleepInhibitor
 {
     private int _changeCount;

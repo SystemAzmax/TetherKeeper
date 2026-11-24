@@ -157,6 +157,28 @@ public class AppSettingsTests
     }
 
     [Fact]
+    public void Validate_RequiresNetworkName_WhenAutoControlByNetworkIsOn()
+    {
+        Assert.Contains(
+            new AppSettings { AutoControlByNetwork = true, AutoControlNetworkName = " " }.Validate(),
+            e => e.Contains("ネットワークを選んで"));
+        Assert.Empty(new AppSettings { AutoControlByNetwork = true, AutoControlNetworkName = "iPhone" }.Validate());
+        Assert.Empty(new AppSettings { AutoControlByNetwork = false, AutoControlNetworkName = "" }.Validate());
+    }
+
+    [Fact]
+    public void Normalize_TrimsNetworkName_AndDisablesAutoControlWithoutName()
+    {
+        var trimmed = new AppSettings { AutoControlByNetwork = true, AutoControlNetworkName = " iPhone " }.Normalize();
+        Assert.Equal("iPhone", trimmed.AutoControlNetworkName);
+        Assert.True(trimmed.AutoControlByNetwork);
+
+        var empty = new AppSettings { AutoControlByNetwork = true, AutoControlNetworkName = "" }.Normalize();
+        Assert.False(empty.AutoControlByNetwork);
+        Assert.Empty(empty.Validate());
+    }
+
+    [Fact]
     public void PreventSleepWhileRunning_IsOffByDefault()
     {
         // 電源の設定を尊重するため、既定ではスリープを妨げない

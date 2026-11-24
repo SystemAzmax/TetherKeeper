@@ -13,17 +13,24 @@ public partial class SettingsViewModel : ObservableObject
     private readonly IAutoStartService _autoStart;
     private readonly ILogService _log;
     private readonly ISleepInhibitor _sleepInhibitor;
+    private readonly INetworkMonitor _networkMonitor;
 
     public SettingsViewModel(
-        ISettingsService settings, IAutoStartService autoStart, ILogService log, ISleepInhibitor sleepInhibitor)
+        ISettingsService settings,
+        IAutoStartService autoStart,
+        ILogService log,
+        ISleepInhibitor sleepInhibitor,
+        INetworkMonitor networkMonitor)
     {
         _settings = settings;
         _autoStart = autoStart;
         _log = log;
         _sleepInhibitor = sleepInhibitor;
+        _networkMonitor = networkMonitor;
         SelectedMethod = Methods[0];
         Load(_settings.Current);
         _ = RefreshLaunchAtLoginAsync();
+        _ = RefreshNetworksAsync();
     }
 
     public IReadOnlyList<MethodOption> Methods { get; } =
@@ -36,6 +43,29 @@ public partial class SettingsViewModel : ObservableObject
     public bool IsAutoStartSupported => _autoStart.IsSupported;
 
     public bool IsSleepPreventionSupported => _sleepInhibitor.IsSupported;
+
+    public bool IsNetworkAutoControlSupported => _networkMonitor.IsSupported;
+
+    [ObservableProperty]
+    public partial bool AutoControlByNetwork { get; set; }
+
+    /// <summary>自動で開始・停止するネットワークの名前。一覧から選ぶほか、つながっていないネットワークの名前を入力することもできる。</summary>
+    [ObservableProperty]
+    public partial string AutoControlNetworkName { get; set; } = string.Empty;
+
+    /// <summary>今つながっているネットワークの一覧 (名前の選択肢)。</summary>
+    [ObservableProperty]
+    public partial IReadOnlyList<ConnectedNetwork> ConnectedNetworks { get; set; } = [];
+
+    /// <summary>一覧で選んだネットワーク。選ぶと、その名前を <see cref="AutoControlNetworkName"/> に入れる。</summary>
+    [ObservableProperty]
+    public partial ConnectedNetwork? SelectedConnectedNetwork { get; set; }
+
+    partial void OnSelectedConnectedNetworkChanged(ConnectedNetwork? value)
+    {
+        if (value is not null)
+            AutoControlNetworkName = value.Name;
+    }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsPing), nameof(IsHttpHead), nameof(IsTcpConnect), nameof(MethodDescription))]
@@ -102,6 +132,26 @@ public partial class SettingsViewModel : ObservableObject
         ErrorText = string.Empty;
         StatusMessage = string.Empty;
         await RefreshLaunchAtLoginAsync();
+        await RefreshNetworksAsync();
+    }
+
+    /// <summary>今つながっているネットワークの一覧を取り直す。</summary>
+    [RelayCommand]
+    private async Task RefreshNetworksAsync()
+    {
+        if (!_networkMonitor.IsSupported)
+            return;
+
+        try
+        {
+            // 取得に少し時間がかかることがあるため、UI スレッドを止めない
+            ConnectedNetworks = await Task.Run(_networkMonitor.GetConnectedNetworks);
+            SelectedConnectedNetwork = null;
+        }
+        catch (Exception ex)
+        {
+            _log.Warning($"接続中のネットワークを取得できませんでした: {ex.Message}");
+        }
     }
 
     [RelayCommand]
@@ -130,6 +180,8 @@ public partial class SettingsViewModel : ObservableObject
         var tcpHost = TcpHost.Trim();
         var notifyOnFailure = NotifyOnFailure;
         var preventSleep = PreventSleepWhileRunning;
+        var autoControlByNetwork = AutoControlByNetwork;
+        var autoControlNetworkName = AutoControlNetworkName.Trim();
         var startOnLaunch = StartOnLaunch;
         var launchAtLogin = LaunchAtLogin;
         var errors = await _settings.UpdateAsync(current => current with
@@ -145,6 +197,8 @@ public partial class SettingsViewModel : ObservableObject
             NotifyOnFailure = notifyOnFailure,
             FailureThreshold = failureThreshold,
             PreventSleepWhileRunning = preventSleep,
+            AutoControlByNetwork = autoControlByNetwork,
+            AutoControlNetworkName = autoControlNetworkName,
             StartOnLaunch = startOnLaunch,
             LaunchAtLogin = launchAtLogin,
         });
@@ -184,6 +238,8 @@ public partial class SettingsViewModel : ObservableObject
         NotifyOnFailure = settings.NotifyOnFailure;
         FailureThreshold = settings.FailureThreshold.ToString();
         PreventSleepWhileRunning = settings.PreventSleepWhileRunning;
+        AutoControlByNetwork = settings.AutoControlByNetwork;
+        AutoControlNetworkName = settings.AutoControlNetworkName;
         StartOnLaunch = settings.StartOnLaunch;
         // LaunchAtLogin は OS 側の実際の状態を正とするため RefreshLaunchAtLoginAsync で別途取得する
     }

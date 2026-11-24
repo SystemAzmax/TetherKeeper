@@ -39,13 +39,16 @@ SystemAzmax（以下「開発者」）は、Windows 用アプリ「テザリン�
 本アプリは、動作に必要な次の情報を、利用者の PC の中に保存します。
 これらが開発者に送信されることはありません。
 
-- 設定（通信方式、送信先、実行間隔、通信量の上限、自動停止の日時など）
+- 設定（通信方式、送信先、実行間隔、通信量の上限、自動停止の日時、自動で開始・停止するネットワークの名前など）
 - 通信量の累計
-- 動作の記録（ログ）。通信の結果、送信先、通信量の計測に使ったネットワーク アダプターの名前、エラーの内容などが記録されます。
+- 動作の記録（ログ）。通信の結果、送信先、通信量の計測に使ったネットワーク アダプターの名前、自動で開始・停止したネットワークの名前、エラーの内容などが記録されます。
   エラーの内容には、ファイルの場所（Windows のユーザー名を含むことがあります）が含まれることがあります。
   30 日を過ぎたログは自動で削除されます
 
 通信量は、PC のネットワーク アダプターの送受信量を、PC の中で数えています。通信の内容は読み取りません。
+
+「指定したネットワークに接続したら開始し、切断したら停止する」を使う場合、本アプリは、PC が接続しているネットワークの名前（Wi-Fi のネットワーク名（SSID）など）を Windows から読み取ります。
+読み取った名前は、設定画面の一覧の表示と、指定したネットワークにつながっているかの判定にだけ使います。保存するのは、利用者が選んだネットワークの名前だけです。位置情報は使いません。
 
 Microsoft Store からインストールした場合、これらの情報は、本アプリをアンインストールすると削除されます。
 
@@ -102,13 +105,16 @@ When you select the "使い方" (User guide) button, the app opens the user guid
 The app stores the following information on your PC so that it can work.
 This information is never sent to the developer.
 
-- Settings, such as the method, destinations, interval, data limit, and the scheduled stop time
+- Settings, such as the method, destinations, interval, data limit, the scheduled stop time, and the name of the network used to start and stop automatically
 - The total data usage
-- Activity logs. They include the results of each run, the destination, the name of the network adapter used to measure data usage, and error details.
+- Activity logs. They include the results of each run, the destination, the name of the network adapter used to measure data usage, the name of the network used to start or stop automatically, and error details.
   Error details may include file locations, which may contain your Windows user name.
   Logs older than 30 days are deleted automatically
 
 The app counts data usage on your PC from the amount of data sent and received by the network adapter. It does not read the content of any traffic.
+
+If you use "指定したネットワークに接続したら開始し、切断したら停止する" (Start when connected to the specified network and stop when disconnected), the app reads the names of the networks your PC is connected to (such as Wi-Fi network names (SSIDs)) from Windows.
+The app uses these names only to show the list on the Settings screen and to check whether your PC is connected to the specified network. It saves only the network name you choose. The app does not use location information.
 
 If you installed the app from the Microsoft Store, this information is deleted when you uninstall the app.
 

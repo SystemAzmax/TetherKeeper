@@ -26,4 +26,10 @@ public sealed class KeepAliveOptions
     /// 動作中に通信量の累計を保存する間隔。停止時とリセット時は、この間隔によらず保存する。
     /// </summary>
     public TimeSpan DataUsageSaveInterval { get; set; } = TimeSpan.FromMinutes(1);
+
+    /// <summary>
+    /// ネットワークの接続が変わってから、自動で開始・停止するかを判定するまでの待ち時間。
+    /// 接続の変化は 1 回で何度も通知されるうえ、Wi-Fi は一瞬切れてすぐつながり直すことがあるため、落ち着くまで待つ。
+    /// </summary>
+    public TimeSpan NetworkChangeDelay { get; set; } = TimeSpan.FromSeconds(5);
 }

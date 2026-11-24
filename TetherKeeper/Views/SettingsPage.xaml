@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:TetherKeeper.ViewModels"
+             xmlns:models="clr-namespace:KeepAlive.Core.Models;assembly=KeepAlive.Core"
              x:Class="TetherKeeper.Views.SettingsPage"
              x:DataType="vm:SettingsViewModel"
              Title="設定">
@@ -89,6 +90,31 @@
                 </Grid>
                 <Label Text="操作しないで放置したときの自動スリープを止めます（画面は消えます）。ふたを閉じる、電源ボタンを押すなどの操作でのスリープは防げません。ノート PC ではバッテリーの消費が増えます。"
                        Style="{StaticResource Hint}" />
+            </VerticalStackLayout>
+
+            <!-- ネットワークに応じた自動開始・停止 -->
+            <VerticalStackLayout IsVisible="{Binding IsNetworkAutoControlSupported}" Spacing="4" Margin="0,8,0,0">
+                <Grid ColumnDefinitions="*,Auto">
+                    <Label Text="指定したネットワークに接続したら開始し、切断したら停止する" VerticalOptions="Center" />
+                    <Switch Grid.Column="1" IsToggled="{Binding AutoControlByNetwork}" />
+                </Grid>
+                <VerticalStackLayout IsVisible="{Binding AutoControlByNetwork}" Spacing="4">
+                    <Label Text="ネットワーク名" Style="{StaticResource FieldLabel}" />
+                    <Entry Text="{Binding AutoControlNetworkName}" Placeholder="例: iPhone" />
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <Picker Title="接続中のネットワークから選ぶ"
+                                ItemsSource="{Binding ConnectedNetworks}"
+                                ItemDisplayBinding="{Binding DisplayName, x:DataType=models:ConnectedNetwork}"
+                                SelectedItem="{Binding SelectedConnectedNetwork}" />
+                        <Button Grid.Column="1"
+                                Text="更新"
+                                Command="{Binding RefreshNetworksCommand}"
+                                Style="{StaticResource InfoButton}"
+                                ToolTipProperties.Text="接続中のネットワークの一覧を取り直します。" />
+                    </Grid>
+                    <Label Text="テザリングにつないだ状態で、一覧から選んでください。Wi-Fi はネットワーク名（SSID）、USB や Bluetooth のテザリングは Windows に表示されるネットワーク名で判定します（大文字と小文字は区別します）。接続が変わってから約 5 秒後に開始・停止します。接続中に自分で停止した場合は、つなぎ直すまで自動では開始しません。"
+                           Style="{StaticResource Hint}" />
+                </VerticalStackLayout>
             </VerticalStackLayout>
 
             <Grid ColumnDefinitions="*,Auto" Margin="0,8,0,0">

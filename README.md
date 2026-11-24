@@ -20,6 +20,7 @@ The app's screens are in Japanese only.
 - "今すぐ実行" (Run now) button
 - When the PC wakes from sleep, runs again after 5 seconds
 - Optionally prevents automatic sleep while the keep-alive is running (off by default. The screen still turns off)
+- Optionally starts when you connect to a specified network (such as your iPhone's tethering) and stops when you disconnect (off by default)
 - Automatic stop at a specified date and time (choose the date and time on the "モニター" (Monitor) screen and select "予約" (Schedule). The schedule is cleared automatically after it stops)
 - Automatic stop at a data limit (set the limit in MB on the Settings screen. The app adds up the data used while the keep-alive is running until you select "リセット" (Reset) on the Monitor screen, and stops when it reaches the limit. You can't start while the limit is reached)
   - The app counts the data sent and received by the network adapter used for internet traffic (if you are connected to both wired LAN and Wi-Fi, the one Windows chooses). This includes traffic from other apps. The log shows which adapter is counted
@@ -131,6 +132,7 @@ powershell -ExecutionPolicy Bypass -File build\Publish-Msix.ps1 -NewCertificate
 │   ├─ Interfaces            IKeepAliveStrategy / ISettingsService / ILogService / IKeepAliveWorker / IDataUsageTracker, etc.
 │   ├─ Services              KeepAliveWorker / SettingsService / LogService / KeepAliveStrategyResolver / DataUsageTracker
 │   │                        FailureAlertTracker (decides when to notify about failures and recovery)
+│   │                        NetworkAutoControl (starts and stops depending on the connected network)
 │   │                        AppDisplayName (switches between the Japanese and English names) / AppAboutInfo (text for "About this app")
 │   ├─ Strategies            KeepAliveStrategy for Ping / HttpHead / TcpConnect
 │   └─ Configuration         DI registration (AddKeepAliveCore) and KeepAliveOptions
@@ -141,7 +143,7 @@ powershell -ExecutionPolicy Bypass -File build\Publish-Msix.ps1 -NewCertificate
 │   └─ Power                 WindowsPowerEventSource (SystemEvents) / WindowsSleepInhibitor (prevents sleep while running)
 ├─ TetherKeeper              .NET MAUI UI (Views / ViewModels / Platforms)
 │   ├─ Services              AppInfoProvider (version and other information) / AppPaths / AppPackage, etc.
-│   ├─ Platforms/Windows     Tray, single instance, Package.appxmanifest and the display name resources (Strings)
+│   ├─ Platforms/Windows     Tray, single instance, connected networks (WindowsNetworkMonitor), Package.appxmanifest and the display name resources (Strings)
 │   └─ ThirdPartyNotices.txt License notices opened by "License information"
 ├─ KeepAlive.Tests           xUnit unit tests
 ├─ tools/notices             Script that creates ThirdPartyNotices.txt

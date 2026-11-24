@@ -50,6 +50,21 @@ When the traffic succeeds again, the app shows "通信が復旧しました" (Th
 
 To run it automatically when you start your PC, turn on both "Windows ログイン時にアプリを起動する" (Start the app when you sign in to Windows) and "アプリ起動時に自動で開始する" (Start automatically when the app starts) on the "設定" (Settings) screen, and then select "保存" (Save).
 
+### Run Only While Tethering
+
+You can have the app start when you connect to tethering and stop when the connection ends, so it doesn't run on your home Wi-Fi or other networks.
+
+1. Connect your PC to tethering.
+2. On the "設定" (Settings) screen, turn on "指定したネットワークに接続したら開始し、切断したら停止する" (Start when connected to the specified network and stop when disconnected).
+3. In "接続中のネットワークから選ぶ" (Choose from connected networks), choose the tethering network. For Wi-Fi, it appears with your iPhone's name (the network name).
+4. Select "保存" (Save).
+
+- The app starts or stops about 5 seconds after the connection changes.
+- When it stops because the connection ended, the app shows a notification (if "失敗が続いたときと、復旧したときに通知する" (Notify when failures continue and when the connection recovers) is on).
+- If you select "停止" (Stop) yourself while connected to tethering, the app doesn't start automatically until you reconnect.
+- If you select "開始" (Start) yourself on another network, the app doesn't stop automatically.
+- The app must be running to start the keep-alive. It's convenient to also turn on "Windows ログイン時にアプリを起動する" (Start the app when you sign in to Windows).
+
 ## 2. Screens and Features
 
 Use "モニター" (Monitor) and "設定" (Settings) at the bottom of the window to switch screens.
@@ -90,6 +105,8 @@ After making changes, select "保存" (Save). "既定値に戻す" (Restore defa
 | 通知する連続失敗の回数 (Consecutive failures before notifying) | When the traffic fails this many times in a row, the app shows a notification and adds a red dot to the tray icon. From 1 to 100. The default is 3 |
 | 失敗が続いたときと、復旧したときに通知する (Notify when failures continue and when the connection recovers) | When off, the app doesn't show notifications (the red dot still appears on the tray icon). The default is on |
 | キープアライブの動作中はスリープしない (Don't sleep while the keep-alive is running) | When on, the PC doesn't go to sleep automatically while the keep-alive is running, even if you leave it idle. The default is off (see [After the PC wakes from sleep](#after-the-pc-wakes-from-sleep)) |
+| 指定したネットワークに接続したら開始し、切断したら停止する (Start when connected to the specified network and stop when disconnected) | When on, the keep-alive starts when you connect to the network in "ネットワーク名" (Network name) and stops when you disconnect. The default is off (see [Run Only While Tethering](#run-only-while-tethering)) |
+| ネットワーク名 (Network name) | The name of the network that starts and stops the keep-alive. You can choose it in "接続中のネットワークから選ぶ" (Choose from connected networks). Select "更新" (Refresh) to update the list |
 | アプリ起動時に自動で開始する (Start automatically when the app starts) | When on, the keep-alive starts when the app starts |
 | Windows ログイン時にアプリを起動する (Start the app when you sign in to Windows) | When on, the app starts in the tray when you sign in to Windows |
 
@@ -139,6 +156,13 @@ Depending on the connection or device, it may drop even while traffic is being s
 
 If "上限に達したため、開始できません。" (The limit has been reached, so it can't start.) appears, the total data usage has reached "通信量の上限（MB）" (Data limit in MB).
 Select "リセット" (Reset) under data usage on the Monitor screen, or change the limit on the Settings screen.
+
+### The keep-alive doesn't start when I connect to tethering
+
+- On the Settings screen, check that "ネットワーク名" (Network name) matches the name of the tethering network (uppercase and lowercase letters are distinguished). The surest way is to select "更新" (Refresh) while connected to tethering and choose the network again from the list.
+- When you connect with USB or Bluetooth, the network has a different name from Wi-Fi. If you change how you connect, choose the network again.
+- While the data limit is reached, the keep-alive doesn't start (see [I can't start the keep-alive](#i-cant-start-the-keep-alive)).
+- If you selected "停止" (Stop) yourself while connected to tethering, the app doesn't start automatically until you reconnect.
 
 ### I can't turn on "Windows ログイン時にアプリを起動する" (Start the app when you sign in to Windows)
 

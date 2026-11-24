@@ -33,6 +33,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ISettingsStore>(new JsonFileSettingsStore(settingsFilePath));
         services.AddSingleton<IDataUsageStore>(new JsonFileDataUsageStore(dataUsageFilePath));
         services.AddSingleton<IDataUsageMeter, NetworkInterfaceDataUsageMeter>();
+        // 接続中のネットワーク名 (Wi-Fi の SSID など) は、.NET の標準の API では取れない。
+        // Windows では UI 側で WinRT の API を使う実装に差し替える
+        services.AddSingleton<INetworkMonitor, UnsupportedNetworkMonitor>();
         services.AddSingleton<ILogSink>(sp => new FileLogSink(
             logDirectory,
             appName,

@@ -31,6 +31,7 @@ namespace TetherKeeper
                             window,
                             services.GetRequiredService<KeepAlive.Core.Interfaces.IKeepAliveWorker>(),
                             services.GetRequiredService<KeepAlive.Core.Interfaces.ISettingsService>(),
+                            services.GetRequiredService<KeepAlive.Core.Services.NetworkAutoControl>(),
                             services.GetRequiredService<AppExitService>());
                     }));
 #endif
@@ -50,6 +51,9 @@ namespace TetherKeeper
             // (後から登録したものが優先される)
             if (AppPackage.IsPackaged)
                 builder.Services.AddSingleton<KeepAlive.Core.Interfaces.IAutoStartService, WinUI.StartupTaskAutoStartService>();
+
+            // 接続中のネットワーク名は WinRT の API で取るため、Infrastructure の「未対応」の実装から差し替える
+            builder.Services.AddSingleton<KeepAlive.Core.Interfaces.INetworkMonitor, WinUI.WindowsNetworkMonitor>();
 #endif
 
             builder.Services.AddSingleton<AppExitService>();

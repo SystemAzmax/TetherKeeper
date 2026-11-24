@@ -80,6 +80,16 @@ public sealed record AppSettings
     /// </summary>
     public bool PreventSleepWhileRunning { get; init; }
 
+    /// <summary>
+    /// <see cref="AutoControlNetworkName"/> のネットワークに接続したらキープアライブを開始し、切断したら停止するか (対応 OS のみ)。
+    /// </summary>
+    public bool AutoControlByNetwork { get; init; }
+
+    /// <summary>
+    /// 自動で開始・停止するきっかけにするネットワークの名前 (Wi-Fi はネットワーク名 (SSID))。大文字と小文字は区別する。
+    /// </summary>
+    public string AutoControlNetworkName { get; init; } = string.Empty;
+
     public TimeSpan Interval => TimeSpan.FromSeconds(IntervalSeconds);
 
     /// <summary>通信量の上限 (バイト)。無効なら null。</summary>
@@ -106,6 +116,8 @@ public sealed record AppSettings
             errors.Add($"通信量の上限は 0〜{MaxDataLimitMegabytes} MB で指定してください。");
         if (FailureThreshold is < MinFailureThreshold or > MaxFailureThreshold)
             errors.Add($"通知する連続失敗の回数は {MinFailureThreshold}〜{MaxFailureThreshold} 回で指定してください。");
+        if (AutoControlByNetwork && string.IsNullOrWhiteSpace(AutoControlNetworkName))
+            errors.Add("自動で開始・停止するネットワークを選んでください。");
 
         switch (Method)
         {
@@ -152,6 +164,9 @@ public sealed record AppSettings
             TcpPort = TcpPort is >= 1 and <= 65535 ? TcpPort : defaults.TcpPort,
             DataLimitMegabytes = Math.Clamp(DataLimitMegabytes, 0, MaxDataLimitMegabytes),
             FailureThreshold = Math.Clamp(FailureThreshold, MinFailureThreshold, MaxFailureThreshold),
+            // 名前が無いと判定できないため、手編集などで空になっていたら無効にする
+            AutoControlNetworkName = AutoControlNetworkName?.Trim() ?? string.Empty,
+            AutoControlByNetwork = AutoControlByNetwork && !string.IsNullOrWhiteSpace(AutoControlNetworkName),
         };
     }
 

@@ -12,7 +12,8 @@ public static class ServiceCollectionExtensions
     /// <summary>
     /// OS 非依存のサービスを登録する。
     /// <see cref="ISettingsStore"/> / <see cref="IDataUsageStore"/> / <see cref="IDataUsageMeter"/> /
-    /// <see cref="IAutoStartService"/> / <see cref="IPowerEventSource"/> / <see cref="ISleepInhibitor"/> は
+    /// <see cref="IAutoStartService"/> / <see cref="IPowerEventSource"/> / <see cref="ISleepInhibitor"/> /
+    /// <see cref="INetworkMonitor"/> は
     /// プラットフォーム側 (Infrastructure) で別途登録すること。
     /// </summary>
     public static IServiceCollection AddKeepAliveCore(
@@ -36,6 +37,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IKeepAliveStrategyResolver, KeepAliveStrategyResolver>();
 
         services.AddSingleton<IKeepAliveWorker, KeepAliveWorker>();
+        services.AddSingleton<NetworkAutoControl>();
         return services;
     }
 
