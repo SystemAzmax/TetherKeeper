@@ -4,6 +4,7 @@ using KeepAlive.Core.Configuration;
 using KeepAlive.Core.Interfaces;
 using KeepAlive.Core.Services;
 using KeepAlive.Infrastructure.AutoStart;
+using KeepAlive.Infrastructure.History;
 using KeepAlive.Infrastructure.Logging;
 using KeepAlive.Infrastructure.Network;
 using KeepAlive.Infrastructure.Power;
@@ -20,6 +21,7 @@ public static class ServiceCollectionExtensions
     /// <param name="settingsFilePath">設定ファイルのフルパス。</param>
     /// <param name="dataUsageFilePath">通信量の累計を保存するファイルのフルパス。</param>
     /// <param name="logDirectory">ログファイルを置くフォルダ。</param>
+    /// <param name="historyDirectory">通信の結果の履歴 (CSV) を置くフォルダ。</param>
     /// <param name="appName">自動起動の登録名・ログファイル名などに使うアプリ名。</param>
     /// <param name="autoStartArguments">ログイン時の自動起動で渡す起動引数。</param>
     public static IServiceCollection AddKeepAliveInfrastructure(
@@ -27,6 +29,7 @@ public static class ServiceCollectionExtensions
         string settingsFilePath,
         string dataUsageFilePath,
         string logDirectory,
+        string historyDirectory,
         string appName,
         string? autoStartArguments = null)
     {
@@ -38,6 +41,12 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<INetworkMonitor, UnsupportedNetworkMonitor>();
         services.AddSingleton<ILogSink>(sp => new FileLogSink(
             logDirectory,
+            appName,
+            sp.GetRequiredService<KeepAliveOptions>().LogRetentionDays,
+            sp.GetRequiredService<TimeProvider>()));
+        // 履歴の保存日数はログと同じにする
+        services.AddSingleton<IResultHistoryStore>(sp => new CsvResultHistoryStore(
+            historyDirectory,
             appName,
             sp.GetRequiredService<KeepAliveOptions>().LogRetentionDays,
             sp.GetRequiredService<TimeProvider>()));

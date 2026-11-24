@@ -30,6 +30,7 @@ iPhone のインターネット共有（テザリング）、Wi-Fi ルーター�
 - アプリ起動時の自動開始、Windows ログイン時の自動起動（トレイに格納した状態で起動）
 - タスクトレイ常駐（× ボタンでトレイに格納。終了は画面の「終了」ボタンかトレイメニューから）。トレイメニューで今の状態の確認、今すぐ実行、自動停止の予約ができる
 - ログのファイル出力（1 日 1 ファイル、30 日分を保存）
+- 「履歴」画面で、直近 24 時間・7 日・30 日の時間帯ごとの失敗回数を集計し、結果を CSV に書き出せる（結果はログとは別に、1 日 1 ファイルの CSV で 30 日分を保存）
 - 設定画面の「アプリの情報」から、このアプリについて（バージョン）・ライセンス情報・使い方ガイドを表示
 
 設定の項目や困ったときの対処は [使い方ガイド](docs/UserGuide_ja.md) にまとめています。
@@ -56,6 +57,7 @@ Visual Studio では `TetherKeeper.slnx` を開き、デバッグ対象に「Win
 
 設定ファイルは `%LOCALAPPDATA%\TetherKeeper\settings.json` に、通信量の累計は同じフォルダの `data-usage.json` に保存されます。
 ログは同じフォルダ内の `logs\TetherKeeper_yyyyMMdd.log` に 1 日 1 ファイルで出力され、30 日を過ぎたファイルは自動で削除されます。
+通信の結果の履歴も、同じように `history\TetherKeeper_yyyyMMdd.csv` に出力されます。
 保存フォルダは、モニター画面の「保存先」ボタンで開けます。
 （上記は開発時の非パッケージ版の場所です。MSIX 版は下記のとおりパッケージ専用フォルダになります）
 
@@ -135,11 +137,13 @@ powershell -ExecutionPolicy Bypass -File build\Publish-Msix.ps1 -NewCertificate
 │   │                        FailureAlertTracker（連続失敗と復旧を通知するかの判定）
 │   │                        NetworkAutoControl（接続中のネットワークに応じた開始・停止）
 │   │                        AutoStopScheduler（自動停止の予約と解除）
+│   │                        ResultHistory / ResultCsv（通信の結果の履歴の記録・集計・書き出し）
 │   │                        AppDisplayName（日本語名と英語名の切り替え）/ AppAboutInfo（「このアプリについて」の本文）
 │   ├─ Strategies            Ping / HttpHead / TcpConnect の各 KeepAliveStrategy
 │   └─ Configuration         DI 登録（AddKeepAliveCore）と KeepAliveOptions
 ├─ KeepAlive.Infrastructure  OS 依存の実装
 │   ├─ Settings              JsonFileSettingsStore / JsonFileDataUsageStore（通信量の累計）
+│   ├─ History               CsvResultHistoryStore（通信の結果の履歴。1 日 1 ファイルの CSV）
 │   ├─ Network               NetworkInterfaceDataUsageMeter（アダプターの送受信量）
 │   ├─ AutoStart             WindowsAutoStartService（HKCU\Run）
 │   └─ Power                 WindowsPowerEventSource（SystemEvents）/ WindowsSleepInhibitor（動作中のスリープ抑止）

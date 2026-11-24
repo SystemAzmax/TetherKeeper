@@ -44,6 +44,7 @@ namespace TetherKeeper
                     AppPaths.SettingsFile,
                     AppPaths.DataUsageFile,
                     AppPaths.LogDirectory,
+                    AppPaths.HistoryDirectory,
                     appName: "TetherKeeper",
                     autoStartArguments: "--tray");
 
@@ -62,13 +63,19 @@ namespace TetherKeeper
             builder.Services.AddSingleton<SettingsViewModel>();
             builder.Services.AddSingleton<MainPage>();
             builder.Services.AddSingleton<SettingsPage>();
+            builder.Services.AddSingleton<HistoryViewModel>();
+            builder.Services.AddSingleton<HistoryPage>();
             builder.Services.AddSingleton<AppShell>();
 
 #if DEBUG
     		builder.Logging.AddDebug();
 #endif
 
-            return builder.Build();
+            var app = builder.Build();
+
+            // 通信の結果の履歴は、画面を開く前から記録する (作った時点から Worker の結果を記録する)
+            app.Services.GetRequiredService<KeepAlive.Core.Services.ResultHistory>();
+            return app;
         }
     }
 }

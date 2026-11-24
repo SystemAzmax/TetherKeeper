@@ -11,6 +11,10 @@
             ContentTemplate="{DataTemplate views:MainPage}"
             Route="MainPage" />
         <ShellContent
+            Title="履歴"
+            ContentTemplate="{DataTemplate views:HistoryPage}"
+            Route="HistoryPage" />
+        <ShellContent
             Title="設定"
             ContentTemplate="{DataTemplate views:SettingsPage}"
             Route="SettingsPage" />

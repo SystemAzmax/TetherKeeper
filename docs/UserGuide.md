@@ -69,7 +69,7 @@ You can have the app start when you connect to tethering and stop when the conne
 
 ## 2. Screens and Features
 
-Use "モニター" (Monitor) and "設定" (Settings) at the bottom of the window to switch screens.
+Use "モニター" (Monitor), "履歴" (History), and "設定" (Settings) at the bottom of the window to switch screens.
 
 ### モニター (Monitor)
 
@@ -90,6 +90,21 @@ About data usage:
 - Because it measures every 5 seconds, it may stop slightly after the limit is exceeded.
 - Stopping the keep-alive does not stop traffic from other apps.
 - While the limit is reached, you can't select "開始" (Start). Select "リセット" (Reset) to be able to start again.
+
+### 履歴 (History)
+
+This screen counts the results recorded while the keep-alive was running, by time of day. Use it to see when the connection tends to drop.
+
+| Item | Description |
+| --- | --- |
+| Period | Choose "直近 24 時間" (Last 24 hours), "直近 7 日" (Last 7 days), or "直近 30 日" (Last 30 days) |
+| 更新 (Refresh) | Counts again with the latest records |
+| CSV に書き出す (Export to CSV) | Writes the results for the selected period to a CSV file in your Downloads folder and shows it in File Explorer. You can open it in Excel |
+| Total | The number of runs in the period, the numbers of successes and failures, and the failure rate |
+| 時間帯ごとの失敗 (Failures by time of day) | For each hour from 0 to 23, shows the number of runs, the number of failures, and the failure rate. The red bar shows the failure rate; the hour with the highest rate has the longest bar |
+
+- Runs that succeed with the fallback method count as successes.
+- Records are kept for 30 days. They are saved as daily CSV files in `history`, in the same folder as the logs (open it with "保存先" (Location) on the Monitor screen).
 
 ### 設定 (Settings)
 
@@ -197,7 +212,7 @@ While the keep-alive is running, the PC doesn't go to sleep automatically, even 
 
 In the Start menu, right-click "TetherKeeper" and choose "Uninstall".
 
-- Your settings, total data usage, and logs are deleted when you uninstall the app.
+- Your settings, total data usage, logs, and history of results are deleted when you uninstall the app (CSV files you exported to the Downloads folder remain).
 - The "Start the app when you sign in to Windows" setting is also deleted.
 
 ## Contact

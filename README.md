@@ -31,6 +31,7 @@ The app's screens are in Japanese only.
 - Start automatically when the app starts, and start the app when you sign in to Windows (starts in the tray)
 - Runs in the notification area (system tray) ("×" moves the app to the tray. To exit, use the "終了" (Exit) button on the screen or the tray menu). The tray menu shows the current status and lets you run now and schedule an auto stop
 - Log files (one file per day, kept for 30 days)
+- "履歴" (History) screen: counts failures by time of day for the last 24 hours, 7 days, or 30 days, and exports the results to CSV (the results are recorded separately from the logs, one CSV file per day, kept for 30 days)
 - "アプリの情報" (App information) on the "設定" (Settings) screen shows About this app (version), License information, and the User guide
 
 For details on each setting and troubleshooting, see the [User Guide](docs/UserGuide.md).
@@ -57,6 +58,7 @@ In Visual Studio, open `TetherKeeper.slnx` and choose "Windows Machine" as the d
 
 Settings are saved to `%LOCALAPPDATA%\TetherKeeper\settings.json`, and the total data usage is saved to `data-usage.json` in the same folder.
 Logs are written to `logs\TetherKeeper_yyyyMMdd.log` in the same folder, one file per day, and files older than 30 days are deleted automatically.
+The history of results is written to `history\TetherKeeper_yyyyMMdd.csv` in the same way.
 You can open the folder with the "保存先" (Location) button on the Monitor screen.
 (These are the locations for the unpackaged app during development. The MSIX app uses a folder dedicated to the package, as described below.)
 
@@ -136,11 +138,13 @@ powershell -ExecutionPolicy Bypass -File build\Publish-Msix.ps1 -NewCertificate
 │   │                        FailureAlertTracker (decides when to notify about failures and recovery)
 │   │                        NetworkAutoControl (starts and stops depending on the connected network)
 │   │                        AutoStopScheduler (schedules and cancels the auto stop)
+│   │                        ResultHistory / ResultCsv (records, counts, and exports the history of results)
 │   │                        AppDisplayName (switches between the Japanese and English names) / AppAboutInfo (text for "About this app")
 │   ├─ Strategies            KeepAliveStrategy for Ping / HttpHead / TcpConnect
 │   └─ Configuration         DI registration (AddKeepAliveCore) and KeepAliveOptions
 ├─ KeepAlive.Infrastructure  Platform-dependent implementations
 │   ├─ Settings              JsonFileSettingsStore / JsonFileDataUsageStore (total data usage)
+│   ├─ History               CsvResultHistoryStore (history of results, one CSV file per day)
 │   ├─ Network               NetworkInterfaceDataUsageMeter (data sent and received by the adapter)
 │   ├─ AutoStart             WindowsAutoStartService (HKCU\Run)
 │   └─ Power                 WindowsPowerEventSource (SystemEvents) / WindowsSleepInhibitor (prevents sleep while running)

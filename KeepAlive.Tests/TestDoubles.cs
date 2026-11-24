@@ -164,11 +164,14 @@ internal sealed class FakeKeepAliveWorker : IKeepAliveWorker
 
     public event EventHandler? StateChanged;
 
-#pragma warning disable CS0067 // 発火しないイベント
     public event EventHandler<KeepAliveResult>? ResultReceived;
 
+#pragma warning disable CS0067 // 発火しないイベント
     public event EventHandler<AutoStopReason>? AutoStopped;
 #pragma warning restore CS0067
+
+    /// <summary>通信が 1 回完了したことにする。</summary>
+    public void RaiseResult(KeepAliveResult result) => ResultReceived?.Invoke(this, result);
 
     public void Start()
     {

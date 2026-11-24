@@ -45,6 +45,8 @@ SystemAzmax（以下「開発者」）は、Windows 用アプリ「テザリン�
 - 動作の記録（ログ）。通信の結果、送信先、通信量の計測に使ったネットワーク アダプターの名前、自動で開始・停止したネットワークの名前、エラーの内容などが記録されます。
   エラーの内容には、ファイルの場所（Windows のユーザー名を含むことがあります）が含まれることがあります。
   30 日を過ぎたログは自動で削除されます
+- 通信の結果の履歴（日時、成否、通信方式、送信先、応答時間、エラーの内容）。時間帯ごとの集計に使います。30 日を過ぎた履歴は自動で削除されます。
+  利用者が「CSV に書き出す」を選んだときだけ、PC のダウンロード フォルダーに書き出します
 
 通信量は、PC のネットワーク アダプターの送受信量を、PC の中で数えています。通信の内容は読み取りません。
 
@@ -112,6 +114,8 @@ This information is never sent to the developer.
 - Activity logs. They include the results of each run, the destination, the name of the network adapter used to measure data usage, the name of the network used to start or stop automatically, and error details.
   Error details may include file locations, which may contain your Windows user name.
   Logs older than 30 days are deleted automatically
+- The history of results (the time, whether it succeeded, the method, the destination, the response time, and error details). It is used to count failures by time of day. History older than 30 days is deleted automatically.
+  The app writes it to the Downloads folder on your PC only when you select "CSV に書き出す" (Export to CSV)
 
 The app counts data usage on your PC from the amount of data sent and received by the network adapter. It does not read the content of any traffic.
 

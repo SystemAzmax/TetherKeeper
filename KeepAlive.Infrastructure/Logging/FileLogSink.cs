@@ -3,6 +3,7 @@ using System.Text;
 using System.Threading.Channels;
 using KeepAlive.Core.Interfaces;
 using KeepAlive.Core.Models;
+using KeepAlive.Infrastructure.Files;
 
 namespace KeepAlive.Infrastructure.Logging;
 
@@ -17,7 +18,6 @@ namespace KeepAlive.Infrastructure.Logging;
 public sealed class FileLogSink : ILogSink, IDisposable
 {
     private const string FileExtension = ".log";
-    private const string DateFormat = "yyyyMMdd";
 
     private static readonly Encoding Utf8NoBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
 
@@ -56,8 +56,7 @@ public sealed class FileLogSink : ILogSink, IDisposable
     }
 
     /// <summary>指定日のログファイルのパス。</summary>
-    public string GetFilePath(DateOnly date) =>
-        Path.Combine(_directory, $"{_filePrefix}_{date.ToString(DateFormat, CultureInfo.InvariantCulture)}{FileExtension}");
+    public string GetFilePath(DateOnly date) => DailyFiles.GetPath(_directory, _filePrefix, FileExtension, date);
 
     public void Dispose()
     {
@@ -126,29 +125,6 @@ public sealed class FileLogSink : ILogSink, IDisposable
         if (_lastCleanupDate == today)
             return;
         _lastCleanupDate = today;
-
-        if (!System.IO.Directory.Exists(_directory))
-            return;
-
-        var oldestKept = today.AddDays(-(_retentionDays - 1));
-        foreach (var path in System.IO.Directory.EnumerateFiles(_directory, $"{_filePrefix}_*{FileExtension}"))
-        {
-            var datePart = Path.GetFileNameWithoutExtension(path)[(_filePrefix.Length + 1)..];
-            if (DateOnly.TryParseExact(datePart, DateFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out var date)
-                && date < oldestKept)
-            {
-                try
-                {
-                    File.Delete(path);
-                }
-                catch (IOException)
-                {
-                    // 閲覧中などで消せない場合は次回に持ち越す
-                }
-                catch (UnauthorizedAccessException)
-                {
-                }
-            }
-        }
+        DailyFiles.DeleteOlderThan(_directory, _filePrefix, FileExtension, today, _retentionDays);
     }
 }
