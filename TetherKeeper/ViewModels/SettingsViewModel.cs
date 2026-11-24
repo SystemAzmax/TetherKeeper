@@ -12,12 +12,15 @@ public partial class SettingsViewModel : ObservableObject
     private readonly ISettingsService _settings;
     private readonly IAutoStartService _autoStart;
     private readonly ILogService _log;
+    private readonly ISleepInhibitor _sleepInhibitor;
 
-    public SettingsViewModel(ISettingsService settings, IAutoStartService autoStart, ILogService log)
+    public SettingsViewModel(
+        ISettingsService settings, IAutoStartService autoStart, ILogService log, ISleepInhibitor sleepInhibitor)
     {
         _settings = settings;
         _autoStart = autoStart;
         _log = log;
+        _sleepInhibitor = sleepInhibitor;
         SelectedMethod = Methods[0];
         Load(_settings.Current);
         _ = RefreshLaunchAtLoginAsync();
@@ -31,6 +34,8 @@ public partial class SettingsViewModel : ObservableObject
     ];
 
     public bool IsAutoStartSupported => _autoStart.IsSupported;
+
+    public bool IsSleepPreventionSupported => _sleepInhibitor.IsSupported;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsPing), nameof(IsHttpHead), nameof(IsTcpConnect), nameof(MethodDescription))]
@@ -63,6 +68,9 @@ public partial class SettingsViewModel : ObservableObject
 
     [ObservableProperty]
     public partial string FailureThreshold { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial bool PreventSleepWhileRunning { get; set; }
 
     [ObservableProperty]
     public partial bool StartOnLaunch { get; set; }
@@ -121,6 +129,7 @@ public partial class SettingsViewModel : ObservableObject
         var httpUrl = HttpUrl.Trim();
         var tcpHost = TcpHost.Trim();
         var notifyOnFailure = NotifyOnFailure;
+        var preventSleep = PreventSleepWhileRunning;
         var startOnLaunch = StartOnLaunch;
         var launchAtLogin = LaunchAtLogin;
         var errors = await _settings.UpdateAsync(current => current with
@@ -135,6 +144,7 @@ public partial class SettingsViewModel : ObservableObject
             DataLimitMegabytes = dataLimit,
             NotifyOnFailure = notifyOnFailure,
             FailureThreshold = failureThreshold,
+            PreventSleepWhileRunning = preventSleep,
             StartOnLaunch = startOnLaunch,
             LaunchAtLogin = launchAtLogin,
         });
@@ -173,6 +183,7 @@ public partial class SettingsViewModel : ObservableObject
         DataLimitMegabytes = settings.DataLimitMegabytes.ToString();
         NotifyOnFailure = settings.NotifyOnFailure;
         FailureThreshold = settings.FailureThreshold.ToString();
+        PreventSleepWhileRunning = settings.PreventSleepWhileRunning;
         StartOnLaunch = settings.StartOnLaunch;
         // LaunchAtLogin は OS 側の実際の状態を正とするため RefreshLaunchAtLoginAsync で別途取得する
     }

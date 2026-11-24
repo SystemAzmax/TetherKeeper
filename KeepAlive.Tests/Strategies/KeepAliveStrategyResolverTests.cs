@@ -30,6 +30,7 @@ public class KeepAliveStrategyResolverTests
             .AddSingleton<IDataUsageStore, InMemoryDataUsageStore>()
             .AddSingleton<IDataUsageMeter, FakeDataUsageMeter>()
             .AddSingleton<IPowerEventSource, FakePowerEventSource>()
+            .AddSingleton<ISleepInhibitor, FakeSleepInhibitor>()
             .AddKeepAliveCore()
             .BuildServiceProvider();
 

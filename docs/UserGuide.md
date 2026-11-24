@@ -89,6 +89,7 @@ After making changes, select "保存" (Save). "既定値に戻す" (Restore defa
 | 通信量の上限（MB） (Data limit in MB) | Stops when the total data usage reaches this value. 0 means no limit (default) |
 | 通知する連続失敗の回数 (Consecutive failures before notifying) | When the traffic fails this many times in a row, the app shows a notification and adds a red dot to the tray icon. From 1 to 100. The default is 3 |
 | 失敗が続いたときと、復旧したときに通知する (Notify when failures continue and when the connection recovers) | When off, the app doesn't show notifications (the red dot still appears on the tray icon). The default is on |
+| キープアライブの動作中はスリープしない (Don't sleep while the keep-alive is running) | When on, the PC doesn't go to sleep automatically while the keep-alive is running, even if you leave it idle. The default is off (see [After the PC wakes from sleep](#after-the-pc-wakes-from-sleep)) |
 | アプリ起動時に自動で開始する (Start automatically when the app starts) | When on, the keep-alive starts when the app starts |
 | Windows ログイン時にアプリを起動する (Start the app when you sign in to Windows) | When on, the app starts in the tray when you sign in to Windows |
 
@@ -147,6 +148,14 @@ Open Task Manager and set TetherKeeper to "Enabled" in "Startup apps".
 ### After the PC wakes from sleep
 
 When the PC wakes from sleep, the app resumes sending traffic after 5 seconds. Nothing is sent while the PC is asleep.
+
+If tethering drops while the PC is asleep, turn on "キープアライブの動作中はスリープしない" (Don't sleep while the keep-alive is running) on the Settings screen.
+While the keep-alive is running, the PC doesn't go to sleep automatically, even if you leave it idle. Only sleep is prevented; the screen still turns off as usual.
+
+- The PC still goes to sleep when you close the lid, press the power button, or select "Sleep" from the Start menu (this is how Windows works).
+- On laptops, battery use increases.
+- On laptops that support Modern Standby and are running on battery, the PC goes to sleep 5 minutes after the Windows sleep timeout passes (this is how Windows works).
+- When you stop the keep-alive, the PC goes back to its usual sleep settings.
 
 ## 4. Uninstalling
 

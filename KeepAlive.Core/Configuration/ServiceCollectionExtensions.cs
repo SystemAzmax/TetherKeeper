@@ -12,7 +12,7 @@ public static class ServiceCollectionExtensions
     /// <summary>
     /// OS 非依存のサービスを登録する。
     /// <see cref="ISettingsStore"/> / <see cref="IDataUsageStore"/> / <see cref="IDataUsageMeter"/> /
-    /// <see cref="IAutoStartService"/> / <see cref="IPowerEventSource"/> は
+    /// <see cref="IAutoStartService"/> / <see cref="IPowerEventSource"/> / <see cref="ISleepInhibitor"/> は
     /// プラットフォーム側 (Infrastructure) で別途登録すること。
     /// </summary>
     public static IServiceCollection AddKeepAliveCore(

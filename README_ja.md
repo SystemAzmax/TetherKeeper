@@ -18,6 +18,7 @@ iPhone のインターネット共有（テザリング）、Wi-Fi ルーター�
 - 成功・失敗の回数、連続失敗数、ログの表示
 - 「今すぐ実行」ボタン
 - スリープ復帰を検知すると、5 秒後に即時実行する
+- キープアライブの動作中は自動スリープをしないようにできる（既定はオフ。画面の消灯は妨げない）
 - 指定した日時にキープアライブを自動停止（モニター画面で日付と時刻を選んで「予約」。停止後は予約が自動で解除される）
 - 通信量の上限での自動停止（設定画面で上限を MB で指定。キープアライブ動作中の通信量を、モニター画面の「リセット」を押すまで累計し、上限に達したら停止する。上限に達している間は開始できない）
   - 数えるのは、インターネットへの通信に使われているネットワークアダプター（有線 LAN と Wi-Fi の両方につながっている場合は Windows が通信に選んだ方）の送受信量で、ほかのアプリの通信も含む。どのアダプターを数えているかはログに「通信量の計測対象」として出る
@@ -136,7 +137,7 @@ powershell -ExecutionPolicy Bypass -File build\Publish-Msix.ps1 -NewCertificate
 │   ├─ Settings              JsonFileSettingsStore / JsonFileDataUsageStore（通信量の累計）
 │   ├─ Network               NetworkInterfaceDataUsageMeter（アダプターの送受信量）
 │   ├─ AutoStart             WindowsAutoStartService（HKCU\Run）
-│   └─ Power                 WindowsPowerEventSource（SystemEvents）
+│   └─ Power                 WindowsPowerEventSource（SystemEvents）/ WindowsSleepInhibitor（動作中のスリープ抑止）
 ├─ TetherKeeper              .NET MAUI の UI（Views / ViewModels / Platforms）
 │   ├─ Services              AppInfoProvider（バージョンなどの取得）/ AppPaths / AppPackage など
 │   ├─ Platforms/Windows     トレイ常駐、多重起動の防止、Package.appxmanifest と表示名のリソース（Strings）

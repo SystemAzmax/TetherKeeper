@@ -11,6 +11,7 @@ public sealed class KeepAliveWorkerTests : IAsyncDisposable
 
     private readonly FakeTimeProvider _time = new();
     private readonly FakePowerEventSource _power = new();
+    private readonly FakeSleepInhibitor _sleep = new();
     private readonly InMemorySettingsStore _store = new();
     private readonly FakeDataUsageMeter _meter = new();
     private readonly InMemoryDataUsageStore _usageStore = new();
@@ -40,6 +41,7 @@ public sealed class KeepAliveWorkerTests : IAsyncDisposable
             _dataUsage,
             _log,
             _power,
+            _sleep,
             _time,
             options);
     }
@@ -194,6 +196,77 @@ public sealed class KeepAliveWorkerTests : IAsyncDisposable
 
         Assert.Equal(1, _ping.ExecutionCount);
         Assert.DoesNotContain(_log.GetEntries(), e => e.Message.Contains("設定変更を反映します"));
+    }
+
+    [Fact]
+    public async Task PreventSleep_IsEnabledOnlyWhileRunning()
+    {
+        await _settings.SaveAsync(_settings.Current with { PreventSleepWhileRunning = true });
+        Assert.False(_sleep.IsEnabled);
+
+        _worker.Start();
+        Assert.True(_sleep.IsEnabled);
+        Assert.Contains(_log.GetEntries(), e => e.Message.Contains("自動スリープをしないようにしました"));
+
+        await _worker.StopAsync();
+        Assert.False(_sleep.IsEnabled);
+        Assert.Contains(_log.GetEntries(), e => e.Message.Contains("自動スリープの抑止を解除しました"));
+    }
+
+    [Fact]
+    public async Task PreventSleep_IsNotUsed_WhenSettingIsOff()
+    {
+        _worker.Start();
+        await TestHelpers.WaitUntilAsync(() => _ping.ExecutionCount == 1);
+        await _worker.StopAsync();
+
+        Assert.Equal(0, _sleep.ChangeCount);
+    }
+
+    [Fact]
+    public async Task PreventSleep_FollowsSettingChangeWhileRunning_WithoutExecuting()
+    {
+        _worker.Start();
+        await TestHelpers.WaitUntilAsync(() => _ping.ExecutionCount == 1);
+
+        await _settings.SaveAsync(_settings.Current with { PreventSleepWhileRunning = true });
+        Assert.True(_sleep.IsEnabled);
+
+        await _settings.SaveAsync(_settings.Current with { PreventSleepWhileRunning = false });
+        Assert.False(_sleep.IsEnabled);
+
+        // スリープの抑止だけの変更では通信し直さない
+        await Task.Delay(100);
+        Assert.Equal(1, _ping.ExecutionCount);
+    }
+
+    [Fact]
+    public async Task PreventSleep_IsReleasedByAutoStop()
+    {
+        await _settings.SaveAsync(_settings.Current with
+        {
+            IntervalSeconds = 600,
+            PreventSleepWhileRunning = true,
+            AutoStopAt = _time.GetUtcNow().AddSeconds(30),
+        });
+        _worker.Start();
+        Assert.True(_sleep.IsEnabled);
+
+        await TestHelpers.WaitUntilAsync(() => !_worker.IsRunning, AdvanceOneSecond);
+        Assert.False(_sleep.IsEnabled);
+    }
+
+    [Fact]
+    public async Task PreventSleep_Failure_IsLogged_AndKeepAliveContinues()
+    {
+        await _settings.SaveAsync(_settings.Current with { PreventSleepWhileRunning = true });
+        _sleep.Throw = true;
+
+        _worker.Start();
+        await TestHelpers.WaitUntilAsync(() => _ping.ExecutionCount == 1);
+
+        Assert.True(_worker.IsRunning);
+        Assert.Contains(_log.GetEntries(), e => e.Level == LogLevelKind.Warning && e.Message.Contains("sleep boom"));
     }
 
     [Fact]
@@ -380,7 +453,7 @@ public sealed class KeepAliveWorkerTests : IAsyncDisposable
     {
         var settings = new FaultySettingsService(new AppSettings { IntervalSeconds = 600 });
         using var worker = new KeepAliveWorker(
-            new KeepAliveStrategyResolver([_ping, _tcp]), settings, _dataUsage, _log, _power, _time, new KeepAliveOptions());
+            new KeepAliveStrategyResolver([_ping, _tcp]), settings, _dataUsage, _log, _power, _sleep, _time, new KeepAliveOptions());
         var stateChanges = 0;
         worker.StateChanged += (_, _) => Interlocked.Increment(ref stateChanges);
 

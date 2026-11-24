@@ -127,6 +127,30 @@ internal sealed class FakePowerEventSource : IPowerEventSource
     public void RaiseResumed() => Resumed?.Invoke(this, EventArgs.Empty);
 }
 
+internal sealed class FakeSleepInhibitor : ISleepInhibitor
+{
+    private int _changeCount;
+
+    public bool IsSupported { get; init; } = true;
+
+    public bool IsEnabled { get; private set; }
+
+    /// <summary>有効・無効を切り替えた回数。</summary>
+    public int ChangeCount => Volatile.Read(ref _changeCount);
+
+    /// <summary>true にすると、SetEnabled で例外を投げる。</summary>
+    public bool Throw { get; set; }
+
+    public void SetEnabled(bool enabled)
+    {
+        if (Throw)
+            throw new InvalidOperationException("sleep boom");
+
+        IsEnabled = enabled;
+        Interlocked.Increment(ref _changeCount);
+    }
+}
+
 /// <summary>固定の設定を返すだけの ISettingsService (Strategy テスト用)。</summary>
 internal sealed class StaticSettingsService(AppSettings settings) : ISettingsService
 {

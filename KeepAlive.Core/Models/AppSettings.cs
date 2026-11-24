@@ -73,6 +73,13 @@ public sealed record AppSettings
     /// </summary>
     public int FailureThreshold { get; init; } = 3;
 
+    /// <summary>
+    /// キープアライブの動作中は、操作しないで放置したときの自動スリープをしないようにするか (対応 OS のみ)。
+    /// スリープ中は通信できず、その間に切断されるのを防ぐため。電源の設定を尊重し、既定はオフにする。
+    /// 画面の消灯は妨げない。
+    /// </summary>
+    public bool PreventSleepWhileRunning { get; init; }
+
     public TimeSpan Interval => TimeSpan.FromSeconds(IntervalSeconds);
 
     /// <summary>通信量の上限 (バイト)。無効なら null。</summary>

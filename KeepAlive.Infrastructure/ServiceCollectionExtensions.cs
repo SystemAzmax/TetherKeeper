@@ -1,6 +1,8 @@
+using System.Globalization;
 using System.Runtime.Versioning;
 using KeepAlive.Core.Configuration;
 using KeepAlive.Core.Interfaces;
+using KeepAlive.Core.Services;
 using KeepAlive.Infrastructure.AutoStart;
 using KeepAlive.Infrastructure.Logging;
 using KeepAlive.Infrastructure.Network;
@@ -45,6 +47,7 @@ public static class ServiceCollectionExtensions
         {
             // TODO: macOS は SMAppService (Login Items) で実装する
             services.AddSingleton<IPowerEventSource, NullPowerEventSource>();
+            services.AddSingleton<ISleepInhibitor, UnsupportedSleepInhibitor>();
             services.AddSingleton<IAutoStartService, UnsupportedAutoStartService>();
         }
 
@@ -55,6 +58,11 @@ public static class ServiceCollectionExtensions
     private static void AddWindowsServices(IServiceCollection services, string appName, string? autoStartArguments)
     {
         services.AddSingleton<IPowerEventSource, WindowsPowerEventSource>();
+        // 理由は powercfg /requests に表示される。表示言語に合わせて日本語と英語を切り替える
+        services.AddSingleton<ISleepInhibitor>(_ => new WindowsSleepInhibitor(
+            CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "ja"
+                ? $"{AppDisplayName.JAPANESE}のキープアライブ（定期的な通信）が動作中です"
+                : $"{AppDisplayName.ENGLISH} keep-alive is running"));
         services.AddSingleton<IAutoStartService>(Environment.ProcessPath is { } path
             ? new WindowsAutoStartService(appName, path, autoStartArguments)
             : new UnsupportedAutoStartService());

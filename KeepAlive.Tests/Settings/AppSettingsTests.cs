@@ -156,6 +156,13 @@ public class AppSettingsTests
         Assert.Equal(3, settings.FailureThreshold);
     }
 
+    [Fact]
+    public void PreventSleepWhileRunning_IsOffByDefault()
+    {
+        // 電源の設定を尊重するため、既定ではスリープを妨げない
+        Assert.False(new AppSettings().PreventSleepWhileRunning);
+    }
+
     [Theory]
     [InlineData(0)]
     [InlineData(AppSettings.MaxFailureThreshold + 1)]

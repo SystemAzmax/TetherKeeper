@@ -18,10 +18,15 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
     private readonly IDataUsageTracker _dataUsage;
     private readonly ILogService _log;
     private readonly IPowerEventSource _power;
+    private readonly ISleepInhibitor _sleepInhibitor;
     private readonly TimeProvider _timeProvider;
     private readonly KeepAliveOptions _options;
 
     private readonly object _gate = new();
+
+    /// <summary>スリープの抑止の切り替えを 1 つずつ行うためのロック (<see cref="_gate"/> の中では取らない)。</summary>
+    private readonly object _sleepGate = new();
+    private bool _sleepInhibited;
     private readonly Channel<bool> _wake =
         Channel.CreateBounded<bool>(new BoundedChannelOptions(1) { FullMode = BoundedChannelFullMode.DropWrite });
 
@@ -49,6 +54,7 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
         IDataUsageTracker dataUsage,
         ILogService log,
         IPowerEventSource power,
+        ISleepInhibitor sleepInhibitor,
         TimeProvider timeProvider,
         KeepAliveOptions options)
     {
@@ -57,6 +63,7 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
         _dataUsage = dataUsage;
         _log = log;
         _power = power;
+        _sleepInhibitor = sleepInhibitor;
         _timeProvider = timeProvider;
         _options = options;
         _lastSettings = settings.Current;
@@ -140,6 +147,7 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
             if (s.DataLimitBytes is not null)
                 _log.Info($"通信量の累計が {s.DataLimitMegabytes} MB に達したら自動停止します (現在 {DataUsage.Format(_dataUsage.Current.TotalBytes)})。");
 
+            UpdateSleepInhibition();
             RaiseStateChanged();
         }
         finally
@@ -191,7 +199,40 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
         }
 
         _log.Info("キープアライブを停止しました。");
+        UpdateSleepInhibition();
         RaiseStateChanged();
+    }
+
+    /// <summary>
+    /// 動作中で、設定でスリープの抑止がオンなら抑止し、それ以外なら解除する。
+    /// 開始・停止・設定の変更のたびに呼ぶ。失敗してもキープアライブは止めず、ログに残すだけにする。
+    /// </summary>
+    private void UpdateSleepInhibition()
+    {
+        if (!_sleepInhibitor.IsSupported)
+            return;
+
+        lock (_sleepGate)
+        {
+            var inhibit = IsRunning && _settings.Current.PreventSleepWhileRunning;
+            if (inhibit == _sleepInhibited)
+                return;
+
+            try
+            {
+                _sleepInhibitor.SetEnabled(inhibit);
+                _sleepInhibited = inhibit;
+                _log.Info(inhibit
+                    ? "動作中は、操作しないときの自動スリープをしないようにしました。"
+                    : "自動スリープの抑止を解除しました。");
+            }
+            catch (Exception ex)
+            {
+                _log.Warning(inhibit
+                    ? $"自動スリープを抑止できませんでした: {ex.Message}"
+                    : $"自動スリープの抑止を解除できませんでした: {ex.Message}");
+            }
+        }
     }
 
     public void TriggerNow()
@@ -217,6 +258,23 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
         lock (_gate)
         {
             _runCts?.Cancel();
+        }
+
+        // 停止を待たずに終わる場合も、スリープの抑止は残さない
+        lock (_sleepGate)
+        {
+            if (!_sleepInhibited)
+                return;
+
+            try
+            {
+                _sleepInhibitor.SetEnabled(false);
+                _sleepInhibited = false;
+            }
+            catch (Exception ex)
+            {
+                _log.Warning($"自動スリープの抑止を解除できませんでした: {ex.Message}");
+            }
         }
     }
 
@@ -426,6 +484,9 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
         if (!IsRunning)
             return;
 
+        if (previous.PreventSleepWhileRunning != settings.PreventSleepWhileRunning)
+            UpdateSleepInhibition();
+
         if (WithoutNonCommunicationSettings(previous) == WithoutNonCommunicationSettings(settings))
         {
             _wake.Writer.TryWrite(true);
@@ -437,11 +498,19 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
     }
 
     /// <summary>
-    /// 自動停止の条件と、失敗の通知の設定を除いた設定 (通信に関わる設定が変わったかの判定用)。
+    /// 自動停止の条件、失敗の通知、スリープの抑止の設定を除いた設定 (通信に関わる設定が変わったかの判定用)。
     /// 自動停止の条件だけが変わったときは、通信せずに停止の判定だけをやり直す。通知の設定は Worker では使わない。
+    /// スリープの抑止は、設定の変更時に別に切り替える。
     /// </summary>
     private static AppSettings WithoutNonCommunicationSettings(AppSettings settings) =>
-        settings with { AutoStopAt = null, DataLimitMegabytes = 0, NotifyOnFailure = false, FailureThreshold = 0 };
+        settings with
+        {
+            AutoStopAt = null,
+            DataLimitMegabytes = 0,
+            NotifyOnFailure = false,
+            FailureThreshold = 0,
+            PreventSleepWhileRunning = false,
+        };
 
     private void OnSuspending(object? sender, EventArgs e) => _log.Info("OS がスリープに入ります。");
 

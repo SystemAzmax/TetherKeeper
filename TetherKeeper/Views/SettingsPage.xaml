@@ -81,6 +81,16 @@
             <Label Text="この回数だけ続けて失敗すると、接続が切れているとみなして通知し、タスクトレイのアイコンに赤い印を付けます（1〜100 回）。成功に戻ったら「復旧しました」と通知します。通知をオフにしても、アイコンの印は付きます。"
                    Style="{StaticResource Hint}" />
 
+            <!-- 動作中のスリープ抑止 -->
+            <VerticalStackLayout IsVisible="{Binding IsSleepPreventionSupported}" Spacing="4" Margin="0,8,0,0">
+                <Grid ColumnDefinitions="*,Auto">
+                    <Label Text="キープアライブの動作中はスリープしない" VerticalOptions="Center" />
+                    <Switch Grid.Column="1" IsToggled="{Binding PreventSleepWhileRunning}" />
+                </Grid>
+                <Label Text="操作しないで放置したときの自動スリープを止めます（画面は消えます）。ふたを閉じる、電源ボタンを押すなどの操作でのスリープは防げません。ノート PC ではバッテリーの消費が増えます。"
+                       Style="{StaticResource Hint}" />
+            </VerticalStackLayout>
+
             <Grid ColumnDefinitions="*,Auto" Margin="0,8,0,0">
                 <Label Text="アプリ起動時に自動で開始する" VerticalOptions="Center" />
                 <Switch Grid.Column="1" IsToggled="{Binding StartOnLaunch}" />

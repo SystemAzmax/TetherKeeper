@@ -19,6 +19,7 @@ The app's screens are in Japanese only.
 - Shows the number of successes and failures, consecutive failures, and the log
 - "今すぐ実行" (Run now) button
 - When the PC wakes from sleep, runs again after 5 seconds
+- Optionally prevents automatic sleep while the keep-alive is running (off by default. The screen still turns off)
 - Automatic stop at a specified date and time (choose the date and time on the "モニター" (Monitor) screen and select "予約" (Schedule). The schedule is cleared automatically after it stops)
 - Automatic stop at a data limit (set the limit in MB on the Settings screen. The app adds up the data used while the keep-alive is running until you select "リセット" (Reset) on the Monitor screen, and stops when it reaches the limit. You can't start while the limit is reached)
   - The app counts the data sent and received by the network adapter used for internet traffic (if you are connected to both wired LAN and Wi-Fi, the one Windows chooses). This includes traffic from other apps. The log shows which adapter is counted
@@ -137,7 +138,7 @@ powershell -ExecutionPolicy Bypass -File build\Publish-Msix.ps1 -NewCertificate
 │   ├─ Settings              JsonFileSettingsStore / JsonFileDataUsageStore (total data usage)
 │   ├─ Network               NetworkInterfaceDataUsageMeter (data sent and received by the adapter)
 │   ├─ AutoStart             WindowsAutoStartService (HKCU\Run)
-│   └─ Power                 WindowsPowerEventSource (SystemEvents)
+│   └─ Power                 WindowsPowerEventSource (SystemEvents) / WindowsSleepInhibitor (prevents sleep while running)
 ├─ TetherKeeper              .NET MAUI UI (Views / ViewModels / Platforms)
 │   ├─ Services              AppInfoProvider (version and other information) / AppPaths / AppPackage, etc.
 │   ├─ Platforms/Windows     Tray, single instance, Package.appxmanifest and the display name resources (Strings)
