@@ -82,7 +82,7 @@ Use "Monitor", "History", and "Settings" at the bottom of the window to switch s
 | Auto stop | Choose a date and time and select "Schedule" to stop the keep-alive at that time. Select "In 1 hour" or "In 2 hours" to schedule a stop that long from now. The schedule is cleared when it stops. Select "Cancel" to cancel the schedule. The app does not exit (it exits if you turn on "Exit the app when it stops automatically" on the Settings screen). If you use the weekly auto stop, its schedule is also shown |
 | Data usage | The total data counted while the keep-alive is running. If you set a limit on the Settings screen, the keep-alive stops when it reaches the limit. Select "Reset" to set it back to 0 |
 | Total / Succeeded / Failed / Consecutive failures | Number of runs. A run that succeeds with the fallback method counts as succeeded, and that number is shown below. Select "Reset statistics" to set them back to 0 |
-| Log | Records such as the results of each run. "Clear log" clears only the log on the screen (the log files remain). "Location" opens the folder where the logs and settings are saved |
+| Log | Records such as the results of each run. "Clear log" clears only the log on the screen (the log files remain). "Location" opens the folder where the log files are saved (`logs`) |
 
 About data usage:
 
@@ -104,7 +104,7 @@ This screen counts the results recorded while the keep-alive was running, by tim
 | Failures by time of day | For each hour from 0 to 23, shows the number of runs, the number of failures, and the failure rate. The red bar shows the failure rate; the hour with the highest rate has the longest bar |
 
 - Runs that succeed with the fallback method count as successes.
-- Records are kept for 30 days. They are saved as daily CSV files in `history`, in the same folder as the logs (open it with "Location" on the Monitor screen).
+- Records are kept for 30 days. They are saved as daily CSV files in `history`, which is in the parent folder of the log folder (`logs`, which "Location" on the Monitor screen opens).
 
 ### Settings
 

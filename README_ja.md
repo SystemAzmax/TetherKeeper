@@ -60,7 +60,7 @@ Visual Studio では `TetherKeeper.slnx` を開き、デバッグ対象に「Win
 設定ファイルは `%LOCALAPPDATA%\TetherKeeper\settings.json` に、通信量の累計は同じフォルダの `data-usage.json` に保存されます。
 ログは同じフォルダ内の `logs\TetherKeeper_yyyyMMdd.log` に 1 日 1 ファイルで出力され、30 日を過ぎたファイルは自動で削除されます。
 通信の結果の履歴も、同じように `history\TetherKeeper_yyyyMMdd.csv` に出力されます。
-保存フォルダは、モニター画面の「保存先」ボタンで開けます。
+モニター画面の「保存先」ボタンでは、`logs` フォルダが開きます。
 （上記は開発時の非パッケージ版の場所です。MSIX 版は下記のとおりパッケージ専用フォルダになります）
 
 ## MSIX でのインストール
@@ -111,7 +111,7 @@ powershell -ExecutionPolicy Bypass -File build\Publish-Msix.ps1
 
 | 項目 | 非パッケージ版（開発時の exe 直接実行） | MSIX 版 |
 |---|---|---|
-| 設定・ログの保存先 | `%LOCALAPPDATA%\TetherKeeper` | `%LOCALAPPDATA%\Packages\TetherKeeper_<発行元ID>\LocalState`（「保存先」ボタンで開ける） |
+| 設定・ログの保存先 | `%LOCALAPPDATA%\TetherKeeper` | `%LOCALAPPDATA%\Packages\TetherKeeper_<発行元ID>\LocalState`（「保存先」ボタンで、この中の `logs` が開く） |
 | ログイン時の自動起動 | レジストリの Run キー | StartupTask（タスクマネージャーの「スタートアップ アプリ」でも切り替え可能） |
 | アンインストール時のデータ | 残る | 自動で削除される |
 

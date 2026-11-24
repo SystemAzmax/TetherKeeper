@@ -61,7 +61,7 @@ In Visual Studio, open `TetherKeeper.slnx` and choose "Windows Machine" as the d
 Settings are saved to `%LOCALAPPDATA%\TetherKeeper\settings.json`, and the total data usage is saved to `data-usage.json` in the same folder.
 Logs are written to `logs\TetherKeeper_yyyyMMdd.log` in the same folder, one file per day, and files older than 30 days are deleted automatically.
 The history of results is written to `history\TetherKeeper_yyyyMMdd.csv` in the same way.
-You can open the folder with the "Location" button on the Monitor screen.
+The "Location" button on the Monitor screen opens the `logs` folder.
 (These are the locations for the unpackaged app during development. The MSIX app uses a folder dedicated to the package, as described below.)
 
 ## Installing with MSIX
@@ -112,7 +112,7 @@ Uninstall TetherKeeper from Settings → Apps → Installed apps. The settings a
 
 | Item | Unpackaged (running the exe directly during development) | MSIX |
 |---|---|---|
-| Where settings and logs are saved | `%LOCALAPPDATA%\TetherKeeper` | `%LOCALAPPDATA%\Packages\TetherKeeper_<publisher ID>\LocalState` (open it with the "Location" button) |
+| Where settings and logs are saved | `%LOCALAPPDATA%\TetherKeeper` | `%LOCALAPPDATA%\Packages\TetherKeeper_<publisher ID>\LocalState` (the "Location" button opens its `logs` folder) |
 | Start at sign-in | The registry Run key | StartupTask (can also be switched in "Startup apps" in Task Manager) |
 | Data when uninstalled | Kept | Deleted automatically |
 
