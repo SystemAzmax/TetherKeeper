@@ -40,14 +40,14 @@ public sealed class AppExitService
         {
             // 停止が終わらない場合も終了は妨げない
             await Task.WhenAny(_worker.StopAsync(), Task.Delay(TimeSpan.FromSeconds(5)));
-            _log.Info($"{AppDisplayName.JAPANESE}を終了します。");
+            _log.Info(Text.Format(AppStrings.Exit_Exiting, AppDisplayName.GetCurrent()));
 
             // ログファイルへの書き残しが無いようにしてから終了する (ファイル書き込みが詰まっても終了は妨げない)
             await Task.WhenAny(_log.FlushAsync(), Task.Delay(TimeSpan.FromSeconds(3)));
         }
         catch (Exception ex)
         {
-            _log.Error($"終了処理中にエラーが発生しました: {ex.Message}");
+            _log.Error(Text.Format(AppStrings.Exit_Error, ex.Message));
         }
 
         try
@@ -69,7 +69,7 @@ public sealed class AppExitService
         if (reason == AutoStopReason.DataLimit || !_settings.Current.ExitAppOnAutoStop)
             return;
 
-        _log.Info("自動停止したため、アプリを終了します。");
+        _log.Info(AppStrings.Exit_AutoStopped);
         // Worker のスレッドから呼ばれるため、終了は UI スレッドで行う
         MainThread.BeginInvokeOnMainThread(() => _ = ExitAsync());
     }

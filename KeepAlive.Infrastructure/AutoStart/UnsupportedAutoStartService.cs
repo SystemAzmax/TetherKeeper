@@ -12,6 +12,6 @@ public sealed class UnsupportedAutoStartService : IAutoStartService
     public Task<bool> IsEnabledAsync() => Task.FromResult(false);
 
     public Task SetEnabledAsync(bool enabled) => enabled
-        ? Task.FromException(new PlatformNotSupportedException("このプラットフォームでは自動起動を設定できません。"))
+        ? Task.FromException(new PlatformNotSupportedException(KeepAlive.Core.Resources.CoreStrings.AutoStart_NotSupported))
         : Task.CompletedTask;
 }

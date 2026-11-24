@@ -8,6 +8,20 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="KeepAlive.Tests" />
+    <Using Include="KeepAlive.Core.Resources" />
+  </ItemGroup>
+
+  <!-- 画面・ログ・通知の文言。CoreStrings.resx が英語 (既定)、CoreStrings.ja.resx が日本語。
+       Windows の表示言語 (CurrentUICulture) が日本語なら日本語、それ以外は英語になる。
+       ビルド時に CoreStrings クラスを生成する (Visual Studio のデザイナーが無くても作れるようにするため) -->
+  <ItemGroup>
+    <EmbeddedResource Update="Resources\CoreStrings.resx">
+      <StronglyTypedFileName>$(IntermediateOutputPath)CoreStrings.Designer.cs</StronglyTypedFileName>
+      <StronglyTypedLanguage>CSharp</StronglyTypedLanguage>
+      <StronglyTypedNamespace>KeepAlive.Core.Resources</StronglyTypedNamespace>
+      <StronglyTypedClassName>CoreStrings</StronglyTypedClassName>
+      <PublicClass>true</PublicClass>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>

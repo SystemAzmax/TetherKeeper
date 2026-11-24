@@ -30,7 +30,7 @@ public sealed class AutoStopScheduler
     public Task<IReadOnlyList<string>> ScheduleAtAsync(DateTimeOffset stopAt)
     {
         if (stopAt <= _timeProvider.GetUtcNow())
-            return Task.FromResult<IReadOnlyList<string>>(["現在より後の日時を指定してください。"]);
+            return Task.FromResult<IReadOnlyList<string>>([CoreStrings.AutoStop_PastTime]);
 
         return SaveAsync(stopAt);
     }
@@ -64,8 +64,8 @@ public sealed class AutoStopScheduler
             return errors;
 
         _log.Info(local is { } value
-            ? $"自動停止を {value:yyyy/MM/dd HH:mm} に予約しました。"
-            : "自動停止の予約を解除しました。");
+            ? Text.Format(CoreStrings.AutoStop_Scheduled, value)
+            : CoreStrings.AutoStop_Cancelled);
         return errors;
     }
 }

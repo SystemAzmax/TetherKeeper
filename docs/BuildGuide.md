@@ -1,7 +1,7 @@
 # ビルド方法
 
 ビルドと実行、MSIX パッケージの作り方は、[README_ja.md](../README_ja.md) の「ビルドと実行」と「MSIX でのインストール」にあります。
-ここでは、リリースのときに確かめる、アプリ名・バージョン・ライセンス表示の扱いをまとめます。
+ここでは、リリースのときに確かめる、アプリ名・画面の文言・バージョン・ライセンス表示の扱いをまとめます。
 
 ## アプリ名（日本語名と英語名）
 
@@ -12,7 +12,8 @@
 | --- | --- | --- |
 | スタートメニュー、タスクバー、設定のアプリ一覧、タスク マネージャーの「スタートアップ アプリ」（MSIX 版） | `TetherKeeper\Platforms\Windows\Strings\<言語>\Resources.resw` の `AppDisplayName` | Windows の言語の設定。日本語が無い場合は、既定の言語（en-US）の名前 |
 | ウィンドウのタイトル、タスクトレイのツールチップ、「このアプリについて」 | `KeepAlive.Core\Services\AppDisplayName.cs` | 表示言語（`CultureInfo.CurrentUICulture`）が日本語かどうか |
-| 日本語の文章の中の名前（メッセージ、ログ、ライセンス表示など） | `AppDisplayName.JAPANESE` と、`tools\notices\build-notices.sh` | 常に日本語名 |
+| メッセージやログの中の名前 | `AppDisplayName.GetCurrent()` を文言（「画面の文言」を参照）に埋め込む | 表示言語が日本語かどうか |
+| ライセンス表示 | `tools\notices\build-notices.sh` | 常に日本語名 |
 
 - `Package.appxmanifest` の `DisplayName`・`Description` と、自動起動（`StartupTask`）の `DisplayName` は、
   `ms-resource:AppDisplayName` のようにリソースを参照しています。マニフェストに名前を直接書かないでください。
@@ -41,6 +42,26 @@
      ストアに出すパッケージは、Partner Center にアップロードするとストアが署名します。
 3. 申請の **ストア登録情報** で、言語ごとの **製品名** を選びます（日本語はテザリングキーパー、英語は TetherKeeper）。
    英語の登録情報を用意しない場合は、**言語の追加と削除** で英語を外せます。
+
+## 画面の文言（日本語と英語）
+
+画面・ログ・通知・入力エラーの文言は、リソースファイル（.resx）に置いています。
+表示言語（`CultureInfo.CurrentUICulture`）が日本語なら日本語、それ以外は英語になります。アプリ名の切り替えと同じ決まりです。
+
+| ファイル | 内容 |
+| --- | --- |
+| `KeepAlive.Core\Resources\CoreStrings.resx` / `CoreStrings.ja.resx` | ログ、入力エラー、失敗・復旧の通知、曜日、履歴の CSV の見出しなど、Core が作る文言 |
+| `TetherKeeper\Resources\Strings\AppStrings.resx` / `AppStrings.ja.resx` | 画面、トレイのメニューと通知、ダイアログなど、アプリが作る文言 |
+
+- `.resx`（拡張子の前に言語が無いもの）が英語で、既定の言語です。日本語と英語以外の言語では英語になります。
+- 文言を足すときは、英語と日本語の両方のファイルに同じ名前で足します。
+  `KeepAlive.Tests` の `LocalizationTests` が、両方の名前と、`{0}` などの埋め込み先の番号がそろっているかを確かめます。
+- `CoreStrings` と `AppStrings` のクラスは、ビルドのときに `.resx` から作ります（`.csproj` の `StronglyTyped*` の設定）。
+  Visual Studio の「カスタム ツール」は使いません。
+- 値を埋め込む文言は、`Text.Format(CoreStrings.名前, 値, …)` のように使います。
+- 履歴の CSV の「成功」「失敗」などは表示言語で書き、読むときはどちらの言語でも受け付けます。表示言語を切り替えても、それまでの履歴を読めます。
+- テストは、PC の表示言語に関係なく日本語の文言で確かめます（`KeepAlive.Tests\TestCulture.cs`）。
+- ストアの登録情報やスクリーンショットを英語で用意するときは、Windows の表示言語を英語にして起動します。
 
 ## バージョンの上げ方
 

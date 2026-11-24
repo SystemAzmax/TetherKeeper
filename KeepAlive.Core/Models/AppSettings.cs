@@ -130,30 +130,30 @@ public sealed record AppSettings
         var errors = new List<string>();
 
         if (!Enum.IsDefined(Method))
-            errors.Add("通信方式が不正です。");
+            errors.Add(CoreStrings.Settings_InvalidMethod);
         if (IntervalSeconds is < MinIntervalSeconds or > MaxIntervalSeconds)
-            errors.Add($"実行間隔は {MinIntervalSeconds}〜{MaxIntervalSeconds} 秒で指定してください。");
+            errors.Add(Text.Format(CoreStrings.Settings_IntervalRange, MinIntervalSeconds, MaxIntervalSeconds));
         if (TimeoutMilliseconds is < MinTimeoutMilliseconds or > MaxTimeoutMilliseconds)
-            errors.Add($"タイムアウトは {MinTimeoutMilliseconds}〜{MaxTimeoutMilliseconds} ミリ秒で指定してください。");
+            errors.Add(Text.Format(CoreStrings.Settings_TimeoutRange, MinTimeoutMilliseconds, MaxTimeoutMilliseconds));
         if (TimeoutMilliseconds >= IntervalSeconds * 1000L)
-            errors.Add("タイムアウトは実行間隔より短くしてください。");
+            errors.Add(CoreStrings.Settings_TimeoutShorterThanInterval);
         if (DataLimitMegabytes is < 0 or > MaxDataLimitMegabytes)
-            errors.Add($"通信量の上限は 0〜{MaxDataLimitMegabytes} MB で指定してください。");
+            errors.Add(Text.Format(CoreStrings.Settings_DataLimitRange, MaxDataLimitMegabytes));
         if (FailureThreshold is < MinFailureThreshold or > MaxFailureThreshold)
-            errors.Add($"通知する連続失敗の回数は {MinFailureThreshold}〜{MaxFailureThreshold} 回で指定してください。");
+            errors.Add(Text.Format(CoreStrings.Settings_FailureThresholdRange, MinFailureThreshold, MaxFailureThreshold));
         if (WeeklyStopEnabled && (WeeklyStopDays & WeeklyDays.Everyday) == WeeklyDays.None)
-            errors.Add("毎週の自動停止の曜日を 1 つ以上選んでください。");
+            errors.Add(CoreStrings.Settings_WeeklyStopDaysRequired);
         if (AutoControlByNetwork && string.IsNullOrWhiteSpace(AutoControlNetworkName))
-            errors.Add("自動で開始・停止するネットワークを選んでください。");
+            errors.Add(CoreStrings.Settings_NetworkNameRequired);
 
         // 送信先は、使う方式 (通信方式と予備の通信方式) の分だけ確かめる
         ValidateDestination(Method, errors);
         if (FallbackMethod is { } fallback)
         {
             if (!Enum.IsDefined(fallback))
-                errors.Add("予備の通信方式が不正です。");
+                errors.Add(CoreStrings.Settings_InvalidFallback);
             else if (fallback == Method)
-                errors.Add("予備の通信方式には、通信方式と別の方式を選んでください。");
+                errors.Add(CoreStrings.Settings_FallbackSameAsMethod);
             else
                 ValidateDestination(fallback, errors);
         }
@@ -166,20 +166,20 @@ public sealed record AppSettings
         switch (method)
         {
             case KeepAliveMethod.Ping when string.IsNullOrWhiteSpace(PingHost):
-                errors.Add("Ping の送信先を入力してください。");
+                errors.Add(CoreStrings.Settings_PingHostRequired);
                 break;
             case KeepAliveMethod.HttpHead when !IsValidHttpUrl(HttpUrl):
-                errors.Add("HTTP の URL は http:// または https:// で始まる絶対 URL を指定してください。");
+                errors.Add(CoreStrings.Settings_HttpUrlInvalid);
                 break;
             case KeepAliveMethod.HttpHead when HasUserInfo(HttpUrl):
                 // 疎通確認に認証は不要。含めると設定ファイル・ログ・画面に平文で残ってしまう
-                errors.Add("HTTP の URL にユーザー名やパスワードを含めないでください。");
+                errors.Add(CoreStrings.Settings_HttpUrlHasUserInfo);
                 break;
             case KeepAliveMethod.TcpConnect when string.IsNullOrWhiteSpace(TcpHost):
-                errors.Add("TCP の接続先ホストを入力してください。");
+                errors.Add(CoreStrings.Settings_TcpHostRequired);
                 break;
             case KeepAliveMethod.TcpConnect when TcpPort is < 1 or > 65535:
-                errors.Add("TCP のポートは 1〜65535 で指定してください。");
+                errors.Add(CoreStrings.Settings_TcpPortRange);
                 break;
         }
     }

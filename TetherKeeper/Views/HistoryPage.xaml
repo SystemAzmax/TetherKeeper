@@ -2,9 +2,10 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:TetherKeeper.ViewModels"
+             xmlns:res="clr-namespace:TetherKeeper.Resources.Strings"
              x:Class="TetherKeeper.Views.HistoryPage"
              x:DataType="vm:HistoryViewModel"
-             Title="履歴">
+             Title="{x:Static res:AppStrings.Tab_History}">
 
     <ScrollView>
         <VerticalStackLayout Padding="16" Spacing="8" MaximumWidthRequest="640">
@@ -14,16 +15,16 @@
                         ItemDisplayBinding="{Binding DisplayName, x:DataType=vm:HistoryPeriod}"
                         SelectedItem="{Binding SelectedPeriod}" />
                 <Button Grid.Column="1"
-                        Text="更新"
+                        Text="{x:Static res:AppStrings.Common_Refresh}"
                         Padding="10,4"
                         MinimumHeightRequest="32"
                         Command="{Binding ReloadCommand}" />
                 <Button Grid.Column="2"
-                        Text="CSV に書き出す"
+                        Text="{x:Static res:AppStrings.History_Export}"
                         Padding="10,4"
                         MinimumHeightRequest="32"
                         Command="{Binding ExportCommand}"
-                        ToolTipProperties.Text="この期間の結果を、ダウンロード フォルダーに CSV で書き出します" />
+                        ToolTipProperties.Text="{x:Static res:AppStrings.History_ExportTip}" />
             </Grid>
 
             <Label Text="{Binding SummaryText}" FontAttributes="Bold" />
@@ -34,7 +35,7 @@
                    TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray300}}" />
 
             <!-- 時間帯ごとの失敗。棒は失敗率 (最も高い時間帯を最大の長さにする) -->
-            <Label Text="時間帯ごとの失敗" FontAttributes="Bold" Margin="0,8,0,0" />
+            <Label Text="{x:Static res:AppStrings.History_ByHour}" FontAttributes="Bold" Margin="0,8,0,0" />
             <VerticalStackLayout BindableLayout.ItemsSource="{Binding HourRows}" Spacing="2">
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="vm:HourRow">
@@ -53,7 +54,7 @@
                 </BindableLayout.ItemTemplate>
             </VerticalStackLayout>
 
-            <Label Text="キープアライブの動作中に記録した通信の結果を、PC の時刻の時間帯（0〜23 時）ごとに数えます。予備の通信方式で成功した回は成功に数えます。記録は 30 日分を残し、ログと同じフォルダー（モニター画面の「保存先」）の history に日ごとの CSV として保存しています。"
+            <Label Text="{x:Static res:AppStrings.History_Note}"
                    FontSize="12"
                    Margin="0,8,0,0"
                    TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray300}}" />

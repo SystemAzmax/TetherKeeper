@@ -53,7 +53,7 @@ public sealed class PingKeepAliveStrategy : IKeepAliveStrategy
             var address = await ResolveAsync(host, linkedCts.Token).ConfigureAwait(false);
             if (address is null)
                 return KeepAliveResult.Failed(
-                    Name, host, timestamp, _timeProvider.GetElapsedTime(started), "名前解決できませんでした。");
+                    Name, host, timestamp, _timeProvider.GetElapsedTime(started), CoreStrings.Result_NameNotResolved);
 
             // 名前解決にかかった分を差し引いた残り時間で Ping を送る
             var remaining = settings.Timeout - _timeProvider.GetElapsedTime(started);
@@ -67,8 +67,8 @@ public sealed class PingKeepAliveStrategy : IKeepAliveStrategy
             var elapsed = _timeProvider.GetElapsedTime(started);
 
             return reply.Status == IPStatus.Success
-                ? KeepAliveResult.Succeeded(Name, host, timestamp, elapsed, $"応答 {reply.RoundtripTime} ms ({reply.Address})")
-                : KeepAliveResult.Failed(Name, host, timestamp, elapsed, $"応答なし: {reply.Status}");
+                ? KeepAliveResult.Succeeded(Name, host, timestamp, elapsed, Text.Format(CoreStrings.Result_PingReply, reply.RoundtripTime, reply.Address))
+                : KeepAliveResult.Failed(Name, host, timestamp, elapsed, Text.Format(CoreStrings.Result_PingNoReply, reply.Status));
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -96,7 +96,7 @@ public sealed class PingKeepAliveStrategy : IKeepAliveStrategy
         catch (PlatformNotSupportedException)
         {
             return KeepAliveResult.Failed(
-                Name, host, timestamp, _timeProvider.GetElapsedTime(started), "この OS では Ping を利用できません。");
+                Name, host, timestamp, _timeProvider.GetElapsedTime(started), CoreStrings.Result_PingNotSupported);
         }
     }
 
@@ -112,5 +112,5 @@ public sealed class PingKeepAliveStrategy : IKeepAliveStrategy
 
     private KeepAliveResult TimedOut(AppSettings settings, string host, DateTimeOffset timestamp, long started) =>
         KeepAliveResult.Failed(
-            Name, host, timestamp, _timeProvider.GetElapsedTime(started), $"タイムアウト ({settings.TimeoutMilliseconds} ms)");
+            Name, host, timestamp, _timeProvider.GetElapsedTime(started), Text.Format(CoreStrings.Result_Timeout, settings.TimeoutMilliseconds));
 }

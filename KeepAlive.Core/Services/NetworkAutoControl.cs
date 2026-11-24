@@ -158,12 +158,12 @@ public sealed class NetworkAutoControl : IDisposable
                 if (_worker.IsRunning)
                     return;
 
-                _log.Info($"「{name}」に接続しているため、キープアライブを開始します。");
+                _log.Info(Text.Format(CoreStrings.NetworkControl_Starting, name));
                 _worker.Start();
             }
             else if (!isConnected && wasConnected == true && _worker.IsRunning)
             {
-                _log.Info($"「{name}」から切断したため、キープアライブを停止します。");
+                _log.Info(Text.Format(CoreStrings.NetworkControl_Stopping, name));
                 await _worker.StopAsync().ConfigureAwait(false);
                 StoppedByDisconnection?.Invoke(this, name);
             }
@@ -171,7 +171,7 @@ public sealed class NetworkAutoControl : IDisposable
         catch (Exception ex)
         {
             // 接続の取得や通知先の失敗で、アプリを落とさない
-            _log.Warning($"ネットワークに応じた自動開始・停止の処理に失敗しました: {ex.GetType().Name}: {ex.Message}");
+            _log.Warning(Text.Format(CoreStrings.NetworkControl_Failed, ex.GetType().Name, ex.Message));
         }
         finally
         {

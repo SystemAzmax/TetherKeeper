@@ -23,8 +23,8 @@ public sealed record ConnectedNetwork(string Name, NetworkKind Kind)
     /// <summary>一覧に表示する文字列 (例: 「iPhone（Wi-Fi）」)。</summary>
     public string DisplayName => Kind switch
     {
-        NetworkKind.WiFi => $"{Name}（Wi-Fi）",
-        NetworkKind.Mobile => $"{Name}（モバイル回線）",
+        NetworkKind.WiFi => Text.Format(CoreStrings.Network_WiFi, Name),
+        NetworkKind.Mobile => Text.Format(CoreStrings.Network_Mobile, Name),
         _ => Name,
     };
 }

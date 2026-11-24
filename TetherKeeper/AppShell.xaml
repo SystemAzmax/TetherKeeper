@@ -3,19 +3,20 @@
     x:Class="TetherKeeper.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:views="clr-namespace:TetherKeeper.Views">
+    xmlns:views="clr-namespace:TetherKeeper.Views"
+    xmlns:res="clr-namespace:TetherKeeper.Resources.Strings">
 
     <TabBar>
         <ShellContent
-            Title="モニター"
+            Title="{x:Static res:AppStrings.Tab_Monitor}"
             ContentTemplate="{DataTemplate views:MainPage}"
             Route="MainPage" />
         <ShellContent
-            Title="履歴"
+            Title="{x:Static res:AppStrings.Tab_History}"
             ContentTemplate="{DataTemplate views:HistoryPage}"
             Route="HistoryPage" />
         <ShellContent
-            Title="設定"
+            Title="{x:Static res:AppStrings.Tab_Settings}"
             ContentTemplate="{DataTemplate views:SettingsPage}"
             Route="SettingsPage" />
     </TabBar>

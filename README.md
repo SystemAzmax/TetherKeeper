@@ -5,7 +5,7 @@ English | [日本語](README_ja.md)
 iPhone Personal Hotspot (tethering), Wi-Fi routers, mobile connections, and some VPNs may drop the connection when there is no traffic for a while.
 TetherKeeper sends a small amount of traffic at regular intervals so that these idle disconnections are less likely to happen. Its Japanese name is テザリングキーパー, which Windows shows when the display language is Japanese.
 
-The app's screens are in Japanese only.
+The app's screens are in English, or in Japanese when the Windows display language is Japanese.
 
 > There is no guarantee that tethering never drops.
 
@@ -18,21 +18,21 @@ The app's screens are in Japanese only.
 - Optional fallback method: only when the method fails, the app tries once more with another method, and records a failure only when both fail
 - Configurable interval (5 to 3600 seconds) and timeout. The Settings screen shows an estimate of the data used per hour (and per 24 hours)
 - Shows the number of successes and failures, consecutive failures, and the log
-- "今すぐ実行" (Run now) button
+- "Run now" button
 - When the PC wakes from sleep, runs again after 5 seconds
 - Optionally prevents automatic sleep while the keep-alive is running (off by default. The screen still turns off)
 - Optionally starts when you connect to a specified network (such as your iPhone's tethering) and stops when you disconnect (off by default)
-- Automatic stop at a specified date and time (choose the date and time on the "モニター" (Monitor) screen and select "予約" (Schedule), or select "1 時間後" (In 1 hour) / "2 時間後" (In 2 hours). The schedule is cleared automatically after it stops)
+- Automatic stop at a specified date and time (choose the date and time on the "Monitor" screen and select "Schedule", or select "In 1 hour" / "In 2 hours". The schedule is cleared automatically after it stops)
 - Automatic stop at a set time on the days of the week you choose, and an option to exit the app when it stops automatically
-- Automatic stop at a data limit (set the limit in MB on the Settings screen. The app adds up the data used while the keep-alive is running until you select "リセット" (Reset) on the Monitor screen, and stops when it reaches the limit. You can't start while the limit is reached)
+- Automatic stop at a data limit (set the limit in MB on the Settings screen. The app adds up the data used while the keep-alive is running until you select "Reset" on the Monitor screen, and stops when it reaches the limit. You can't start while the limit is reached)
   - The app counts the data sent and received by the network adapter used for internet traffic (if you are connected to both wired LAN and Wi-Fi, the one Windows chooses). This includes traffic from other apps. The log shows which adapter is counted
   - Because it measures every 5 seconds, it stops after exceeding the limit by the amount of traffic in that time. Stopping the keep-alive does not stop traffic from other apps
 - Notifications when failures continue and when the connection recovers (after 3 consecutive failures by default; the number can be changed on the Settings screen). While failures continue, the tray icon shows a red dot
 - Start automatically when the app starts, and start the app when you sign in to Windows (starts in the tray)
-- Runs in the notification area (system tray) ("×" moves the app to the tray. To exit, use the "終了" (Exit) button on the screen or the tray menu). The tray menu shows the current status and lets you run now and schedule an auto stop
+- Runs in the notification area (system tray) ("×" moves the app to the tray. To exit, use the "Exit" button on the screen or the tray menu). The tray menu shows the current status and lets you run now and schedule an auto stop
 - Log files (one file per day, kept for 30 days)
-- "履歴" (History) screen: counts failures by time of day for the last 24 hours, 7 days, or 30 days, and exports the results to CSV (the results are recorded separately from the logs, one CSV file per day, kept for 30 days)
-- "アプリの情報" (App information) on the "設定" (Settings) screen shows About this app (version), License information, and the User guide
+- "History" screen: counts failures by time of day for the last 24 hours, 7 days, or 30 days, and exports the results to CSV (the results are recorded separately from the logs, one CSV file per day, kept for 30 days)
+- "App information" on the "Settings" screen shows About this app (version), License information, and the User guide
 
 For details on each setting and troubleshooting, see the [User Guide](docs/UserGuide.md).
 For how the app handles personal information and the network traffic it sends, see the [Privacy Policy](docs/PrivacyPolicy.md).
@@ -59,7 +59,7 @@ In Visual Studio, open `TetherKeeper.slnx` and choose "Windows Machine" as the d
 Settings are saved to `%LOCALAPPDATA%\TetherKeeper\settings.json`, and the total data usage is saved to `data-usage.json` in the same folder.
 Logs are written to `logs\TetherKeeper_yyyyMMdd.log` in the same folder, one file per day, and files older than 30 days are deleted automatically.
 The history of results is written to `history\TetherKeeper_yyyyMMdd.csv` in the same way.
-You can open the folder with the "保存先" (Location) button on the Monitor screen.
+You can open the folder with the "Location" button on the Monitor screen.
 (These are the locations for the unpackaged app during development. The MSIX app uses a folder dedicated to the package, as described below.)
 
 ## Installing with MSIX
@@ -110,7 +110,7 @@ Uninstall TetherKeeper from Settings → Apps → Installed apps. The settings a
 
 | Item | Unpackaged (running the exe directly during development) | MSIX |
 |---|---|---|
-| Where settings and logs are saved | `%LOCALAPPDATA%\TetherKeeper` | `%LOCALAPPDATA%\Packages\TetherKeeper_<publisher ID>\LocalState` (open it with the "保存先" (Location) button) |
+| Where settings and logs are saved | `%LOCALAPPDATA%\TetherKeeper` | `%LOCALAPPDATA%\Packages\TetherKeeper_<publisher ID>\LocalState` (open it with the "Location" button) |
 | Start at sign-in | The registry Run key | StartupTask (can also be switched in "Startup apps" in Task Manager) |
 | Data when uninstalled | Kept | Deleted automatically |
 
@@ -141,7 +141,8 @@ powershell -ExecutionPolicy Bypass -File build\Publish-Msix.ps1 -NewCertificate
 │   │                        ResultHistory / ResultCsv (records, counts, and exports the history of results)
 │   │                        AppDisplayName (switches between the Japanese and English names) / AppAboutInfo (text for "About this app")
 │   ├─ Strategies            KeepAliveStrategy for Ping / HttpHead / TcpConnect
-│   └─ Configuration         DI registration (AddKeepAliveCore) and KeepAliveOptions
+│   ├─ Configuration         DI registration (AddKeepAliveCore) and KeepAliveOptions
+│   └─ Resources             CoreStrings.resx (English) / CoreStrings.ja.resx (Japanese): text for logs, errors, and notifications
 ├─ KeepAlive.Infrastructure  Platform-dependent implementations
 │   ├─ Settings              JsonFileSettingsStore / JsonFileDataUsageStore (total data usage)
 │   ├─ History               CsvResultHistoryStore (history of results, one CSV file per day)
@@ -150,6 +151,7 @@ powershell -ExecutionPolicy Bypass -File build\Publish-Msix.ps1 -NewCertificate
 │   └─ Power                 WindowsPowerEventSource (SystemEvents) / WindowsSleepInhibitor (prevents sleep while running)
 ├─ TetherKeeper              .NET MAUI UI (Views / ViewModels / Platforms)
 │   ├─ Services              AppInfoProvider (version and other information) / AppPaths / AppPackage, etc.
+│   ├─ Resources/Strings     AppStrings.resx (English) / AppStrings.ja.resx (Japanese): text for the screens
 │   ├─ Platforms/Windows     Tray, single instance, connected networks (WindowsNetworkMonitor), Package.appxmanifest and the display name resources (Strings)
 │   └─ ThirdPartyNotices.txt License notices opened by "License information"
 ├─ KeepAlive.Tests           xUnit unit tests

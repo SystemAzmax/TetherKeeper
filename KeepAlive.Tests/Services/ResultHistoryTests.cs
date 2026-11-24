@@ -54,7 +54,7 @@ public sealed class ResultHistoryTests : IDisposable
     }
 
     [Theory]
-    [InlineData(ResultCsv.Header)]
+    [InlineData("日時,結果,通信方式,送信先,応答時間(ms),予備,内容")]
     [InlineData("")]
     [InlineData("2026/11/24 09:00:00,成功,Ping")]
     [InlineData("2026/11/24 09:00:00,不明,Ping,1.1.1.1,12,,")]

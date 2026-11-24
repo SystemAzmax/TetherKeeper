@@ -1,0 +1,518 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>  <data name="Common_Refresh" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="Tab_Monitor" xml:space="preserve">
+    <value>Monitor</value>
+  </data>
+  <data name="Tab_History" xml:space="preserve">
+    <value>History</value>
+  </data>
+  <data name="Tab_Settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="Main_RunNow" xml:space="preserve">
+    <value>Run now</value>
+  </data>
+  <data name="Main_Exit" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+  <data name="Main_AutoStop" xml:space="preserve">
+    <value>Auto stop</value>
+  </data>
+  <data name="Main_InOneHour" xml:space="preserve">
+    <value>In 1 hour</value>
+  </data>
+  <data name="Main_InOneHourTip" xml:space="preserve">
+    <value>Schedule a stop 1 hour from now</value>
+  </data>
+  <data name="Main_InTwoHours" xml:space="preserve">
+    <value>In 2 hours</value>
+  </data>
+  <data name="Main_InTwoHoursTip" xml:space="preserve">
+    <value>Schedule a stop 2 hours from now</value>
+  </data>
+  <data name="Main_DataUsage" xml:space="preserve">
+    <value>Data usage</value>
+  </data>
+  <data name="Main_Reset" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="Main_ResetTip" xml:space="preserve">
+    <value>Set the total data usage back to 0</value>
+  </data>
+  <data name="Main_DataLimitReached" xml:space="preserve">
+    <value>The limit has been reached, so it can&apos;t start. Reset the data usage to start again.</value>
+  </data>
+  <data name="Main_Total" xml:space="preserve">
+    <value>Total</value>
+  </data>
+  <data name="Main_Succeeded" xml:space="preserve">
+    <value>Succeeded</value>
+  </data>
+  <data name="Main_Failed" xml:space="preserve">
+    <value>Failed</value>
+  </data>
+  <data name="Main_ConsecutiveFailures" xml:space="preserve">
+    <value>Consecutive failures</value>
+  </data>
+  <data name="Main_Log" xml:space="preserve">
+    <value>Log</value>
+  </data>
+  <data name="Main_ResetStatistics" xml:space="preserve">
+    <value>Reset statistics</value>
+  </data>
+  <data name="Main_ClearLog" xml:space="preserve">
+    <value>Clear log</value>
+  </data>
+  <data name="Main_ClearLogTip" xml:space="preserve">
+    <value>Clear the log on the screen (the log files remain)</value>
+  </data>
+  <data name="Main_Location" xml:space="preserve">
+    <value>Location</value>
+  </data>
+  <data name="Main_LocationTip" xml:space="preserve">
+    <value>Open the folder where the log files are saved</value>
+  </data>
+  <data name="Main_NoLogs" xml:space="preserve">
+    <value>No logs</value>
+  </data>
+  <data name="Status_Stopped" xml:space="preserve">
+    <value>Stopped</value>
+  </data>
+  <data name="Status_Running" xml:space="preserve">
+    <value>Running</value>
+  </data>
+  <data name="Status_RunningWithFailures" xml:space="preserve">
+    <value>Running ({0} consecutive failures)</value>
+  </data>
+  <data name="Button_Start" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="Button_Stop" xml:space="preserve">
+    <value>Stop</value>
+  </data>
+  <data name="Button_Schedule" xml:space="preserve">
+    <value>Schedule</value>
+  </data>
+  <data name="Button_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Result_NotRunYet" xml:space="preserve">
+    <value>Not run yet</value>
+  </data>
+  <data name="App_Started" xml:space="preserve">
+    <value>{0} {1} ({2}) started.</value>
+  </data>
+  <data name="Next_Running" xml:space="preserve">
+    <value>Running…</value>
+  </data>
+  <data name="Next_Seconds" xml:space="preserve">
+    <value>Next run in {0:F0} seconds</value>
+  </data>
+  <data name="AutoStop_DateTimeRequired" xml:space="preserve">
+    <value>Specify the date and time for the auto stop.</value>
+  </data>
+  <data name="Log_OpenFolderFailed" xml:space="preserve">
+    <value>Couldn&apos;t open the log folder: {0}</value>
+  </data>
+  <data name="Config_Text" xml:space="preserve">
+    <value>{0} → {1} (every {2} seconds)</value>
+  </data>
+  <data name="AutoStop_WillStop" xml:space="preserve">
+    <value>The keep-alive will stop at {0:yyyy/MM/dd HH:mm}</value>
+  </data>
+  <data name="AutoStop_WillStopWhenStarted" xml:space="preserve">
+    <value>Scheduled to stop at {0:yyyy/MM/dd HH:mm} (takes effect when you start)</value>
+  </data>
+  <data name="AutoStop_DescriptionExit" xml:space="preserve">
+    <value>Stops the keep-alive at the specified date and time, and exits the app</value>
+  </data>
+  <data name="AutoStop_Description" xml:space="preserve">
+    <value>Stops the keep-alive at the specified date and time (the app doesn&apos;t exit)</value>
+  </data>
+  <data name="WeeklyStop_Next" xml:space="preserve">
+    <value> (next: {1} {0:MM/dd} {0:HH:mm})</value>
+  </data>
+  <data name="WeeklyStop_Text" xml:space="preserve">
+    <value>Weekly auto stop: {0} {1}{2}</value>
+  </data>
+  <data name="DataUsage_NoLimit" xml:space="preserve">
+    <value>{0} (no limit)</value>
+  </data>
+  <data name="DataUsage_Since" xml:space="preserve">
+    <value>Total since {0:yyyy/MM/dd HH:mm} (measured while the keep-alive is running, including traffic from other apps)</value>
+  </data>
+  <data name="DataUsage_Note" xml:space="preserve">
+    <value>While the keep-alive is running, the app counts the data sent and received by the network in use (including traffic from other apps)</value>
+  </data>
+  <data name="Stats_FallbackSuccesses" xml:space="preserve">
+    <value>Successes with the fallback method: {0}</value>
+  </data>
+  <data name="Outcome_Failed" xml:space="preserve">
+    <value>Failed</value>
+  </data>
+  <data name="Outcome_Succeeded" xml:space="preserve">
+    <value>Succeeded</value>
+  </data>
+  <data name="Outcome_SucceededWithFallback" xml:space="preserve">
+    <value>Succeeded (fallback {0})</value>
+  </data>
+  <data name="Settings_Method" xml:space="preserve">
+    <value>Method</value>
+  </data>
+  <data name="Settings_Fallback" xml:space="preserve">
+    <value>Fallback method</value>
+  </data>
+  <data name="Settings_FallbackHint" xml:space="preserve">
+    <value>Only when the method fails, the app tries once more with this method (using its destination field below), and records a failure only when both fail. This tells apart a problem with one method (such as a destination outage or blocked ICMP) from a dropped connection. Retrying uses more data.</value>
+  </data>
+  <data name="Settings_PingHost" xml:space="preserve">
+    <value>Ping destination (host name / IP address)</value>
+  </data>
+  <data name="Settings_HttpUrl" xml:space="preserve">
+    <value>HTTP HEAD destination URL</value>
+  </data>
+  <data name="Settings_TcpHost" xml:space="preserve">
+    <value>TCP host</value>
+  </data>
+  <data name="Settings_Port" xml:space="preserve">
+    <value>Port</value>
+  </data>
+  <data name="Settings_Interval" xml:space="preserve">
+    <value>Interval (seconds)</value>
+  </data>
+  <data name="Settings_Timeout" xml:space="preserve">
+    <value>Timeout (milliseconds)</value>
+  </data>
+  <data name="Settings_IntervalHint" xml:space="preserve">
+    <value>Interval: 5 to 3600 seconds. Timeout: 500 to 30000 milliseconds (shorter than the interval). If the connection drops, set the interval to about 15 to 30 seconds.</value>
+  </data>
+  <data name="Settings_TrafficEstimateHint" xml:space="preserve">
+    <value>This estimates only the keep-alive&apos;s own traffic (it varies with the connection and with IPv4 or IPv6). It doesn&apos;t include traffic from other apps, name resolution, or retries with the fallback method. &quot;Data limit&quot; counts traffic from other apps too.</value>
+  </data>
+  <data name="Settings_DataLimit" xml:space="preserve">
+    <value>Data limit (MB)</value>
+  </data>
+  <data name="Settings_DataLimitHint" xml:space="preserve">
+    <value>Stops when the total data usage counted while the keep-alive is running reaches this value (0 means no limit). This includes traffic from other apps. The total keeps adding up across stops and app restarts until you reset it on the Monitor screen.</value>
+  </data>
+  <data name="Settings_WeeklyStop" xml:space="preserve">
+    <value>Stop at a set time every week</value>
+  </data>
+  <data name="Settings_WeeklyStopHint" xml:space="preserve">
+    <value>Stops the keep-alive at this time on the chosen days (only while it is running). Unlike a scheduled date and time, this isn&apos;t cleared when it stops. Start it yourself or with the network-based auto start.</value>
+  </data>
+  <data name="Settings_ExitOnAutoStop" xml:space="preserve">
+    <value>Exit the app when it stops automatically</value>
+  </data>
+  <data name="Settings_ExitOnAutoStopHint" xml:space="preserve">
+    <value>The app also exits when the keep-alive stops at a scheduled date and time or at the weekly time. It doesn&apos;t exit when it stops because of the data limit or a network disconnection.</value>
+  </data>
+  <data name="Settings_FailureThreshold" xml:space="preserve">
+    <value>Consecutive failures before notifying</value>
+  </data>
+  <data name="Settings_NotifyOnFailure" xml:space="preserve">
+    <value>Notify when failures continue and when the connection recovers</value>
+  </data>
+  <data name="Settings_NotifyHint" xml:space="preserve">
+    <value>When the traffic fails this many times in a row, the app assumes the connection has dropped, shows a notification, and adds a red dot to the tray icon (1 to 100). When it succeeds again, the app notifies you that it has recovered. The red dot appears even if notifications are off.</value>
+  </data>
+  <data name="Settings_PreventSleep" xml:space="preserve">
+    <value>Don&apos;t sleep while the keep-alive is running</value>
+  </data>
+  <data name="Settings_PreventSleepHint" xml:space="preserve">
+    <value>Prevents automatic sleep when the PC is left idle (the screen still turns off). It can&apos;t prevent sleep from closing the lid, pressing the power button, and so on. Laptops use more battery.</value>
+  </data>
+  <data name="Settings_AutoControl" xml:space="preserve">
+    <value>Start when connected to the specified network and stop when disconnected</value>
+  </data>
+  <data name="Settings_NetworkName" xml:space="preserve">
+    <value>Network name</value>
+  </data>
+  <data name="Settings_NetworkNamePlaceholder" xml:space="preserve">
+    <value>e.g. iPhone</value>
+  </data>
+  <data name="Settings_ChooseNetwork" xml:space="preserve">
+    <value>Choose from connected networks</value>
+  </data>
+  <data name="Settings_RefreshNetworksTip" xml:space="preserve">
+    <value>Gets the list of connected networks again.</value>
+  </data>
+  <data name="Settings_NetworkHint" xml:space="preserve">
+    <value>Connect to tethering, and then choose it from the list. Wi-Fi is matched by its network name (SSID), and USB or Bluetooth tethering by the network name shown in Windows (uppercase and lowercase letters are distinguished). The app starts or stops about 5 seconds after the connection changes. If you stop it yourself while connected, it doesn&apos;t start automatically until you reconnect.</value>
+  </data>
+  <data name="Settings_StartOnLaunch" xml:space="preserve">
+    <value>Start automatically when the app starts</value>
+  </data>
+  <data name="Settings_LaunchAtLogin" xml:space="preserve">
+    <value>Start the app when you sign in to Windows</value>
+  </data>
+  <data name="Settings_Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="Settings_RestoreDefaults" xml:space="preserve">
+    <value>Restore defaults</value>
+  </data>
+  <data name="Settings_Disclaimer" xml:space="preserve">
+    <value>* This app sends a small amount of traffic at regular intervals to reduce idle disconnections. It can&apos;t guarantee that the connection never drops.</value>
+  </data>
+  <data name="Settings_AppInfo" xml:space="preserve">
+    <value>App information</value>
+  </data>
+  <data name="Settings_About" xml:space="preserve">
+    <value>About this app</value>
+  </data>
+  <data name="Settings_AboutTip" xml:space="preserve">
+    <value>Shows the app version and other information.</value>
+  </data>
+  <data name="Settings_Licenses" xml:space="preserve">
+    <value>License information</value>
+  </data>
+  <data name="Settings_LicensesTip" xml:space="preserve">
+    <value>Shows the licenses of the software this app uses.</value>
+  </data>
+  <data name="Settings_UserGuide" xml:space="preserve">
+    <value>User guide</value>
+  </data>
+  <data name="Settings_UserGuideTip" xml:space="preserve">
+    <value>Opens the user guide in your web browser.</value>
+  </data>
+  <data name="Method_PingDescription" xml:space="preserve">
+    <value>Uses the least data and doesn&apos;t require administrator rights. Fails on networks that block ICMP.</value>
+  </data>
+  <data name="Method_HttpDescription" xml:space="preserve">
+    <value>More likely to work behind a proxy or on networks that block ICMP. Uses more data than Ping. Any HTTP response counts as success.</value>
+  </data>
+  <data name="Method_TcpDescription" xml:space="preserve">
+    <value>Connects and immediately disconnects. Connections to the port (such as 443) must be allowed.</value>
+  </data>
+  <data name="Fallback_None" xml:space="preserve">
+    <value>Don&apos;t use</value>
+  </data>
+  <data name="Settings_TrafficEstimate" xml:space="preserve">
+    <value>Data estimate: {0} per hour ({1} per 24 hours)</value>
+  </data>
+  <data name="Settings_NetworksLoadFailed" xml:space="preserve">
+    <value>Couldn&apos;t get the connected networks: {0}</value>
+  </data>
+  <data name="Label_Interval" xml:space="preserve">
+    <value>Interval</value>
+  </data>
+  <data name="Label_Timeout" xml:space="preserve">
+    <value>Timeout</value>
+  </data>
+  <data name="Label_TcpPort" xml:space="preserve">
+    <value>TCP port</value>
+  </data>
+  <data name="Label_DataLimit" xml:space="preserve">
+    <value>Data limit</value>
+  </data>
+  <data name="Label_FailureThreshold" xml:space="preserve">
+    <value>Consecutive failures before notifying</value>
+  </data>
+  <data name="Settings_IntegerRequired" xml:space="preserve">
+    <value>Enter a whole number for {0}.</value>
+  </data>
+  <data name="Settings_SavedAt" xml:space="preserve">
+    <value>Saved ({0:HH:mm:ss})</value>
+  </data>
+  <data name="Settings_DefaultsEntered" xml:space="preserve">
+    <value>Default values have been entered. Select Save to apply them.</value>
+  </data>
+  <data name="AutoStart_StateFailed" xml:space="preserve">
+    <value>Couldn&apos;t get the start-at-sign-in state: {0}</value>
+  </data>
+  <data name="AutoStart_Enabled" xml:space="preserve">
+    <value>Turned on starting the app at sign-in.</value>
+  </data>
+  <data name="AutoStart_Disabled" xml:space="preserve">
+    <value>Turned off starting the app at sign-in.</value>
+  </data>
+  <data name="AutoStart_SetFailed" xml:space="preserve">
+    <value>Couldn&apos;t change the start-at-sign-in setting: {0}</value>
+  </data>
+  <data name="About_Title" xml:space="preserve">
+    <value>About {0}</value>
+  </data>
+  <data name="Licenses_OpenFailedLog" xml:space="preserve">
+    <value>Couldn&apos;t open the license information file: {0}</value>
+  </data>
+  <data name="Licenses_OpenFailed" xml:space="preserve">
+    <value>Couldn&apos;t open the license information file.
+
+File: {0}
+Details: {1}</value>
+  </data>
+  <data name="UserGuide_OpenFailedLog" xml:space="preserve">
+    <value>Couldn&apos;t open the user guide: {0}</value>
+  </data>
+  <data name="UserGuide_OpenFailed" xml:space="preserve">
+    <value>Couldn&apos;t open the user guide.
+
+URL: {0}
+Details: {1}</value>
+  </data>
+  <data name="History_Last24Hours" xml:space="preserve">
+    <value>Last 24 hours</value>
+  </data>
+  <data name="History_Last7Days" xml:space="preserve">
+    <value>Last 7 days</value>
+  </data>
+  <data name="History_Last30Days" xml:space="preserve">
+    <value>Last 30 days</value>
+  </data>
+  <data name="History_File24Hours" xml:space="preserve">
+    <value>24h</value>
+  </data>
+  <data name="History_File7Days" xml:space="preserve">
+    <value>7d</value>
+  </data>
+  <data name="History_File30Days" xml:space="preserve">
+    <value>30d</value>
+  </data>
+  <data name="History_FileName" xml:space="preserve">
+    <value>TetherKeeper_History_{0}_{1:yyyyMMdd_HHmmss}.csv</value>
+  </data>
+  <data name="History_LoadFailedLog" xml:space="preserve">
+    <value>Couldn&apos;t read the history of results: {0}</value>
+  </data>
+  <data name="History_LoadFailed" xml:space="preserve">
+    <value>Couldn&apos;t read the history: {0}</value>
+  </data>
+  <data name="History_ExportedLog" xml:space="preserve">
+    <value>Exported the history of results: {0}</value>
+  </data>
+  <data name="History_Exported" xml:space="preserve">
+    <value>Exported: {0}</value>
+  </data>
+  <data name="History_ExportFailedLog" xml:space="preserve">
+    <value>Couldn&apos;t export the history of results: {0}</value>
+  </data>
+  <data name="History_ExportFailed" xml:space="preserve">
+    <value>Couldn&apos;t export: {0}</value>
+  </data>
+  <data name="History_OpenFolderFailed" xml:space="preserve">
+    <value>Couldn&apos;t open the folder of the exported file: {0}</value>
+  </data>
+  <data name="History_NoRecords" xml:space="preserve">
+    <value>There are no records for this period.</value>
+  </data>
+  <data name="History_FallbackPart" xml:space="preserve">
+    <value> ({0:N0} with fallback)</value>
+  </data>
+  <data name="History_Summary" xml:space="preserve">
+    <value>Total {0:N0} / succeeded {1:N0}{2} / failed {3:N0} ({4:P1})</value>
+  </data>
+  <data name="History_Hour" xml:space="preserve">
+    <value>{0:00}:00</value>
+  </data>
+  <data name="History_NoRecordsHour" xml:space="preserve">
+    <value>No records</value>
+  </data>
+  <data name="History_HourCount" xml:space="preserve">
+    <value>{1:N0} of {0:N0} failed ({2:P1})</value>
+  </data>
+  <data name="History_Export" xml:space="preserve">
+    <value>Export to CSV</value>
+  </data>
+  <data name="History_ExportTip" xml:space="preserve">
+    <value>Writes the results for this period to a CSV file in your Downloads folder</value>
+  </data>
+  <data name="History_ByHour" xml:space="preserve">
+    <value>Failures by time of day</value>
+  </data>
+  <data name="History_Note" xml:space="preserve">
+    <value>Counts the results recorded while the keep-alive was running, by hour of the day (0 to 23, PC time). Runs that succeeded with the fallback method count as successes. Records are kept for 30 days as daily CSV files in &quot;history&quot;, in the same folder as the logs (&quot;Location&quot; on the Monitor screen).</value>
+  </data>
+  <data name="Tray_RunningInTrayTitle" xml:space="preserve">
+    <value>{0} is running in the notification area</value>
+  </data>
+  <data name="Tray_RunningInTrayMessage" xml:space="preserve">
+    <value>To exit, right-click the tray icon and select &quot;Exit&quot;.</value>
+  </data>
+  <data name="Tray_ShowWindow" xml:space="preserve">
+    <value>Show window</value>
+  </data>
+  <data name="Tray_StopKeepAlive" xml:space="preserve">
+    <value>Stop keep-alive</value>
+  </data>
+  <data name="Tray_StartKeepAlive" xml:space="preserve">
+    <value>Start keep-alive</value>
+  </data>
+  <data name="Tray_ScheduleAutoStop" xml:space="preserve">
+    <value>Schedule auto stop</value>
+  </data>
+  <data name="Tray_StopInOneHour" xml:space="preserve">
+    <value>Stop in 1 hour</value>
+  </data>
+  <data name="Tray_StopInTwoHours" xml:space="preserve">
+    <value>Stop in 2 hours</value>
+  </data>
+  <data name="Tray_CancelSchedule" xml:space="preserve">
+    <value>Cancel the schedule</value>
+  </data>
+  <data name="Tray_Status" xml:space="preserve">
+    <value>Status: {0}</value>
+  </data>
+  <data name="Tray_LastResult" xml:space="preserve">
+    <value>Last result: {0:HH:mm:ss} {1}</value>
+  </data>
+  <data name="Tray_AutoStopAt" xml:space="preserve">
+    <value>Auto stop: scheduled for {0:MM/dd HH:mm}</value>
+  </data>
+  <data name="Tray_DisconnectedTitle" xml:space="preserve">
+    <value>Disconnected from the network</value>
+  </data>
+  <data name="Tray_DisconnectedMessage" xml:space="preserve">
+    <value>Stopped the keep-alive because the PC disconnected from &quot;{0}&quot;.</value>
+  </data>
+  <data name="Tray_TooltipStopped" xml:space="preserve">
+    <value>{0} (stopped)</value>
+  </data>
+  <data name="Tray_TooltipRunning" xml:space="preserve">
+    <value>{0} (running)</value>
+  </data>
+  <data name="Tray_TooltipFailing" xml:space="preserve">
+    <value>{0} (running, {1} consecutive failures)</value>
+  </data>
+  <data name="Exit_Exiting" xml:space="preserve">
+    <value>Exiting {0}.</value>
+  </data>
+  <data name="Exit_Error" xml:space="preserve">
+    <value>An error occurred while exiting: {0}</value>
+  </data>
+  <data name="Exit_AutoStopped" xml:space="preserve">
+    <value>Exiting the app because it stopped automatically.</value>
+  </data>
+  <data name="SingleInstance_NotResponding" xml:space="preserve">
+    <value>{0} is already running but isn&apos;t responding.
+
+End {0} (TetherKeeper.exe) in Task Manager, and then start it again.
+If you can&apos;t find it, restart your PC.</value>
+  </data>
+  <data name="StartupTask_EnabledByPolicy" xml:space="preserve">
+    <value>Starting at sign-in is turned on by your organization&apos;s policy, so it can&apos;t be turned off.</value>
+  </data>
+  <data name="StartupTask_DisabledByUser" xml:space="preserve">
+    <value>{0} is turned off in &quot;Startup apps&quot; in Task Manager. Turn it on there.</value>
+  </data>
+  <data name="StartupTask_DisabledByPolicy" xml:space="preserve">
+    <value>Starting at sign-in is blocked by your organization&apos;s policy.</value>
+  </data>
+  <data name="StartupTask_EnableFailed" xml:space="preserve">
+    <value>Couldn&apos;t turn on starting at sign-in (state: {0}).</value>
+  </data>
+</root>

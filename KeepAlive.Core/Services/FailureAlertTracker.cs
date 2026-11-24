@@ -25,28 +25,29 @@ public sealed record FailureAlert(
 {
     /// <summary>通知のタイトル。</summary>
     public string Title => Kind == FailureAlertKind.Failing
-        ? "通信の失敗が続いています"
-        : "通信が復旧しました";
+        ? CoreStrings.Alert_FailingTitle
+        : CoreStrings.Alert_RecoveredTitle;
 
     /// <summary>通知の本文。</summary>
     public string Message => Kind == FailureAlertKind.Failing
-        ? $"{ConsecutiveFailures} 回続けて失敗しました（{FailingSince.ToLocalTime():HH:mm} から）。" +
-          "テザリングなどの接続が切れている可能性があります。"
-        : $"{ConsecutiveFailures} 回続けて失敗したあと、成功しました（失敗が続いた時間: {FormatDuration(Duration ?? TimeSpan.Zero)}）。";
+        ? Text.Format(CoreStrings.Alert_FailingMessage, ConsecutiveFailures, FailingSince.ToLocalTime())
+        : Text.Format(CoreStrings.Alert_RecoveredMessage, ConsecutiveFailures, FormatDuration(Duration ?? TimeSpan.Zero));
 
     /// <summary>失敗が続いた時間を「約 5 分」「約 1 時間 20 分」のように表す。</summary>
     public static string FormatDuration(TimeSpan duration)
     {
         if (duration < TimeSpan.FromMinutes(1))
-            return "1 分未満";
+            return CoreStrings.Duration_LessThanMinute;
 
         var minutes = (int)Math.Round(duration.TotalMinutes, MidpointRounding.AwayFromZero);
         if (minutes < 60)
-            return $"約 {minutes} 分";
+            return Text.Format(CoreStrings.Duration_Minutes, minutes);
 
         var hours = minutes / 60;
         var rest = minutes % 60;
-        return rest == 0 ? $"約 {hours} 時間" : $"約 {hours} 時間 {rest} 分";
+        return rest == 0
+            ? Text.Format(CoreStrings.Duration_Hours, hours)
+            : Text.Format(CoreStrings.Duration_HoursMinutes, hours, rest);
     }
 }
 

@@ -51,9 +51,9 @@ public partial class SettingsViewModel : ObservableObject
 
     public IReadOnlyList<MethodOption> Methods { get; } =
     [
-        new(KeepAliveMethod.Ping, "Ping (ICMP)", "通信量が最小。管理者権限は不要です。ICMP を遮断するネットワークでは失敗します。"),
-        new(KeepAliveMethod.HttpHead, "HTTP HEAD", "プロキシ環境や ICMP 遮断環境でも通りやすい方式です。通信量は Ping より多くなります。HTTP の応答があれば内容に関わらず成功とみなします。"),
-        new(KeepAliveMethod.TcpConnect, "TCP Connect", "接続確立のみ行い即切断します。ポート 443 などへの接続が許可されている必要があります。"),
+        new(KeepAliveMethod.Ping, "Ping (ICMP)", AppStrings.Method_PingDescription),
+        new(KeepAliveMethod.HttpHead, "HTTP HEAD", AppStrings.Method_HttpDescription),
+        new(KeepAliveMethod.TcpConnect, "TCP Connect", AppStrings.Method_TcpDescription),
     ];
 
     public bool IsAutoStartSupported => _autoStart.IsSupported;
@@ -90,7 +90,7 @@ public partial class SettingsViewModel : ObservableObject
     /// <summary>予備の通信方式の選択肢 (先頭は「使わない」)。</summary>
     public IReadOnlyList<FallbackOption> FallbackOptions { get; } =
     [
-        new(null, "使わない"),
+        new(null, AppStrings.Fallback_None),
         new(KeepAliveMethod.Ping, "Ping (ICMP)"),
         new(KeepAliveMethod.HttpHead, "HTTP HEAD"),
         new(KeepAliveMethod.TcpConnect, "TCP Connect"),
@@ -133,7 +133,7 @@ public partial class SettingsViewModel : ObservableObject
             return;
         }
 
-        TrafficEstimateText = $"通信量の目安: 1 時間あたり {perHour.Format()}（24 時間で {perHour.Multiply(24).Format()}）";
+        TrafficEstimateText = Text.Format(AppStrings.Settings_TrafficEstimate, perHour.Format(), perHour.Multiply(24).Format());
     }
 
     [ObservableProperty]
@@ -232,7 +232,7 @@ public partial class SettingsViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            _log.Warning($"接続中のネットワークを取得できませんでした: {ex.Message}");
+            _log.Warning(Text.Format(AppStrings.Settings_NetworksLoadFailed, ex.Message));
         }
     }
 
@@ -241,13 +241,13 @@ public partial class SettingsViewModel : ObservableObject
     {
         StatusMessage = string.Empty;
         var parseErrors = new List<string>();
-        var interval = ParseInt(IntervalSeconds, "実行間隔", parseErrors);
-        var timeout = ParseInt(TimeoutMilliseconds, "タイムアウト", parseErrors);
-        var port = ParseInt(TcpPort, "TCP ポート", parseErrors);
+        var interval = ParseInt(IntervalSeconds, AppStrings.Label_Interval, parseErrors);
+        var timeout = ParseInt(TimeoutMilliseconds, AppStrings.Label_Timeout, parseErrors);
+        var port = ParseInt(TcpPort, AppStrings.Label_TcpPort, parseErrors);
         var dataLimit = string.IsNullOrWhiteSpace(DataLimitMegabytes)
             ? 0
-            : ParseInt(DataLimitMegabytes, "通信量の上限", parseErrors);
-        var failureThreshold = ParseInt(FailureThreshold, "通知する連続失敗の回数", parseErrors);
+            : ParseInt(DataLimitMegabytes, AppStrings.Label_DataLimit, parseErrors);
+        var failureThreshold = ParseInt(FailureThreshold, AppStrings.Label_FailureThreshold, parseErrors);
         if (parseErrors.Count > 0)
         {
             ErrorText = string.Join(Environment.NewLine, parseErrors);
@@ -308,7 +308,7 @@ public partial class SettingsViewModel : ObservableObject
         if (!await TryApplyAutoStartAsync(LaunchAtLogin))
             return;
 
-        StatusMessage = $"保存しました（{DateTime.Now:HH:mm:ss}）";
+        StatusMessage = Text.Format(AppStrings.Settings_SavedAt, DateTime.Now);
         Load(_settings.Current);
         await RefreshLaunchAtLoginAsync();
     }
@@ -318,7 +318,7 @@ public partial class SettingsViewModel : ObservableObject
     {
         var defaults = new AppSettings();
         Load(defaults);
-        StatusMessage = "既定値を入力しました。保存すると反映されます。";
+        StatusMessage = AppStrings.Settings_DefaultsEntered;
     }
 
     private void Load(AppSettings settings)
@@ -355,7 +355,7 @@ public partial class SettingsViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            _log.Warning($"自動起動の状態を取得できませんでした: {ex.Message}");
+            _log.Warning(Text.Format(AppStrings.AutoStart_StateFailed, ex.Message));
         }
     }
 
@@ -367,12 +367,12 @@ public partial class SettingsViewModel : ObservableObject
                 return true;
 
             await _autoStart.SetEnabledAsync(enabled);
-            _log.Info(enabled ? "ログイン時の自動起動を有効にしました。" : "ログイン時の自動起動を無効にしました。");
+            _log.Info(enabled ? AppStrings.AutoStart_Enabled : AppStrings.AutoStart_Disabled);
             return true;
         }
         catch (Exception ex)
         {
-            ErrorText = $"自動起動の設定に失敗しました: {ex.Message}";
+            ErrorText = Text.Format(AppStrings.AutoStart_SetFailed, ex.Message);
             _log.Error(ErrorText);
             return false;
         }
@@ -383,7 +383,7 @@ public partial class SettingsViewModel : ObservableObject
         if (int.TryParse(text?.Trim(), out var value))
             return value;
 
-        errors.Add($"{label}には整数を入力してください。");
+        errors.Add(Text.Format(AppStrings.Settings_IntegerRequired, label));
         return 0;
     }
 }

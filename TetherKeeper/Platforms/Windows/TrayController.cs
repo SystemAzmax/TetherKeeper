@@ -127,8 +127,8 @@ internal sealed class TrayController
         {
             _hiddenNoticeShown = true;
             _notifyIcon.ShowBalloon(
-                $"{AppDisplayName.JAPANESE}はタスクトレイで動作中です",
-                "終了するには、トレイアイコンを右クリックして「終了」を選んでください。");
+                Text.Format(AppStrings.Tray_RunningInTrayTitle, AppDisplayName.GetCurrent()),
+                AppStrings.Tray_RunningInTrayMessage);
         }
     }
 
@@ -152,18 +152,18 @@ internal sealed class TrayController
         items.AddRange(BuildStatusLines(isRunning, scheduledStop).Select(TrayMenuItem.Info));
         items.Add(TrayMenuItem.Separator);
 
-        items.Add(new("ウィンドウを表示", ShowWindow, IsDefault: true));
-        items.Add(new(isRunning ? "キープアライブを停止" : "キープアライブを開始", ToggleWorker));
-        items.Add(new("今すぐ実行", _worker.TriggerNow, IsEnabled: isRunning));
-        items.Add(new("自動停止を予約", null, Children:
+        items.Add(new(AppStrings.Tray_ShowWindow, ShowWindow, IsDefault: true));
+        items.Add(new(isRunning ? AppStrings.Tray_StopKeepAlive : AppStrings.Tray_StartKeepAlive, ToggleWorker));
+        items.Add(new(AppStrings.Main_RunNow, _worker.TriggerNow, IsEnabled: isRunning));
+        items.Add(new(AppStrings.Tray_ScheduleAutoStop, null, Children:
         [
-            new("1 時間後に停止", () => ScheduleAutoStop(TimeSpan.FromHours(1))),
-            new("2 時間後に停止", () => ScheduleAutoStop(TimeSpan.FromHours(2))),
+            new(AppStrings.Tray_StopInOneHour, () => ScheduleAutoStop(TimeSpan.FromHours(1))),
+            new(AppStrings.Tray_StopInTwoHours, () => ScheduleAutoStop(TimeSpan.FromHours(2))),
             TrayMenuItem.Separator,
-            new("予約を解除", CancelAutoStop, IsEnabled: scheduledStop is not null),
+            new(AppStrings.Tray_CancelSchedule, CancelAutoStop, IsEnabled: scheduledStop is not null),
         ]));
         items.Add(TrayMenuItem.Separator);
-        items.Add(new("終了", () => _ = _exitService.ExitAsync()));
+        items.Add(new(AppStrings.Main_Exit, () => _ = _exitService.ExitAsync()));
         return items;
     }
 
@@ -171,23 +171,25 @@ internal sealed class TrayController
     private IEnumerable<string> BuildStatusLines(bool isRunning, DateTimeOffset? scheduledStop)
     {
         var statistics = _worker.Statistics;
-        yield return !isRunning ? "状態: 停止中"
-            : statistics.ConsecutiveFailures > 0 ? $"状態: 動作中（{statistics.ConsecutiveFailures} 回連続失敗）"
-            : "状態: 動作中";
+        yield return Text.Format(
+            AppStrings.Tray_Status,
+            !isRunning ? AppStrings.Status_Stopped
+            : statistics.ConsecutiveFailures > 0 ? Text.Format(AppStrings.Status_RunningWithFailures, statistics.ConsecutiveFailures)
+            : AppStrings.Status_Running);
 
         if (statistics.LastResult is { } last)
-            yield return $"最後の結果: {last.Timestamp.ToLocalTime():HH:mm:ss} {ViewModels.MainViewModel.FormatOutcome(last)}";
+            yield return Text.Format(AppStrings.Tray_LastResult, last.Timestamp.ToLocalTime(), ViewModels.MainViewModel.FormatOutcome(last));
 
         if (isRunning && _worker.NextRunAt is { } next)
         {
             var remaining = next - DateTimeOffset.Now;
             yield return remaining > TimeSpan.Zero
-                ? $"次回実行まで {Math.Ceiling(remaining.TotalSeconds):F0} 秒"
-                : "実行中…";
+                ? Text.Format(AppStrings.Next_Seconds, Math.Ceiling(remaining.TotalSeconds))
+                : AppStrings.Next_Running;
         }
 
         if (scheduledStop is { } stopAt)
-            yield return $"自動停止: {stopAt:MM/dd HH:mm} に停止予定";
+            yield return Text.Format(AppStrings.Tray_AutoStopAt, stopAt);
     }
 
     // 以下の async void は、例外を外に出すとアプリが落ちるため、すべて受け止める
@@ -269,8 +271,8 @@ internal sealed class TrayController
             return;
 
         _notifyIcon.ShowBalloon(
-            "ネットワークから切断しました",
-            $"「{networkName}」から切断したため、キープアライブを停止しました。",
+            AppStrings.Tray_DisconnectedTitle,
+            Text.Format(AppStrings.Tray_DisconnectedMessage, networkName),
             BalloonIcon.Warning);
     }
 
@@ -281,11 +283,11 @@ internal sealed class TrayController
         // アプリ名は表示言語に合わせて日本語名と英語名を切り替える
         var name = AppInfoProvider.GetProductName();
         if (!_worker.IsRunning)
-            return $"{name}（停止中）";
+            return Text.Format(AppStrings.Tray_TooltipStopped, name);
 
         var failures = _worker.Statistics.ConsecutiveFailures;
         return failures > 0
-            ? $"{name}（動作中・{failures} 回連続失敗）"
-            : $"{name}（動作中）";
+            ? Text.Format(AppStrings.Tray_TooltipFailing, name, failures)
+            : Text.Format(AppStrings.Tray_TooltipRunning, name);
     }
 }

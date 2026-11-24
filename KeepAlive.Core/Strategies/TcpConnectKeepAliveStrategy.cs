@@ -51,7 +51,7 @@ public sealed class TcpConnectKeepAliveStrategy : IKeepAliveStrategy
                 // 切断時のエラーは疎通結果に影響しない
             }
 
-            return KeepAliveResult.Succeeded(Name, target, timestamp, elapsed, $"接続成功 ({remote})");
+            return KeepAliveResult.Succeeded(Name, target, timestamp, elapsed, Text.Format(CoreStrings.Result_TcpConnected, remote));
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -60,7 +60,7 @@ public sealed class TcpConnectKeepAliveStrategy : IKeepAliveStrategy
         catch (OperationCanceledException)
         {
             return KeepAliveResult.Failed(
-                Name, target, timestamp, _timeProvider.GetElapsedTime(started), $"タイムアウト ({settings.TimeoutMilliseconds} ms)");
+                Name, target, timestamp, _timeProvider.GetElapsedTime(started), Text.Format(CoreStrings.Result_Timeout, settings.TimeoutMilliseconds));
         }
         catch (SocketException ex)
         {

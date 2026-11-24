@@ -64,7 +64,7 @@ public sealed class DataUsageTracker : IDataUsageTracker
         }
         catch (Exception ex)
         {
-            _log.Warning($"通信量の累計を読み込めなかったため、0 から数えます: {ex.Message}");
+            _log.Warning(Text.Format(CoreStrings.DataUsage_LoadFailed, ex.Message));
             stored = null;
         }
 
@@ -97,7 +97,7 @@ public sealed class DataUsageTracker : IDataUsageTracker
             _dirty = true;
         }
 
-        _log.Info($"通信量の累計 ({DataUsage.Format(previous.TotalBytes)}) をリセットしました。");
+        _log.Info(Text.Format(CoreStrings.DataUsage_Reset, DataUsage.Format(previous.TotalBytes)));
         RaiseChanged(reset);
         await SaveAsync().ConfigureAwait(false);
     }
@@ -166,7 +166,7 @@ public sealed class DataUsageTracker : IDataUsageTracker
                 // 次の機会に保存し直す。計測とキープアライブは止めない
                 lock (_gate)
                     _dirty = true;
-                _log.Error($"通信量の累計を保存できませんでした: {ex.Message}");
+                _log.Error(Text.Format(CoreStrings.DataUsage_SaveFailed, ex.Message));
             }
         }
         finally
@@ -183,7 +183,7 @@ public sealed class DataUsageTracker : IDataUsageTracker
         }
         catch (Exception ex)
         {
-            _log.Error($"通信量の通知先でエラーが発生しました: {ex.GetType().Name}: {ex.Message}");
+            _log.Error(Text.Format(CoreStrings.DataUsage_HandlerError, ex.GetType().Name, ex.Message));
         }
     }
 
@@ -238,7 +238,7 @@ public sealed class DataUsageTracker : IDataUsageTracker
             if (previous is null || previous.InterfaceId != reading.InterfaceId)
             {
                 // 別のアダプターの値どうしは比べられないため、新しいアダプターの値を基準にする
-                _owner._log.Info($"通信量の計測対象: {reading.InterfaceName}");
+                _owner._log.Info(Text.Format(CoreStrings.DataUsage_Adapter, reading.InterfaceName));
                 return 0;
             }
 
@@ -260,7 +260,7 @@ public sealed class DataUsageTracker : IDataUsageTracker
                 if (!_readErrorLogged)
                 {
                     _readErrorLogged = true;
-                    _owner._log.Warning($"通信量を計測できませんでした: {ex.GetType().Name}: {ex.Message}");
+                    _owner._log.Warning(Text.Format(CoreStrings.DataUsage_MeasureFailed, ex.GetType().Name, ex.Message));
                 }
 
                 return null;

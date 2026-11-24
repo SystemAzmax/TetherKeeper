@@ -31,7 +31,7 @@ internal sealed class StartupTaskAutoStartService : IAutoStartService
         if (!enabled)
         {
             if (task.State == StartupTaskState.EnabledByPolicy)
-                throw new InvalidOperationException("組織のポリシーで自動起動が有効にされているため、無効にできません。");
+                throw new InvalidOperationException(AppStrings.StartupTask_EnabledByPolicy);
 
             task.Disable();
             return;
@@ -49,11 +49,11 @@ internal sealed class StartupTaskAutoStartService : IAutoStartService
             case StartupTaskState.DisabledByUser:
                 throw new InvalidOperationException(
                     // タスクマネージャーには、パッケージのリソースの表示名 (表示言語の名前) が出る
-                    $"タスクマネージャーの「スタートアップ アプリ」で{AppDisplayName.GetCurrent()}が無効にされています。そちらで有効にしてください。");
+                    Text.Format(AppStrings.StartupTask_DisabledByUser, AppDisplayName.GetCurrent()));
             case StartupTaskState.DisabledByPolicy:
-                throw new InvalidOperationException("組織のポリシーで自動起動が禁止されています。");
+                throw new InvalidOperationException(AppStrings.StartupTask_DisabledByPolicy);
             default:
-                throw new InvalidOperationException($"自動起動を有効にできませんでした (状態: {state})。");
+                throw new InvalidOperationException(Text.Format(AppStrings.StartupTask_EnableFailed, state));
         }
     }
 }

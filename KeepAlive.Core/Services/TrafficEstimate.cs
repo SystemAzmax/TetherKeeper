@@ -24,7 +24,9 @@ public readonly record struct TrafficRange(long MinBytes, long MaxBytes)
         };
         var min = FormatNumber(MinBytes / divisor);
         var max = FormatNumber(MaxBytes / divisor);
-        return min == max ? $"約 {max} {unit}" : $"約 {min}〜{max} {unit}";
+        return min == max
+            ? Text.Format(CoreStrings.Traffic_Single, max, unit)
+            : Text.Format(CoreStrings.Traffic_Range, min, max, unit);
     }
 
     // 有効数字 2 桁ほどにそろえる (目安のため、細かい桁は出さない)

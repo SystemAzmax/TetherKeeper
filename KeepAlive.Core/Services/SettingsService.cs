@@ -38,7 +38,7 @@ public sealed class SettingsService : ISettingsService
             }
             catch (Exception ex)
             {
-                _log.Warning($"設定の読み込みに失敗したため既定値を使用します: {ex.Message}");
+                _log.Warning(Text.Format(CoreStrings.Settings_LoadFailed, ex.Message));
                 loaded = new AppSettings();
             }
 
@@ -107,12 +107,13 @@ public sealed class SettingsService : ISettingsService
         }
         catch (Exception ex)
         {
-            _log.Error($"設定の保存に失敗しました: {ex.Message}");
-            return [$"設定の保存に失敗しました: {ex.Message}"];
+            var message = Text.Format(CoreStrings.Settings_SaveFailed, ex.Message);
+            _log.Error(message);
+            return [message];
         }
 
         Apply(normalized);
-        _log.Info("設定を保存しました。");
+        _log.Info(CoreStrings.Settings_Saved);
         return [];
     }
 

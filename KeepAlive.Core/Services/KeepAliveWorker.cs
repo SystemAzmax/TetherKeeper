@@ -107,9 +107,8 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
         // 上限に達したまま開始しても、開始直後に止まるだけになるため開始しない
         if (!IsRunning && IsDataLimitReached(s))
         {
-            _log.Warning(
-                $"通信量の累計 ({DataUsage.Format(_dataUsage.Current.TotalBytes)}) が上限 ({s.DataLimitMegabytes} MB) に達しているため、開始できません。" +
-                "モニター画面で通信量をリセットするか、設定画面で上限を変更してください。");
+            _log.Warning(Text.Format(
+                CoreStrings.Worker_DataLimitReachedCannotStart, DataUsage.Format(_dataUsage.Current.TotalBytes), s.DataLimitMegabytes));
             return;
         }
 
@@ -138,7 +137,7 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
                 catch (Exception ex) when (!token.IsCancellationRequested)
                 {
                     // ループが黙って止まり「動作中」の表示だけが残るのを防ぐため、停止状態に戻す
-                    _log.Error($"予期しないエラーのためキープアライブを停止しました: {ex.GetType().Name}: {ex.Message}");
+                    _log.Error(Text.Format(CoreStrings.Worker_StoppedByError, ex.GetType().Name, ex.Message));
                     _ = StopCoreAsync(runCts);
                 }
             }, CancellationToken.None);
@@ -146,19 +145,19 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
 
         try
         {
-            _log.Info($"キープアライブを開始しました ({_resolver.Resolve(s.Method).Name} / {s.IntervalSeconds} 秒間隔)。");
+            _log.Info(Text.Format(CoreStrings.Worker_Started, _resolver.Resolve(s.Method).Name, s.IntervalSeconds));
             if (s.AutoStopAt is { } stopAt)
             {
                 if (stopAt > startedAt)
-                    _log.Info($"{stopAt.ToLocalTime():yyyy/MM/dd HH:mm} に自動停止します。");
+                    _log.Info(Text.Format(CoreStrings.Worker_WillStopAt, stopAt.ToLocalTime()));
                 else
-                    _log.Warning($"自動停止日時 ({stopAt.ToLocalTime():yyyy/MM/dd HH:mm}) を過ぎているため、自動停止は行いません。");
+                    _log.Warning(Text.Format(CoreStrings.Worker_AutoStopTimePassed, stopAt.ToLocalTime()));
             }
 
             LogWeeklyStop(s, startedAt);
 
             if (s.DataLimitBytes is not null)
-                _log.Info($"通信量の累計が {s.DataLimitMegabytes} MB に達したら自動停止します (現在 {DataUsage.Format(_dataUsage.Current.TotalBytes)})。");
+                _log.Info(Text.Format(CoreStrings.Worker_WillStopAtDataLimit, s.DataLimitMegabytes, DataUsage.Format(_dataUsage.Current.TotalBytes)));
 
             UpdateSleepInhibition();
             RaiseStateChanged();
@@ -204,14 +203,14 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
         catch (Exception ex)
         {
             // 停止 (アプリ終了を含む) が失敗しないよう、ここでは例外を外に出さない
-            _log.Error($"停止処理中にエラーが発生しました: {ex.GetType().Name}: {ex.Message}");
+            _log.Error(Text.Format(CoreStrings.Worker_StopError, ex.GetType().Name, ex.Message));
         }
         finally
         {
             cts.Dispose();
         }
 
-        _log.Info("キープアライブを停止しました。");
+        _log.Info(CoreStrings.Worker_Stopped);
         UpdateSleepInhibition();
         RaiseStateChanged();
     }
@@ -236,14 +235,14 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
                 _sleepInhibitor.SetEnabled(inhibit);
                 _sleepInhibited = inhibit;
                 _log.Info(inhibit
-                    ? "動作中は、操作しないときの自動スリープをしないようにしました。"
-                    : "自動スリープの抑止を解除しました。");
+                    ? CoreStrings.Worker_SleepPrevented
+                    : CoreStrings.Worker_SleepReleased);
             }
             catch (Exception ex)
             {
                 _log.Warning(inhibit
-                    ? $"自動スリープを抑止できませんでした: {ex.Message}"
-                    : $"自動スリープの抑止を解除できませんでした: {ex.Message}");
+                    ? Text.Format(CoreStrings.Worker_SleepPreventFailed, ex.Message)
+                    : Text.Format(CoreStrings.Worker_SleepReleaseFailed, ex.Message));
             }
         }
     }
@@ -286,7 +285,7 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
             }
             catch (Exception ex)
             {
-                _log.Warning($"自動スリープの抑止を解除できませんでした: {ex.Message}");
+                _log.Warning(Text.Format(CoreStrings.Worker_SleepReleaseFailed, ex.Message));
             }
         }
     }
@@ -314,7 +313,7 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
 
                 // 電源イベントを取得できない OS 向けの保険: 想定より大きく時間が飛んでいればスリープ等とみなす
                 if (lastRunAt is { } last && now - last > settings.Interval * 2 + settings.Timeout)
-                    _log.Warning($"前回実行から {(now - last).TotalMinutes:F1} 分経過しています (スリープ／休止からの復帰の可能性)。");
+                    _log.Warning(Text.Format(CoreStrings.Worker_TimeJumped, (now - last).TotalMinutes));
                 lastRunAt = now;
 
                 await ExecuteOnceAsync(settings, cancellationToken).ConfigureAwait(false);
@@ -404,7 +403,7 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
         var next = WeeklySchedule.GetNextOccurrence(
             settings.WeeklyStopDays, settings.WeeklyStopTime, startedAt, _timeProvider.LocalTimeZone);
         if (next is { } at)
-            _log.Info($"毎週の自動停止 ({WeeklySchedule.Format(settings.WeeklyStopDays)} {settings.WeeklyStopTime:HH\\:mm}) により、{ToLocalText(at)} に停止します。");
+            _log.Info(Text.Format(CoreStrings.Worker_WeeklyStopScheduled, WeeklySchedule.Format(settings.WeeklyStopDays), $"{settings.WeeklyStopTime:HH\\:mm}", ToLocalText(at)));
     }
 
     private async Task AutoStopAsync(CancellationTokenSource runCts, AutoStopReason reason)
@@ -416,20 +415,20 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
                 case AutoStopReason.DataLimit:
                     // 上限は解除しない (累計をリセットするまで、開始できないままにする)
                     _log.Info(
-                        $"通信量の累計 ({DataUsage.Format(_dataUsage.Current.TotalBytes)}) が上限 ({_settings.Current.DataLimitMegabytes} MB) に達しました。");
+                        Text.Format(CoreStrings.Worker_DataLimitReached, DataUsage.Format(_dataUsage.Current.TotalBytes), _settings.Current.DataLimitMegabytes));
                     await StopCoreAsync(runCts).ConfigureAwait(false);
                     break;
 
                 case AutoStopReason.WeeklySchedule:
                     // 毎週の設定は解除しない (次の週も同じ時刻に止める)
                     var weekly = _settings.Current;
-                    _log.Info($"毎週の自動停止の時刻 ({WeeklySchedule.Format(weekly.WeeklyStopDays)} {weekly.WeeklyStopTime:HH\\:mm}) になりました。");
+                    _log.Info(Text.Format(CoreStrings.Worker_WeeklyStopTimeReached, WeeklySchedule.Format(weekly.WeeklyStopDays), $"{weekly.WeeklyStopTime:HH\\:mm}"));
                     await StopCoreAsync(runCts).ConfigureAwait(false);
                     break;
 
                 default:
                     var stopAt = _settings.Current.AutoStopAt;
-                    _log.Info($"自動停止日時 ({stopAt?.ToLocalTime():yyyy/MM/dd HH:mm}) になりました。");
+                    _log.Info(Text.Format(CoreStrings.Worker_AutoStopTimeReached, stopAt?.ToLocalTime()));
                     await StopCoreAsync(runCts).ConfigureAwait(false);
 
                     // 使い終わった日時を解除し、次回の開始時に再適用されないようにする
@@ -442,7 +441,7 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
         }
         catch (Exception ex)
         {
-            _log.Error($"自動停止の処理に失敗しました: {ex.Message}");
+            _log.Error(Text.Format(CoreStrings.Worker_AutoStopFailed, ex.Message));
             return;
         }
 
@@ -453,7 +452,7 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
         catch (Exception ex)
         {
             // 通知先 (アプリの終了など) の不具合で、Worker を巻き込まない
-            _log.Error($"自動停止の通知先でエラーが発生しました: {ex.GetType().Name}: {ex.Message}");
+            _log.Error(Text.Format(CoreStrings.Worker_AutoStopHandlerError, ex.GetType().Name, ex.Message));
         }
     }
 
@@ -468,26 +467,29 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
 
         if (result.Success)
         {
-            _log.Info($"成功: {Describe(result)}");
+            _log.Info(Text.Format(CoreStrings.Worker_Succeeded, Describe(result)));
         }
         else if (fallbackMethod is null)
         {
-            _log.Warning($"失敗: {Describe(result)}");
+            _log.Warning(Text.Format(CoreStrings.Worker_Failed, Describe(result)));
         }
         else
         {
             // 予備で成功すれば、回線はつながっている (送信先や方式だけの問題) とみなし、成功として数える
-            _log.Warning($"失敗: {Describe(result)}。予備の通信方式でやり直します。");
+            _log.Warning(Text.Format(CoreStrings.Worker_FailedRetrying, Describe(result)));
             var fallback = await RunStrategyAsync(fallbackMethod.Value, cancellationToken).ConfigureAwait(false);
             if (fallback.Success)
             {
-                _log.Info($"予備で成功: {Describe(fallback)}");
+                _log.Info(Text.Format(CoreStrings.Worker_FallbackSucceeded, Describe(fallback)));
                 result = fallback with { UsedFallback = true };
             }
             else
             {
-                _log.Warning($"予備も失敗: {Describe(fallback)}");
-                result = result with { Message = $"{result.Message}（予備の {fallback.StrategyName} も失敗: {fallback.Message}）" };
+                _log.Warning(Text.Format(CoreStrings.Worker_FallbackFailed, Describe(fallback)));
+                result = result with
+                {
+                    Message = Text.Format(CoreStrings.Worker_FallbackFailedMessage, result.Message, fallback.StrategyName, fallback.Message),
+                };
             }
         }
 
@@ -503,7 +505,7 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
         catch (Exception ex)
         {
             // 通知先 (画面など) の不具合でキープアライブを止めない
-            _log.Error($"実行結果の通知先でエラーが発生しました: {ex.GetType().Name}: {ex.Message}");
+            _log.Error(Text.Format(CoreStrings.Worker_ResultHandlerError, ex.GetType().Name, ex.Message));
         }
     }
 
@@ -528,7 +530,7 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
             // Strategy の想定外例外でループ全体を止めない
             return KeepAliveResult.Failed(
                 strategy?.Name ?? method.ToString(), "-", timestamp, _timeProvider.GetElapsedTime(started),
-                $"予期しないエラー: {ex.GetType().Name}: {ex.Message}");
+                Text.Format(CoreStrings.Result_UnexpectedError, ex.GetType().Name, ex.Message));
         }
     }
 
@@ -543,7 +545,7 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
         }
         catch (Exception ex)
         {
-            _log.Error($"状態変化の通知先でエラーが発生しました: {ex.GetType().Name}: {ex.Message}");
+            _log.Error(Text.Format(CoreStrings.Worker_StateHandlerError, ex.GetType().Name, ex.Message));
         }
     }
 
@@ -620,7 +622,7 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
             return;
         }
 
-        _log.Info($"設定変更を反映します ({_resolver.Resolve(settings.Method).Name} / {settings.IntervalSeconds} 秒間隔)。");
+        _log.Info(Text.Format(CoreStrings.Worker_SettingsApplied, _resolver.Resolve(settings.Method).Name, settings.IntervalSeconds));
         TriggerNow();
     }
 
@@ -648,17 +650,17 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
             AutoControlNetworkName = string.Empty,
         };
 
-    private void OnSuspending(object? sender, EventArgs e) => _log.Info("OS がスリープに入ります。");
+    private void OnSuspending(object? sender, EventArgs e) => _log.Info(CoreStrings.Worker_Suspending);
 
     private void OnResumed(object? sender, EventArgs e)
     {
         if (!IsRunning)
         {
-            _log.Info("OS がスリープから復帰しました。");
+            _log.Info(CoreStrings.Worker_Resumed);
             return;
         }
 
-        _log.Info($"OS がスリープから復帰しました。{_options.ResumeDelay.TotalSeconds:F0} 秒後に通信を再開します。");
+        _log.Info(Text.Format(CoreStrings.Worker_ResumedRestarting, _options.ResumeDelay.TotalSeconds));
         _ = TriggerAfterDelayAsync(_options.ResumeDelay);
     }
 
@@ -671,7 +673,7 @@ public sealed class KeepAliveWorker : IKeepAliveWorker, IDisposable
         }
         catch (Exception ex)
         {
-            _log.Error($"復帰後の再開処理に失敗しました: {ex.Message}");
+            _log.Error(Text.Format(CoreStrings.Worker_ResumeFailed, ex.Message));
         }
     }
 }

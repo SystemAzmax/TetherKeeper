@@ -4,7 +4,7 @@
 
 iPhone のインターネット共有（テザリング）、Wi-Fi ルーター、モバイル回線、一部の VPN は、一定時間通信が無いと接続を切断することがあります。
 テザリングキーパーは定期的に小さな通信を発生させて、このアイドル切断を起きにくくするツールです。
-英語名は TetherKeeper で、表示言語が日本語以外の Windows では、この名前で表示されます。
+英語名は TetherKeeper で、表示言語が日本語以外の Windows では、この名前と英語の画面で表示されます。
 
 > テザリングの切断を 100% 防げる保証はありません。
 
@@ -140,7 +140,8 @@ powershell -ExecutionPolicy Bypass -File build\Publish-Msix.ps1 -NewCertificate
 │   │                        ResultHistory / ResultCsv（通信の結果の履歴の記録・集計・書き出し）
 │   │                        AppDisplayName（日本語名と英語名の切り替え）/ AppAboutInfo（「このアプリについて」の本文）
 │   ├─ Strategies            Ping / HttpHead / TcpConnect の各 KeepAliveStrategy
-│   └─ Configuration         DI 登録（AddKeepAliveCore）と KeepAliveOptions
+│   ├─ Configuration         DI 登録（AddKeepAliveCore）と KeepAliveOptions
+│   └─ Resources             CoreStrings.resx（英語）/ CoreStrings.ja.resx（日本語）: ログ・エラー・通知の文言
 ├─ KeepAlive.Infrastructure  OS 依存の実装
 │   ├─ Settings              JsonFileSettingsStore / JsonFileDataUsageStore（通信量の累計）
 │   ├─ History               CsvResultHistoryStore（通信の結果の履歴。1 日 1 ファイルの CSV）
@@ -149,6 +150,7 @@ powershell -ExecutionPolicy Bypass -File build\Publish-Msix.ps1 -NewCertificate
 │   └─ Power                 WindowsPowerEventSource（SystemEvents）/ WindowsSleepInhibitor（動作中のスリープ抑止）
 ├─ TetherKeeper              .NET MAUI の UI（Views / ViewModels / Platforms）
 │   ├─ Services              AppInfoProvider（バージョンなどの取得）/ AppPaths / AppPackage など
+│   ├─ Resources/Strings     AppStrings.resx（英語）/ AppStrings.ja.resx（日本語）: 画面の文言
 │   ├─ Platforms/Windows     トレイ常駐、多重起動の防止、接続中のネットワークの取得（WindowsNetworkMonitor）、Package.appxmanifest と表示名のリソース（Strings）
 │   └─ ThirdPartyNotices.txt 「ライセンス情報」で開くライセンス表示
 ├─ KeepAlive.Tests           xUnit の単体テスト

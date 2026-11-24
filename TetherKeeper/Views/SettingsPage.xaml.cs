@@ -31,7 +31,7 @@ public partial class SettingsPage : ContentPage
     private async void OnAboutButtonClick(object? sender, EventArgs e)
     {
         await ShowMessageAsync(
-            $"{AppInfoProvider.GetProductName()} について",
+            Text.Format(AppStrings.About_Title, AppInfoProvider.GetProductName()),
             AppInfoProvider.CreateAboutMessage());
     }
 
@@ -51,11 +51,10 @@ public partial class SettingsPage : ContentPage
         }
         catch (Exception ex)
         {
-            _log.Error($"ライセンス情報のファイルを開けませんでした: {ex.Message}");
+            _log.Error(Text.Format(AppStrings.Licenses_OpenFailedLog, ex.Message));
             await ShowMessageAsync(
-                "ライセンス情報",
-                "ライセンス情報のファイルを開けませんでした。"
-                + $"\n\nファイル: {path}\n詳細: {ex.Message}");
+                AppStrings.Settings_Licenses,
+                Text.Format(AppStrings.Licenses_OpenFailed, path, ex.Message));
         }
     }
 
@@ -75,11 +74,10 @@ public partial class SettingsPage : ContentPage
         }
         catch (Exception ex)
         {
-            _log.Error($"使い方ガイドを開けませんでした: {ex.Message}");
+            _log.Error(Text.Format(AppStrings.UserGuide_OpenFailedLog, ex.Message));
             await ShowMessageAsync(
-                "使い方",
-                "使い方ガイドを開けませんでした。"
-                + $"\n\nURL: {url}\n詳細: {ex.Message}");
+                AppStrings.Settings_UserGuide,
+                Text.Format(AppStrings.UserGuide_OpenFailed, url, ex.Message));
         }
     }
 

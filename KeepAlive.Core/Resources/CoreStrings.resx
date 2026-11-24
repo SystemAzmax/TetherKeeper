@@ -1,0 +1,308 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>  <data name="Settings_InvalidMethod" xml:space="preserve">
+    <value>The method is not valid.</value>
+  </data>
+  <data name="Settings_IntervalRange" xml:space="preserve">
+    <value>Specify an interval from {0} to {1} seconds.</value>
+  </data>
+  <data name="Settings_TimeoutRange" xml:space="preserve">
+    <value>Specify a timeout from {0} to {1} milliseconds.</value>
+  </data>
+  <data name="Settings_TimeoutShorterThanInterval" xml:space="preserve">
+    <value>Make the timeout shorter than the interval.</value>
+  </data>
+  <data name="Settings_DataLimitRange" xml:space="preserve">
+    <value>Specify a data limit from 0 to {0} MB.</value>
+  </data>
+  <data name="Settings_FailureThresholdRange" xml:space="preserve">
+    <value>Specify the number of consecutive failures from {0} to {1}.</value>
+  </data>
+  <data name="Settings_WeeklyStopDaysRequired" xml:space="preserve">
+    <value>Choose at least one day for the weekly auto stop.</value>
+  </data>
+  <data name="Settings_NetworkNameRequired" xml:space="preserve">
+    <value>Choose the network that starts and stops the keep-alive.</value>
+  </data>
+  <data name="Settings_InvalidFallback" xml:space="preserve">
+    <value>The fallback method is not valid.</value>
+  </data>
+  <data name="Settings_FallbackSameAsMethod" xml:space="preserve">
+    <value>Choose a fallback method that is different from the method.</value>
+  </data>
+  <data name="Settings_PingHostRequired" xml:space="preserve">
+    <value>Enter the Ping destination.</value>
+  </data>
+  <data name="Settings_HttpUrlInvalid" xml:space="preserve">
+    <value>Specify an absolute HTTP URL that starts with http:// or https://.</value>
+  </data>
+  <data name="Settings_HttpUrlHasUserInfo" xml:space="preserve">
+    <value>Don&apos;t include a user name or password in the HTTP URL.</value>
+  </data>
+  <data name="Settings_TcpHostRequired" xml:space="preserve">
+    <value>Enter the TCP host.</value>
+  </data>
+  <data name="Settings_TcpPortRange" xml:space="preserve">
+    <value>Specify a TCP port from 1 to 65535.</value>
+  </data>
+  <data name="Settings_LoadFailed" xml:space="preserve">
+    <value>Couldn&apos;t load the settings, so the defaults are used: {0}</value>
+  </data>
+  <data name="Settings_SaveFailed" xml:space="preserve">
+    <value>Couldn&apos;t save the settings: {0}</value>
+  </data>
+  <data name="Settings_Saved" xml:space="preserve">
+    <value>Saved the settings.</value>
+  </data>
+  <data name="Network_WiFi" xml:space="preserve">
+    <value>{0} (Wi-Fi)</value>
+  </data>
+  <data name="Network_Mobile" xml:space="preserve">
+    <value>{0} (mobile)</value>
+  </data>
+  <data name="Weekly_DayNames" xml:space="preserve">
+    <value>Sun,Mon,Tue,Wed,Thu,Fri,Sat</value>
+  </data>
+  <data name="Weekly_DaySeparator" xml:space="preserve">
+    <value>, </value>
+  </data>
+  <data name="Weekly_Everyday" xml:space="preserve">
+    <value>Every day</value>
+  </data>
+  <data name="Weekly_Weekdays" xml:space="preserve">
+    <value>Weekdays</value>
+  </data>
+  <data name="Weekly_Weekends" xml:space="preserve">
+    <value>Weekends</value>
+  </data>
+  <data name="Weekly_None" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="About_StoreEdition" xml:space="preserve">
+    <value>Store version</value>
+  </data>
+  <data name="About_ExeEdition" xml:space="preserve">
+    <value>exe version</value>
+  </data>
+  <data name="About_Version" xml:space="preserve">
+    <value>Version {0} ({1})</value>
+  </data>
+  <data name="AutoStop_PastTime" xml:space="preserve">
+    <value>Specify a date and time later than now.</value>
+  </data>
+  <data name="AutoStop_Scheduled" xml:space="preserve">
+    <value>Scheduled the auto stop for {0:yyyy/MM/dd HH:mm}.</value>
+  </data>
+  <data name="AutoStop_Cancelled" xml:space="preserve">
+    <value>Canceled the scheduled auto stop.</value>
+  </data>
+  <data name="DataUsage_LoadFailed" xml:space="preserve">
+    <value>Couldn&apos;t load the total data usage, so counting starts from 0: {0}</value>
+  </data>
+  <data name="DataUsage_Reset" xml:space="preserve">
+    <value>Reset the total data usage ({0}).</value>
+  </data>
+  <data name="DataUsage_SaveFailed" xml:space="preserve">
+    <value>Couldn&apos;t save the total data usage: {0}</value>
+  </data>
+  <data name="DataUsage_HandlerError" xml:space="preserve">
+    <value>An error occurred in a data usage handler: {0}: {1}</value>
+  </data>
+  <data name="DataUsage_Adapter" xml:space="preserve">
+    <value>Adapter used to measure data usage: {0}</value>
+  </data>
+  <data name="DataUsage_MeasureFailed" xml:space="preserve">
+    <value>Couldn&apos;t measure data usage: {0}: {1}</value>
+  </data>
+  <data name="Alert_FailingTitle" xml:space="preserve">
+    <value>Failures are continuing</value>
+  </data>
+  <data name="Alert_RecoveredTitle" xml:space="preserve">
+    <value>The connection has recovered</value>
+  </data>
+  <data name="Alert_FailingMessage" xml:space="preserve">
+    <value>Failed {0} times in a row (since {1:HH:mm}). The tethering or other connection may have dropped.</value>
+  </data>
+  <data name="Alert_RecoveredMessage" xml:space="preserve">
+    <value>Succeeded after {0} consecutive failures (failures lasted {1}).</value>
+  </data>
+  <data name="Duration_LessThanMinute" xml:space="preserve">
+    <value>less than 1 minute</value>
+  </data>
+  <data name="Duration_Minutes" xml:space="preserve">
+    <value>about {0} min</value>
+  </data>
+  <data name="Duration_Hours" xml:space="preserve">
+    <value>about {0} h</value>
+  </data>
+  <data name="Duration_HoursMinutes" xml:space="preserve">
+    <value>about {0} h {1} min</value>
+  </data>
+  <data name="Strategy_NotRegistered" xml:space="preserve">
+    <value>No strategy is registered for the method {0}.</value>
+  </data>
+  <data name="Result_Timeout" xml:space="preserve">
+    <value>Timed out ({0} ms)</value>
+  </data>
+  <data name="Result_HttpRedirect" xml:space="preserve">
+    <value>{0} (redirect response: a sign-in page or proxy may be responding)</value>
+  </data>
+  <data name="Result_NameNotResolved" xml:space="preserve">
+    <value>Couldn&apos;t resolve the host name.</value>
+  </data>
+  <data name="Result_PingReply" xml:space="preserve">
+    <value>Reply {0} ms ({1})</value>
+  </data>
+  <data name="Result_PingNoReply" xml:space="preserve">
+    <value>No reply: {0}</value>
+  </data>
+  <data name="Result_PingNotSupported" xml:space="preserve">
+    <value>Ping isn&apos;t available on this OS.</value>
+  </data>
+  <data name="Result_TcpConnected" xml:space="preserve">
+    <value>Connected ({0})</value>
+  </data>
+  <data name="Result_UnexpectedError" xml:space="preserve">
+    <value>Unexpected error: {0}: {1}</value>
+  </data>
+  <data name="Worker_DataLimitReachedCannotStart" xml:space="preserve">
+    <value>Can&apos;t start because the total data usage ({0}) has reached the limit ({1} MB). Reset the data usage on the Monitor screen, or change the limit on the Settings screen.</value>
+  </data>
+  <data name="Worker_StoppedByError" xml:space="preserve">
+    <value>Stopped the keep-alive because of an unexpected error: {0}: {1}</value>
+  </data>
+  <data name="Worker_Started" xml:space="preserve">
+    <value>Started the keep-alive ({0} / every {1} seconds).</value>
+  </data>
+  <data name="Worker_WillStopAt" xml:space="preserve">
+    <value>Will stop automatically at {0:yyyy/MM/dd HH:mm}.</value>
+  </data>
+  <data name="Worker_AutoStopTimePassed" xml:space="preserve">
+    <value>The auto stop time ({0:yyyy/MM/dd HH:mm}) has passed, so it won&apos;t stop automatically.</value>
+  </data>
+  <data name="Worker_WillStopAtDataLimit" xml:space="preserve">
+    <value>Will stop automatically when the total data usage reaches {0} MB (now {1}).</value>
+  </data>
+  <data name="Worker_StopError" xml:space="preserve">
+    <value>An error occurred while stopping: {0}: {1}</value>
+  </data>
+  <data name="Worker_Stopped" xml:space="preserve">
+    <value>Stopped the keep-alive.</value>
+  </data>
+  <data name="Worker_SleepPrevented" xml:space="preserve">
+    <value>Automatic sleep is now prevented while running.</value>
+  </data>
+  <data name="Worker_SleepReleased" xml:space="preserve">
+    <value>Stopped preventing automatic sleep.</value>
+  </data>
+  <data name="Worker_SleepPreventFailed" xml:space="preserve">
+    <value>Couldn&apos;t prevent automatic sleep: {0}</value>
+  </data>
+  <data name="Worker_SleepReleaseFailed" xml:space="preserve">
+    <value>Couldn&apos;t stop preventing automatic sleep: {0}</value>
+  </data>
+  <data name="Worker_TimeJumped" xml:space="preserve">
+    <value>{0:F1} minutes have passed since the last run (the PC may have woken from sleep or hibernation).</value>
+  </data>
+  <data name="Worker_WeeklyStopScheduled" xml:space="preserve">
+    <value>Will stop at {2} because of the weekly auto stop ({0} {1}).</value>
+  </data>
+  <data name="Worker_DataLimitReached" xml:space="preserve">
+    <value>The total data usage ({0}) has reached the limit ({1} MB).</value>
+  </data>
+  <data name="Worker_WeeklyStopTimeReached" xml:space="preserve">
+    <value>It&apos;s time for the weekly auto stop ({0} {1}).</value>
+  </data>
+  <data name="Worker_AutoStopTimeReached" xml:space="preserve">
+    <value>It&apos;s the auto stop time ({0:yyyy/MM/dd HH:mm}).</value>
+  </data>
+  <data name="Worker_AutoStopFailed" xml:space="preserve">
+    <value>Couldn&apos;t stop automatically: {0}</value>
+  </data>
+  <data name="Worker_AutoStopHandlerError" xml:space="preserve">
+    <value>An error occurred in an auto stop handler: {0}: {1}</value>
+  </data>
+  <data name="Worker_Succeeded" xml:space="preserve">
+    <value>Succeeded: {0}</value>
+  </data>
+  <data name="Worker_Failed" xml:space="preserve">
+    <value>Failed: {0}</value>
+  </data>
+  <data name="Worker_FailedRetrying" xml:space="preserve">
+    <value>Failed: {0}. Trying again with the fallback method.</value>
+  </data>
+  <data name="Worker_FallbackSucceeded" xml:space="preserve">
+    <value>Succeeded with fallback: {0}</value>
+  </data>
+  <data name="Worker_FallbackFailed" xml:space="preserve">
+    <value>Fallback also failed: {0}</value>
+  </data>
+  <data name="Worker_FallbackFailedMessage" xml:space="preserve">
+    <value>{0} (the fallback {1} also failed: {2})</value>
+  </data>
+  <data name="Worker_ResultHandlerError" xml:space="preserve">
+    <value>An error occurred in a result handler: {0}: {1}</value>
+  </data>
+  <data name="Worker_StateHandlerError" xml:space="preserve">
+    <value>An error occurred in a state change handler: {0}: {1}</value>
+  </data>
+  <data name="Worker_SettingsApplied" xml:space="preserve">
+    <value>Applying the new settings ({0} / every {1} seconds).</value>
+  </data>
+  <data name="Worker_Suspending" xml:space="preserve">
+    <value>The OS is going to sleep.</value>
+  </data>
+  <data name="Worker_Resumed" xml:space="preserve">
+    <value>The OS has woken from sleep.</value>
+  </data>
+  <data name="Worker_ResumedRestarting" xml:space="preserve">
+    <value>The OS has woken from sleep. Traffic will resume in {0:F0} seconds.</value>
+  </data>
+  <data name="Worker_ResumeFailed" xml:space="preserve">
+    <value>Couldn&apos;t resume after waking: {0}</value>
+  </data>
+  <data name="NetworkControl_Starting" xml:space="preserve">
+    <value>Starting the keep-alive because the PC is connected to &quot;{0}&quot;.</value>
+  </data>
+  <data name="NetworkControl_Stopping" xml:space="preserve">
+    <value>Stopping the keep-alive because the PC disconnected from &quot;{0}&quot;.</value>
+  </data>
+  <data name="NetworkControl_Failed" xml:space="preserve">
+    <value>Couldn&apos;t start or stop automatically depending on the network: {0}: {1}</value>
+  </data>
+  <data name="Traffic_Single" xml:space="preserve">
+    <value>about {0} {1}</value>
+  </data>
+  <data name="Traffic_Range" xml:space="preserve">
+    <value>about {0}–{1} {2}</value>
+  </data>
+  <data name="Csv_Header" xml:space="preserve">
+    <value>Time,Result,Method,Destination,Response time (ms),Fallback,Details</value>
+  </data>
+  <data name="Csv_Success" xml:space="preserve">
+    <value>Succeeded</value>
+  </data>
+  <data name="Csv_Failure" xml:space="preserve">
+    <value>Failed</value>
+  </data>
+  <data name="Csv_Fallback" xml:space="preserve">
+    <value>Fallback</value>
+  </data>
+  <data name="Sleep_Reason" xml:space="preserve">
+    <value>{0} keep-alive is running</value>
+  </data>
+  <data name="AutoStart_NotSupported" xml:space="preserve">
+    <value>Starting the app at sign-in isn&apos;t supported on this platform.</value>
+  </data>
+</root>

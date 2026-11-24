@@ -1,0 +1,308 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>  <data name="Settings_InvalidMethod" xml:space="preserve">
+    <value>通信方式が不正です。</value>
+  </data>
+  <data name="Settings_IntervalRange" xml:space="preserve">
+    <value>実行間隔は {0}〜{1} 秒で指定してください。</value>
+  </data>
+  <data name="Settings_TimeoutRange" xml:space="preserve">
+    <value>タイムアウトは {0}〜{1} ミリ秒で指定してください。</value>
+  </data>
+  <data name="Settings_TimeoutShorterThanInterval" xml:space="preserve">
+    <value>タイムアウトは実行間隔より短くしてください。</value>
+  </data>
+  <data name="Settings_DataLimitRange" xml:space="preserve">
+    <value>通信量の上限は 0〜{0} MB で指定してください。</value>
+  </data>
+  <data name="Settings_FailureThresholdRange" xml:space="preserve">
+    <value>通知する連続失敗の回数は {0}〜{1} 回で指定してください。</value>
+  </data>
+  <data name="Settings_WeeklyStopDaysRequired" xml:space="preserve">
+    <value>毎週の自動停止の曜日を 1 つ以上選んでください。</value>
+  </data>
+  <data name="Settings_NetworkNameRequired" xml:space="preserve">
+    <value>自動で開始・停止するネットワークを選んでください。</value>
+  </data>
+  <data name="Settings_InvalidFallback" xml:space="preserve">
+    <value>予備の通信方式が不正です。</value>
+  </data>
+  <data name="Settings_FallbackSameAsMethod" xml:space="preserve">
+    <value>予備の通信方式には、通信方式と別の方式を選んでください。</value>
+  </data>
+  <data name="Settings_PingHostRequired" xml:space="preserve">
+    <value>Ping の送信先を入力してください。</value>
+  </data>
+  <data name="Settings_HttpUrlInvalid" xml:space="preserve">
+    <value>HTTP の URL は http:// または https:// で始まる絶対 URL を指定してください。</value>
+  </data>
+  <data name="Settings_HttpUrlHasUserInfo" xml:space="preserve">
+    <value>HTTP の URL にユーザー名やパスワードを含めないでください。</value>
+  </data>
+  <data name="Settings_TcpHostRequired" xml:space="preserve">
+    <value>TCP の接続先ホストを入力してください。</value>
+  </data>
+  <data name="Settings_TcpPortRange" xml:space="preserve">
+    <value>TCP のポートは 1〜65535 で指定してください。</value>
+  </data>
+  <data name="Settings_LoadFailed" xml:space="preserve">
+    <value>設定の読み込みに失敗したため既定値を使用します: {0}</value>
+  </data>
+  <data name="Settings_SaveFailed" xml:space="preserve">
+    <value>設定の保存に失敗しました: {0}</value>
+  </data>
+  <data name="Settings_Saved" xml:space="preserve">
+    <value>設定を保存しました。</value>
+  </data>
+  <data name="Network_WiFi" xml:space="preserve">
+    <value>{0}（Wi-Fi）</value>
+  </data>
+  <data name="Network_Mobile" xml:space="preserve">
+    <value>{0}（モバイル回線）</value>
+  </data>
+  <data name="Weekly_DayNames" xml:space="preserve">
+    <value>日,月,火,水,木,金,土</value>
+  </data>
+  <data name="Weekly_DaySeparator" xml:space="preserve">
+    <value>・</value>
+  </data>
+  <data name="Weekly_Everyday" xml:space="preserve">
+    <value>毎日</value>
+  </data>
+  <data name="Weekly_Weekdays" xml:space="preserve">
+    <value>平日</value>
+  </data>
+  <data name="Weekly_Weekends" xml:space="preserve">
+    <value>土日</value>
+  </data>
+  <data name="Weekly_None" xml:space="preserve">
+    <value>なし</value>
+  </data>
+  <data name="About_StoreEdition" xml:space="preserve">
+    <value>ストア版</value>
+  </data>
+  <data name="About_ExeEdition" xml:space="preserve">
+    <value>exe 版</value>
+  </data>
+  <data name="About_Version" xml:space="preserve">
+    <value>バージョン {0}（{1}）</value>
+  </data>
+  <data name="AutoStop_PastTime" xml:space="preserve">
+    <value>現在より後の日時を指定してください。</value>
+  </data>
+  <data name="AutoStop_Scheduled" xml:space="preserve">
+    <value>自動停止を {0:yyyy/MM/dd HH:mm} に予約しました。</value>
+  </data>
+  <data name="AutoStop_Cancelled" xml:space="preserve">
+    <value>自動停止の予約を解除しました。</value>
+  </data>
+  <data name="DataUsage_LoadFailed" xml:space="preserve">
+    <value>通信量の累計を読み込めなかったため、0 から数えます: {0}</value>
+  </data>
+  <data name="DataUsage_Reset" xml:space="preserve">
+    <value>通信量の累計 ({0}) をリセットしました。</value>
+  </data>
+  <data name="DataUsage_SaveFailed" xml:space="preserve">
+    <value>通信量の累計を保存できませんでした: {0}</value>
+  </data>
+  <data name="DataUsage_HandlerError" xml:space="preserve">
+    <value>通信量の通知先でエラーが発生しました: {0}: {1}</value>
+  </data>
+  <data name="DataUsage_Adapter" xml:space="preserve">
+    <value>通信量の計測対象: {0}</value>
+  </data>
+  <data name="DataUsage_MeasureFailed" xml:space="preserve">
+    <value>通信量を計測できませんでした: {0}: {1}</value>
+  </data>
+  <data name="Alert_FailingTitle" xml:space="preserve">
+    <value>通信の失敗が続いています</value>
+  </data>
+  <data name="Alert_RecoveredTitle" xml:space="preserve">
+    <value>通信が復旧しました</value>
+  </data>
+  <data name="Alert_FailingMessage" xml:space="preserve">
+    <value>{0} 回続けて失敗しました（{1:HH:mm} から）。テザリングなどの接続が切れている可能性があります。</value>
+  </data>
+  <data name="Alert_RecoveredMessage" xml:space="preserve">
+    <value>{0} 回続けて失敗したあと、成功しました（失敗が続いた時間: {1}）。</value>
+  </data>
+  <data name="Duration_LessThanMinute" xml:space="preserve">
+    <value>1 分未満</value>
+  </data>
+  <data name="Duration_Minutes" xml:space="preserve">
+    <value>約 {0} 分</value>
+  </data>
+  <data name="Duration_Hours" xml:space="preserve">
+    <value>約 {0} 時間</value>
+  </data>
+  <data name="Duration_HoursMinutes" xml:space="preserve">
+    <value>約 {0} 時間 {1} 分</value>
+  </data>
+  <data name="Strategy_NotRegistered" xml:space="preserve">
+    <value>通信方式 {0} の Strategy が登録されていません。</value>
+  </data>
+  <data name="Result_Timeout" xml:space="preserve">
+    <value>タイムアウト ({0} ms)</value>
+  </data>
+  <data name="Result_HttpRedirect" xml:space="preserve">
+    <value>{0}（リダイレクト応答: ログイン画面やプロキシが応答している可能性があります）</value>
+  </data>
+  <data name="Result_NameNotResolved" xml:space="preserve">
+    <value>名前解決できませんでした。</value>
+  </data>
+  <data name="Result_PingReply" xml:space="preserve">
+    <value>応答 {0} ms ({1})</value>
+  </data>
+  <data name="Result_PingNoReply" xml:space="preserve">
+    <value>応答なし: {0}</value>
+  </data>
+  <data name="Result_PingNotSupported" xml:space="preserve">
+    <value>この OS では Ping を利用できません。</value>
+  </data>
+  <data name="Result_TcpConnected" xml:space="preserve">
+    <value>接続成功 ({0})</value>
+  </data>
+  <data name="Result_UnexpectedError" xml:space="preserve">
+    <value>予期しないエラー: {0}: {1}</value>
+  </data>
+  <data name="Worker_DataLimitReachedCannotStart" xml:space="preserve">
+    <value>通信量の累計 ({0}) が上限 ({1} MB) に達しているため、開始できません。モニター画面で通信量をリセットするか、設定画面で上限を変更してください。</value>
+  </data>
+  <data name="Worker_StoppedByError" xml:space="preserve">
+    <value>予期しないエラーのためキープアライブを停止しました: {0}: {1}</value>
+  </data>
+  <data name="Worker_Started" xml:space="preserve">
+    <value>キープアライブを開始しました ({0} / {1} 秒間隔)。</value>
+  </data>
+  <data name="Worker_WillStopAt" xml:space="preserve">
+    <value>{0:yyyy/MM/dd HH:mm} に自動停止します。</value>
+  </data>
+  <data name="Worker_AutoStopTimePassed" xml:space="preserve">
+    <value>自動停止日時 ({0:yyyy/MM/dd HH:mm}) を過ぎているため、自動停止は行いません。</value>
+  </data>
+  <data name="Worker_WillStopAtDataLimit" xml:space="preserve">
+    <value>通信量の累計が {0} MB に達したら自動停止します (現在 {1})。</value>
+  </data>
+  <data name="Worker_StopError" xml:space="preserve">
+    <value>停止処理中にエラーが発生しました: {0}: {1}</value>
+  </data>
+  <data name="Worker_Stopped" xml:space="preserve">
+    <value>キープアライブを停止しました。</value>
+  </data>
+  <data name="Worker_SleepPrevented" xml:space="preserve">
+    <value>動作中は、操作しないときの自動スリープをしないようにしました。</value>
+  </data>
+  <data name="Worker_SleepReleased" xml:space="preserve">
+    <value>自動スリープの抑止を解除しました。</value>
+  </data>
+  <data name="Worker_SleepPreventFailed" xml:space="preserve">
+    <value>自動スリープを抑止できませんでした: {0}</value>
+  </data>
+  <data name="Worker_SleepReleaseFailed" xml:space="preserve">
+    <value>自動スリープの抑止を解除できませんでした: {0}</value>
+  </data>
+  <data name="Worker_TimeJumped" xml:space="preserve">
+    <value>前回実行から {0:F1} 分経過しています (スリープ／休止からの復帰の可能性)。</value>
+  </data>
+  <data name="Worker_WeeklyStopScheduled" xml:space="preserve">
+    <value>毎週の自動停止 ({0} {1}) により、{2} に停止します。</value>
+  </data>
+  <data name="Worker_DataLimitReached" xml:space="preserve">
+    <value>通信量の累計 ({0}) が上限 ({1} MB) に達しました。</value>
+  </data>
+  <data name="Worker_WeeklyStopTimeReached" xml:space="preserve">
+    <value>毎週の自動停止の時刻 ({0} {1}) になりました。</value>
+  </data>
+  <data name="Worker_AutoStopTimeReached" xml:space="preserve">
+    <value>自動停止日時 ({0:yyyy/MM/dd HH:mm}) になりました。</value>
+  </data>
+  <data name="Worker_AutoStopFailed" xml:space="preserve">
+    <value>自動停止の処理に失敗しました: {0}</value>
+  </data>
+  <data name="Worker_AutoStopHandlerError" xml:space="preserve">
+    <value>自動停止の通知先でエラーが発生しました: {0}: {1}</value>
+  </data>
+  <data name="Worker_Succeeded" xml:space="preserve">
+    <value>成功: {0}</value>
+  </data>
+  <data name="Worker_Failed" xml:space="preserve">
+    <value>失敗: {0}</value>
+  </data>
+  <data name="Worker_FailedRetrying" xml:space="preserve">
+    <value>失敗: {0}。予備の通信方式でやり直します。</value>
+  </data>
+  <data name="Worker_FallbackSucceeded" xml:space="preserve">
+    <value>予備で成功: {0}</value>
+  </data>
+  <data name="Worker_FallbackFailed" xml:space="preserve">
+    <value>予備も失敗: {0}</value>
+  </data>
+  <data name="Worker_FallbackFailedMessage" xml:space="preserve">
+    <value>{0}（予備の {1} も失敗: {2}）</value>
+  </data>
+  <data name="Worker_ResultHandlerError" xml:space="preserve">
+    <value>実行結果の通知先でエラーが発生しました: {0}: {1}</value>
+  </data>
+  <data name="Worker_StateHandlerError" xml:space="preserve">
+    <value>状態変化の通知先でエラーが発生しました: {0}: {1}</value>
+  </data>
+  <data name="Worker_SettingsApplied" xml:space="preserve">
+    <value>設定変更を反映します ({0} / {1} 秒間隔)。</value>
+  </data>
+  <data name="Worker_Suspending" xml:space="preserve">
+    <value>OS がスリープに入ります。</value>
+  </data>
+  <data name="Worker_Resumed" xml:space="preserve">
+    <value>OS がスリープから復帰しました。</value>
+  </data>
+  <data name="Worker_ResumedRestarting" xml:space="preserve">
+    <value>OS がスリープから復帰しました。{0:F0} 秒後に通信を再開します。</value>
+  </data>
+  <data name="Worker_ResumeFailed" xml:space="preserve">
+    <value>復帰後の再開処理に失敗しました: {0}</value>
+  </data>
+  <data name="NetworkControl_Starting" xml:space="preserve">
+    <value>「{0}」に接続しているため、キープアライブを開始します。</value>
+  </data>
+  <data name="NetworkControl_Stopping" xml:space="preserve">
+    <value>「{0}」から切断したため、キープアライブを停止します。</value>
+  </data>
+  <data name="NetworkControl_Failed" xml:space="preserve">
+    <value>ネットワークに応じた自動開始・停止の処理に失敗しました: {0}: {1}</value>
+  </data>
+  <data name="Traffic_Single" xml:space="preserve">
+    <value>約 {0} {1}</value>
+  </data>
+  <data name="Traffic_Range" xml:space="preserve">
+    <value>約 {0}〜{1} {2}</value>
+  </data>
+  <data name="Csv_Header" xml:space="preserve">
+    <value>日時,結果,通信方式,送信先,応答時間(ms),予備,内容</value>
+  </data>
+  <data name="Csv_Success" xml:space="preserve">
+    <value>成功</value>
+  </data>
+  <data name="Csv_Failure" xml:space="preserve">
+    <value>失敗</value>
+  </data>
+  <data name="Csv_Fallback" xml:space="preserve">
+    <value>予備で成功</value>
+  </data>
+  <data name="Sleep_Reason" xml:space="preserve">
+    <value>{0}のキープアライブ（定期的な通信）が動作中です</value>
+  </data>
+  <data name="AutoStart_NotSupported" xml:space="preserve">
+    <value>このプラットフォームでは自動起動を設定できません。</value>
+  </data>
+</root>

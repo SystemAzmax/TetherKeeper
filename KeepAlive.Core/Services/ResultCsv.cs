@@ -8,16 +8,28 @@ namespace KeepAlive.Core.Services;
 /// 通信の結果の履歴を CSV の 1 行にする・CSV の 1 行から読む。
 /// 履歴のファイルと、書き出す CSV の両方で同じ形式を使う。
 /// Excel で開きやすいよう、日時は「2026/11/24 10:23:45」(PC の時刻) の形にし、文字列は必要なときだけ「"」で囲む。
+/// 見出しと「成功」「失敗」などの文言は表示言語で書き、読むときはどの言語の文言でも受け付ける
+/// (表示言語を切り替えても、それまでの履歴を読めるようにするため)。
 /// </summary>
 public static class ResultCsv
 {
     private const string TimestampFormat = "yyyy/MM/dd HH:mm:ss";
-    private const string SuccessText = "成功";
-    private const string FailureText = "失敗";
-    private const string FallbackText = "予備で成功";
 
-    /// <summary>見出しの行。</summary>
-    public const string Header = "日時,結果,通信方式,送信先,応答時間(ms),予備,内容";
+    /// <summary>リソースを用意している言語 (既定の英語と日本語)。</summary>
+    private static readonly CultureInfo[] ResourceCultures = [CultureInfo.InvariantCulture, CultureInfo.GetCultureInfo("ja")];
+
+    private static readonly HashSet<string> SuccessTexts = AllTranslations(nameof(CoreStrings.Csv_Success));
+    private static readonly HashSet<string> FailureTexts = AllTranslations(nameof(CoreStrings.Csv_Failure));
+    private static readonly HashSet<string> FallbackTexts = AllTranslations(nameof(CoreStrings.Csv_Fallback));
+
+    /// <summary>見出しの行 (表示言語)。</summary>
+    public static string Header => CoreStrings.Csv_Header;
+
+    private static HashSet<string> AllTranslations(string name) =>
+        ResourceCultures
+            .Select(culture => CoreStrings.ResourceManager.GetString(name, culture))
+            .OfType<string>()
+            .ToHashSet(StringComparer.Ordinal);
 
     /// <summary>結果を CSV の 1 行にする。日時は <paramref name="zone"/> の時刻で書く。</summary>
     public static string Format(KeepAliveResult result, TimeZoneInfo zone)
@@ -25,11 +37,11 @@ public static class ResultCsv
         var local = TimeZoneInfo.ConvertTime(result.Timestamp, zone);
         return string.Join(',',
             local.ToString(TimestampFormat, CultureInfo.InvariantCulture),
-            result.Success ? SuccessText : FailureText,
+            result.Success ? CoreStrings.Csv_Success : CoreStrings.Csv_Failure,
             Escape(result.StrategyName),
             Escape(result.Target),
             ((long)Math.Round(result.Elapsed.TotalMilliseconds)).ToString(CultureInfo.InvariantCulture),
-            result.UsedFallback ? FallbackText : string.Empty,
+            result.UsedFallback ? CoreStrings.Csv_Fallback : string.Empty,
             Escape(result.Message ?? string.Empty));
     }
 
@@ -39,7 +51,7 @@ public static class ResultCsv
         var fields = SplitFields(line);
         if (fields is not { Count: 7 }
             || !DateTime.TryParseExact(fields[0], TimestampFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out var local)
-            || fields[1] is not (SuccessText or FailureText)
+            || !(SuccessTexts.Contains(fields[1]) || FailureTexts.Contains(fields[1]))
             || !long.TryParse(fields[4], NumberStyles.Integer, CultureInfo.InvariantCulture, out var elapsedMs))
             return null;
 
@@ -47,11 +59,11 @@ public static class ResultCsv
         return new KeepAliveResult
         {
             Timestamp = new DateTimeOffset(unspecified, zone.GetUtcOffset(unspecified)),
-            Success = fields[1] == SuccessText,
+            Success = SuccessTexts.Contains(fields[1]),
             StrategyName = fields[2],
             Target = fields[3],
             Elapsed = TimeSpan.FromMilliseconds(elapsedMs),
-            UsedFallback = fields[5] == FallbackText,
+            UsedFallback = FallbackTexts.Contains(fields[5]),
             Message = fields[6].Length > 0 ? fields[6] : null,
         };
     }

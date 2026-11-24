@@ -56,8 +56,8 @@ public static class AppAboutInfo
         bool isPackaged,
         string? copyright)
     {
-        var edition = isPackaged ? "ストア版" : "exe 版";
-        var message = $"{productName}\nバージョン {FormatVersion(version)}（{edition}）";
+        var edition = isPackaged ? CoreStrings.About_StoreEdition : CoreStrings.About_ExeEdition;
+        var message = $"{productName}\n{Text.Format(CoreStrings.About_Version, FormatVersion(version), edition)}";
         return string.IsNullOrWhiteSpace(copyright)
             ? message
             : $"{message}\n\n{copyright}";

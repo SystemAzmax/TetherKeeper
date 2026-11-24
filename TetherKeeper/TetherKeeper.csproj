@@ -81,6 +81,28 @@
 		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
 	</ItemGroup>
 
+	<!-- 画面・ログ・通知の文言。AppStrings.resx が英語 (既定)、AppStrings.ja.resx が日本語。
+	     Windows の表示言語が日本語なら日本語、それ以外は英語になる。ビルド時に AppStrings クラスを生成する
+	     (Core 側の文言は KeepAlive.Core の CoreStrings) -->
+	<ItemGroup>
+		<EmbeddedResource Update="Resources\Strings\AppStrings.resx">
+			<StronglyTypedFileName>$(IntermediateOutputPath)AppStrings.Designer.cs</StronglyTypedFileName>
+			<StronglyTypedLanguage>CSharp</StronglyTypedLanguage>
+			<StronglyTypedNamespace>TetherKeeper.Resources.Strings</StronglyTypedNamespace>
+			<StronglyTypedClassName>AppStrings</StronglyTypedClassName>
+			<PublicClass>true</PublicClass>
+		</EmbeddedResource>
+		<Using Include="TetherKeeper.Resources.Strings" />
+		<Using Include="KeepAlive.Core.Resources" />
+	</ItemGroup>
+
+	<!-- WinUI の XAML コンパイラーは、通常のコンパイルより前に一度ソースをコンパイルする。
+	     そのときに AppStrings クラスができているよう、リソースの生成を先に行う。
+	     リソース名を決める PrepareResourceNames を先に行わないと、リソース名が空 (.resources) になり、実行時に文言を読めない -->
+	<Target Name="GenerateResourcesBeforeXamlCompile"
+	        BeforeTargets="MarkupCompilePass1"
+	        DependsOnTargets="PrepareResourceNames;ResGen" />
+
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
 		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />

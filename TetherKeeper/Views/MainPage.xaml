@@ -2,9 +2,10 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:TetherKeeper.ViewModels"
+             xmlns:res="clr-namespace:TetherKeeper.Resources.Strings"
              x:Class="TetherKeeper.Views.MainPage"
              x:DataType="vm:MainViewModel"
-             Title="モニター">
+             Title="{x:Static res:AppStrings.Tab_Monitor}">
 
     <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,*"
           Padding="16"
@@ -37,11 +38,11 @@
             <Button Text="{Binding ToggleButtonText}"
                     Command="{Binding ToggleCommand}" />
             <Button Grid.Column="1"
-                    Text="今すぐ実行"
+                    Text="{x:Static res:AppStrings.Main_RunNow}"
                     Command="{Binding RunNowCommand}" />
             <!-- 終了は主操作 (紫) や無効状態 (グレー) と区別するため薄い赤の塗りつぶし -->
             <Button Grid.Column="2"
-                    Text="終了"
+                    Text="{x:Static res:AppStrings.Main_Exit}"
                     Command="{Binding ExitCommand}"
                     BackgroundColor="{AppThemeBinding Light={StaticResource DangerContainer}, Dark={StaticResource DangerContainerDark}}"
                     TextColor="{AppThemeBinding Light={StaticResource Danger}, Dark={StaticResource OnDangerContainerDark}}" />
@@ -55,7 +56,7 @@
             <VerticalStackLayout Spacing="4">
                 <!-- Windows の TimePicker は最小幅が大きいため、ボタンは見出し行に置き、ピッカーは狭い幅で折り返す -->
                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                    <Label Text="自動停止" FontAttributes="Bold" VerticalOptions="Center" />
+                    <Label Text="{x:Static res:AppStrings.Main_AutoStop}" FontAttributes="Bold" VerticalOptions="Center" />
                     <Button Grid.Column="1"
                             Text="{Binding AutoStopButtonText}"
                             Padding="10,4"
@@ -72,22 +73,22 @@
                                 IsEnabled="{Binding CanEditAutoStop}"
                                 Margin="0,0,8,4" />
                     <!-- 今からの時間で予約する。予約済みのときは「解除」してから選び直す -->
-                    <Button Text="1 時間後"
+                    <Button Text="{x:Static res:AppStrings.Main_InOneHour}"
                             Padding="10,4"
                             MinimumHeightRequest="32"
                             Margin="0,0,8,4"
                             IsVisible="{Binding CanEditAutoStop}"
                             Command="{Binding ScheduleAutoStopAfterCommand}"
                             CommandParameter="1"
-                            ToolTipProperties.Text="今から 1 時間後に停止するよう予約します" />
-                    <Button Text="2 時間後"
+                            ToolTipProperties.Text="{x:Static res:AppStrings.Main_InOneHourTip}" />
+                    <Button Text="{x:Static res:AppStrings.Main_InTwoHours}"
                             Padding="10,4"
                             MinimumHeightRequest="32"
                             Margin="0,0,0,4"
                             IsVisible="{Binding CanEditAutoStop}"
                             Command="{Binding ScheduleAutoStopAfterCommand}"
                             CommandParameter="2"
-                            ToolTipProperties.Text="今から 2 時間後に停止するよう予約します" />
+                            ToolTipProperties.Text="{x:Static res:AppStrings.Main_InTwoHoursTip}" />
                 </FlexLayout>
                 <Label Text="{Binding AutoStopText}"
                        FontSize="12"
@@ -110,19 +111,19 @@
                 Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}">
             <VerticalStackLayout Spacing="4">
                 <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
-                    <Label Text="通信量" FontAttributes="Bold" VerticalOptions="Center" />
+                    <Label Text="{x:Static res:AppStrings.Main_DataUsage}" FontAttributes="Bold" VerticalOptions="Center" />
                     <Label Grid.Column="1" Text="{Binding DataUsageText}" VerticalOptions="Center" />
                     <Button Grid.Column="2"
-                            Text="リセット"
+                            Text="{x:Static res:AppStrings.Main_Reset}"
                             Padding="10,4"
                             MinimumHeightRequest="32"
-                            ToolTipProperties.Text="通信量の累計を 0 に戻す"
+                            ToolTipProperties.Text="{x:Static res:AppStrings.Main_ResetTip}"
                             Command="{Binding ResetDataUsageCommand}" />
                 </Grid>
                 <Label Text="{Binding DataUsageNote}"
                        FontSize="12"
                        TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray300}}" />
-                <Label Text="上限に達したため、開始できません。リセットすると再び開始できます。"
+                <Label Text="{x:Static res:AppStrings.Main_DataLimitReached}"
                        IsVisible="{Binding IsDataLimitReached}"
                        FontSize="12"
                        TextColor="#E53935" />
@@ -134,10 +135,10 @@
               ColumnDefinitions="*,*,*,*"
               RowDefinitions="Auto,Auto"
               ColumnSpacing="4">
-            <Label Text="合計" HorizontalOptions="Center" FontSize="12" />
-            <Label Grid.Column="1" Text="成功" HorizontalOptions="Center" FontSize="12" />
-            <Label Grid.Column="2" Text="失敗" HorizontalOptions="Center" FontSize="12" />
-            <Label Grid.Column="3" Text="連続失敗" HorizontalOptions="Center" FontSize="12" />
+            <Label Text="{x:Static res:AppStrings.Main_Total}" HorizontalOptions="Center" FontSize="12" />
+            <Label Grid.Column="1" Text="{x:Static res:AppStrings.Main_Succeeded}" HorizontalOptions="Center" FontSize="12" />
+            <Label Grid.Column="2" Text="{x:Static res:AppStrings.Main_Failed}" HorizontalOptions="Center" FontSize="12" />
+            <Label Grid.Column="3" Text="{x:Static res:AppStrings.Main_ConsecutiveFailures}" HorizontalOptions="Center" FontSize="12" />
             <Label Grid.Row="1" Text="{Binding TotalCount}" HorizontalOptions="Center" FontSize="22" />
             <Label Grid.Row="1" Grid.Column="1" Text="{Binding SuccessCount}" HorizontalOptions="Center" FontSize="22" />
             <Label Grid.Row="1" Grid.Column="2" Text="{Binding FailureCount}" HorizontalOptions="Center" FontSize="22" />
@@ -152,23 +153,23 @@
                    TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray300}}" />
             <Label Text="{Binding LastResultText}" LineBreakMode="TailTruncation" />
             <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="8">
-                <Label Text="ログ" FontAttributes="Bold" VerticalOptions="Center" />
+                <Label Text="{x:Static res:AppStrings.Main_Log}" FontAttributes="Bold" VerticalOptions="Center" />
                 <Button Grid.Column="1"
-                        Text="統計リセット"
+                        Text="{x:Static res:AppStrings.Main_ResetStatistics}"
                         Padding="10,4"
                         MinimumHeightRequest="32"
                         Command="{Binding ResetStatisticsCommand}" />
                 <Button Grid.Column="2"
-                        Text="ログ消去"
+                        Text="{x:Static res:AppStrings.Main_ClearLog}"
                         Padding="10,4"
                         MinimumHeightRequest="32"
-                        ToolTipProperties.Text="画面のログを消去 (ファイルのログは残ります)"
+                        ToolTipProperties.Text="{x:Static res:AppStrings.Main_ClearLogTip}"
                         Command="{Binding ClearLogCommand}" />
                 <Button Grid.Column="3"
-                        Text="保存先"
+                        Text="{x:Static res:AppStrings.Main_Location}"
                         Padding="10,4"
                         MinimumHeightRequest="32"
-                        ToolTipProperties.Text="ログファイルの保存フォルダを開く"
+                        ToolTipProperties.Text="{x:Static res:AppStrings.Main_LocationTip}"
                         Command="{Binding OpenLogFolderCommand}" />
             </Grid>
         </VerticalStackLayout>
@@ -180,7 +181,7 @@
                 Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}">
             <CollectionView ItemsSource="{Binding Logs}">
                 <CollectionView.EmptyView>
-                    <Label Text="ログはありません" HorizontalOptions="Center" Margin="0,16" />
+                    <Label Text="{x:Static res:AppStrings.Main_NoLogs}" HorizontalOptions="Center" Margin="0,16" />
                 </CollectionView.EmptyView>
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="vm:LogLine">

@@ -21,7 +21,8 @@ public enum WeeklyDays
 /// <summary>毎週決まった曜日・時刻の予定の計算。</summary>
 public static class WeeklySchedule
 {
-    private static readonly string[] DayNames = ["日", "月", "火", "水", "木", "金", "土"];
+    /// <summary>曜日の短い名前 (日曜から順に。表示言語に合わせる)。</summary>
+    private static string[] DayNames => CoreStrings.Weekly_DayNames.Split(',');
 
     /// <summary>曜日を <see cref="WeeklyDays"/> の値にする。</summary>
     public static WeeklyDays ToWeeklyDays(this DayOfWeek day) => (WeeklyDays)(1 << (int)day);
@@ -62,15 +63,15 @@ public static class WeeklySchedule
         days &= WeeklyDays.Everyday;
         return days switch
         {
-            WeeklyDays.Everyday => "毎日",
-            WeeklyDays.Weekdays => "平日",
-            WeeklyDays.Weekends => "土日",
-            WeeklyDays.None => "なし",
+            WeeklyDays.Everyday => CoreStrings.Weekly_Everyday,
+            WeeklyDays.Weekdays => CoreStrings.Weekly_Weekdays,
+            WeeklyDays.Weekends => CoreStrings.Weekly_Weekends,
+            WeeklyDays.None => CoreStrings.Weekly_None,
             // 月曜始まりで並べる
-            _ => string.Join("・", Enumerable.Range(1, 7)
+            _ => string.Join(CoreStrings.Weekly_DaySeparator, Enumerable.Range(1, 7)
                 .Select(i => (DayOfWeek)(i % 7))
                 .Where(d => days.HasFlag(d.ToWeeklyDays()))
-                .Select(d => DayNames[(int)d])),
+                .Select(GetDayName)),
         };
     }
 

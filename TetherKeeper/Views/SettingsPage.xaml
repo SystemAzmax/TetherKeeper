@@ -2,10 +2,11 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:TetherKeeper.ViewModels"
+             xmlns:res="clr-namespace:TetherKeeper.Resources.Strings"
              xmlns:models="clr-namespace:KeepAlive.Core.Models;assembly=KeepAlive.Core"
              x:Class="TetherKeeper.Views.SettingsPage"
              x:DataType="vm:SettingsViewModel"
-             Title="設定">
+             Title="{x:Static res:AppStrings.Tab_Settings}">
 
     <ContentPage.Resources>
         <Style x:Key="FieldLabel" TargetType="Label">
@@ -26,26 +27,26 @@
     <ScrollView>
         <VerticalStackLayout Padding="16" Spacing="4" MaximumWidthRequest="640">
 
-            <Label Text="通信方式" Style="{StaticResource FieldLabel}" />
+            <Label Text="{x:Static res:AppStrings.Settings_Method}" Style="{StaticResource FieldLabel}" />
             <Picker ItemsSource="{Binding Methods}"
                     ItemDisplayBinding="{Binding DisplayName, x:DataType=vm:MethodOption}"
                     SelectedItem="{Binding SelectedMethod}" />
             <Label Text="{Binding MethodDescription}" Style="{StaticResource Hint}" />
 
-            <Label Text="予備の通信方式" Style="{StaticResource FieldLabel}" />
+            <Label Text="{x:Static res:AppStrings.Settings_Fallback}" Style="{StaticResource FieldLabel}" />
             <Picker ItemsSource="{Binding FallbackOptions}"
                     ItemDisplayBinding="{Binding DisplayName, x:DataType=vm:FallbackOption}"
                     SelectedItem="{Binding SelectedFallback}" />
-            <Label Text="通信方式で失敗したときだけ、この方式（送信先は下のこの方式の欄）で 1 回やり直し、どちらも失敗したときだけ「失敗」とします。送信先の障害や ICMP の遮断で 1 つの方式だけが失敗する場合に、回線の切断と区別できます。やり直した分だけ通信量が増えます。"
+            <Label Text="{x:Static res:AppStrings.Settings_FallbackHint}"
                    Style="{StaticResource Hint}" />
 
             <VerticalStackLayout IsVisible="{Binding IsPing}" Spacing="4">
-                <Label Text="Ping 送信先（ホスト名 / IP アドレス）" Style="{StaticResource FieldLabel}" />
+                <Label Text="{x:Static res:AppStrings.Settings_PingHost}" Style="{StaticResource FieldLabel}" />
                 <Entry Text="{Binding PingHost}" Placeholder="1.1.1.1" />
             </VerticalStackLayout>
 
             <VerticalStackLayout IsVisible="{Binding IsHttpHead}" Spacing="4">
-                <Label Text="HTTP HEAD 送信先 URL" Style="{StaticResource FieldLabel}" />
+                <Label Text="{x:Static res:AppStrings.Settings_HttpUrl}" Style="{StaticResource FieldLabel}" />
                 <Entry Text="{Binding HttpUrl}" Keyboard="Url" Placeholder="http://www.msftconnecttest.com/connecttest.txt" />
             </VerticalStackLayout>
 
@@ -55,8 +56,8 @@
                   RowDefinitions="Auto,Auto"
                   ColumnSpacing="8"
                   RowSpacing="4">
-                <Label Text="TCP 接続先ホスト" Style="{StaticResource FieldLabel}" />
-                <Label Grid.Column="1" Text="ポート" Style="{StaticResource FieldLabel}" />
+                <Label Text="{x:Static res:AppStrings.Settings_TcpHost}" Style="{StaticResource FieldLabel}" />
+                <Label Grid.Column="1" Text="{x:Static res:AppStrings.Settings_Port}" Style="{StaticResource FieldLabel}" />
                 <Entry Grid.Row="1" Text="{Binding TcpHost}" Placeholder="1.1.1.1" />
                 <Entry Grid.Row="1" Grid.Column="1" Text="{Binding TcpPort}" Keyboard="Numeric" Placeholder="443" />
             </Grid>
@@ -66,28 +67,28 @@
                   RowDefinitions="Auto,Auto"
                   ColumnSpacing="8"
                   RowSpacing="4">
-                <Label Text="実行間隔（秒）" Style="{StaticResource FieldLabel}" />
-                <Label Grid.Column="1" Text="タイムアウト（ミリ秒）" Style="{StaticResource FieldLabel}" />
+                <Label Text="{x:Static res:AppStrings.Settings_Interval}" Style="{StaticResource FieldLabel}" />
+                <Label Grid.Column="1" Text="{x:Static res:AppStrings.Settings_Timeout}" Style="{StaticResource FieldLabel}" />
                 <Entry Grid.Row="1" Text="{Binding IntervalSeconds}" Keyboard="Numeric" />
                 <Entry Grid.Row="1" Grid.Column="1" Text="{Binding TimeoutMilliseconds}" Keyboard="Numeric" />
             </Grid>
-            <Label Text="間隔 5〜3600 秒、タイムアウト 500〜30000 ミリ秒（間隔より短く）。切断される場合は間隔を 15〜30 秒程度に。"
+            <Label Text="{x:Static res:AppStrings.Settings_IntervalHint}"
                    Style="{StaticResource Hint}" />
             <!-- 通信方式と実行間隔から計算した、キープアライブ自身の通信量の目安 -->
             <VerticalStackLayout IsVisible="{Binding HasTrafficEstimate}" Spacing="0">
                 <Label Text="{Binding TrafficEstimateText}" FontAttributes="Bold" FontSize="13" />
-                <Label Text="キープアライブ自身の通信だけの目安です（回線や IPv4・IPv6 の違いで変わります）。ほかのアプリの通信、名前解決、予備の通信方式でやり直した分は含みません。「通信量の上限」は、ほかのアプリの通信も含めて数えます。"
+                <Label Text="{x:Static res:AppStrings.Settings_TrafficEstimateHint}"
                        Style="{StaticResource Hint}" />
             </VerticalStackLayout>
 
-            <Label Text="通信量の上限（MB）" Style="{StaticResource FieldLabel}" />
+            <Label Text="{x:Static res:AppStrings.Settings_DataLimit}" Style="{StaticResource FieldLabel}" />
             <Entry Text="{Binding DataLimitMegabytes}" Keyboard="Numeric" Placeholder="0" />
-            <Label Text="キープアライブの動作中に数えた通信量の累計がこの値に達したら停止します（0 は上限なし）。ほかのアプリの通信も含みます。累計はモニター画面でリセットするまで、停止やアプリの再起動をまたいで加算します。"
+            <Label Text="{x:Static res:AppStrings.Settings_DataLimitHint}"
                    Style="{StaticResource Hint}" />
 
             <!-- 毎週の自動停止 -->
             <Grid ColumnDefinitions="*,Auto" Margin="0,8,0,0">
-                <Label Text="毎週決まった時刻に停止する" VerticalOptions="Center" />
+                <Label Text="{x:Static res:AppStrings.Settings_WeeklyStop}" VerticalOptions="Center" />
                 <Switch Grid.Column="1" IsToggled="{Binding WeeklyStopEnabled}" />
             </Grid>
             <VerticalStackLayout IsVisible="{Binding WeeklyStopEnabled}" Spacing="4">
@@ -102,69 +103,69 @@
                     </BindableLayout.ItemTemplate>
                 </FlexLayout>
                 <TimePicker Time="{Binding WeeklyStopTime}" Format="HH:mm" HorizontalOptions="Start" />
-                <Label Text="選んだ曜日のこの時刻に、キープアライブを停止します（動作中のときだけ）。日時の予約と違い、停止しても解除しません。開始するのは自分か、ネットワークに応じた自動開始です。"
+                <Label Text="{x:Static res:AppStrings.Settings_WeeklyStopHint}"
                        Style="{StaticResource Hint}" />
             </VerticalStackLayout>
 
             <Grid ColumnDefinitions="*,Auto">
-                <Label Text="自動停止したらアプリも終了する" VerticalOptions="Center" />
+                <Label Text="{x:Static res:AppStrings.Settings_ExitOnAutoStop}" VerticalOptions="Center" />
                 <Switch Grid.Column="1" IsToggled="{Binding ExitAppOnAutoStop}" />
             </Grid>
-            <Label Text="日時の予約か毎週の自動停止で停止したときに、アプリも終了します。通信量の上限やネットワークの切断で停止したときは終了しません。"
+            <Label Text="{x:Static res:AppStrings.Settings_ExitOnAutoStopHint}"
                    Style="{StaticResource Hint}" />
 
             <!-- 通信の失敗の通知 -->
-            <Label Text="通知する連続失敗の回数" Style="{StaticResource FieldLabel}" />
+            <Label Text="{x:Static res:AppStrings.Settings_FailureThreshold}" Style="{StaticResource FieldLabel}" />
             <Entry Text="{Binding FailureThreshold}" Keyboard="Numeric" Placeholder="3" />
             <Grid ColumnDefinitions="*,Auto">
-                <Label Text="失敗が続いたときと、復旧したときに通知する" VerticalOptions="Center" />
+                <Label Text="{x:Static res:AppStrings.Settings_NotifyOnFailure}" VerticalOptions="Center" />
                 <Switch Grid.Column="1" IsToggled="{Binding NotifyOnFailure}" />
             </Grid>
-            <Label Text="この回数だけ続けて失敗すると、接続が切れているとみなして通知し、タスクトレイのアイコンに赤い印を付けます（1〜100 回）。成功に戻ったら「復旧しました」と通知します。通知をオフにしても、アイコンの印は付きます。"
+            <Label Text="{x:Static res:AppStrings.Settings_NotifyHint}"
                    Style="{StaticResource Hint}" />
 
             <!-- 動作中のスリープ抑止 -->
             <VerticalStackLayout IsVisible="{Binding IsSleepPreventionSupported}" Spacing="4" Margin="0,8,0,0">
                 <Grid ColumnDefinitions="*,Auto">
-                    <Label Text="キープアライブの動作中はスリープしない" VerticalOptions="Center" />
+                    <Label Text="{x:Static res:AppStrings.Settings_PreventSleep}" VerticalOptions="Center" />
                     <Switch Grid.Column="1" IsToggled="{Binding PreventSleepWhileRunning}" />
                 </Grid>
-                <Label Text="操作しないで放置したときの自動スリープを止めます（画面は消えます）。ふたを閉じる、電源ボタンを押すなどの操作でのスリープは防げません。ノート PC ではバッテリーの消費が増えます。"
+                <Label Text="{x:Static res:AppStrings.Settings_PreventSleepHint}"
                        Style="{StaticResource Hint}" />
             </VerticalStackLayout>
 
             <!-- ネットワークに応じた自動開始・停止 -->
             <VerticalStackLayout IsVisible="{Binding IsNetworkAutoControlSupported}" Spacing="4" Margin="0,8,0,0">
                 <Grid ColumnDefinitions="*,Auto">
-                    <Label Text="指定したネットワークに接続したら開始し、切断したら停止する" VerticalOptions="Center" />
+                    <Label Text="{x:Static res:AppStrings.Settings_AutoControl}" VerticalOptions="Center" />
                     <Switch Grid.Column="1" IsToggled="{Binding AutoControlByNetwork}" />
                 </Grid>
                 <VerticalStackLayout IsVisible="{Binding AutoControlByNetwork}" Spacing="4">
-                    <Label Text="ネットワーク名" Style="{StaticResource FieldLabel}" />
-                    <Entry Text="{Binding AutoControlNetworkName}" Placeholder="例: iPhone" />
+                    <Label Text="{x:Static res:AppStrings.Settings_NetworkName}" Style="{StaticResource FieldLabel}" />
+                    <Entry Text="{Binding AutoControlNetworkName}" Placeholder="{x:Static res:AppStrings.Settings_NetworkNamePlaceholder}" />
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                        <Picker Title="接続中のネットワークから選ぶ"
+                        <Picker Title="{x:Static res:AppStrings.Settings_ChooseNetwork}"
                                 ItemsSource="{Binding ConnectedNetworks}"
                                 ItemDisplayBinding="{Binding DisplayName, x:DataType=models:ConnectedNetwork}"
                                 SelectedItem="{Binding SelectedConnectedNetwork}" />
                         <Button Grid.Column="1"
-                                Text="更新"
+                                Text="{x:Static res:AppStrings.Common_Refresh}"
                                 Command="{Binding RefreshNetworksCommand}"
                                 Style="{StaticResource InfoButton}"
-                                ToolTipProperties.Text="接続中のネットワークの一覧を取り直します。" />
+                                ToolTipProperties.Text="{x:Static res:AppStrings.Settings_RefreshNetworksTip}" />
                     </Grid>
-                    <Label Text="テザリングにつないだ状態で、一覧から選んでください。Wi-Fi はネットワーク名（SSID）、USB や Bluetooth のテザリングは Windows に表示されるネットワーク名で判定します（大文字と小文字は区別します）。接続が変わってから約 5 秒後に開始・停止します。接続中に自分で停止した場合は、つなぎ直すまで自動では開始しません。"
+                    <Label Text="{x:Static res:AppStrings.Settings_NetworkHint}"
                            Style="{StaticResource Hint}" />
                 </VerticalStackLayout>
             </VerticalStackLayout>
 
             <Grid ColumnDefinitions="*,Auto" Margin="0,8,0,0">
-                <Label Text="アプリ起動時に自動で開始する" VerticalOptions="Center" />
+                <Label Text="{x:Static res:AppStrings.Settings_StartOnLaunch}" VerticalOptions="Center" />
                 <Switch Grid.Column="1" IsToggled="{Binding StartOnLaunch}" />
             </Grid>
 
             <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding IsAutoStartSupported}">
-                <Label Text="Windows ログイン時にアプリを起動する" VerticalOptions="Center" />
+                <Label Text="{x:Static res:AppStrings.Settings_LaunchAtLogin}" VerticalOptions="Center" />
                 <Switch Grid.Column="1" IsToggled="{Binding LaunchAtLogin}" />
             </Grid>
 
@@ -174,33 +175,33 @@
                    Margin="0,12,0,0" />
 
             <Grid ColumnDefinitions="*,*" ColumnSpacing="8" Margin="0,12,0,0">
-                <Button Text="保存" Command="{Binding SaveCommand}" />
+                <Button Text="{x:Static res:AppStrings.Settings_Save}" Command="{Binding SaveCommand}" />
                 <Button Grid.Column="1"
-                        Text="既定値に戻す"
+                        Text="{x:Static res:AppStrings.Settings_RestoreDefaults}"
                         Command="{Binding RestoreDefaultsCommand}"
                         BackgroundColor="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}"
                         TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}" />
             </Grid>
             <Label Text="{Binding StatusMessage}" Style="{StaticResource Hint}" HorizontalOptions="Center" />
 
-            <Label Text="※ 本アプリは定期的に微小な通信を発生させてアイドル切断を軽減するものであり、切断を完全に防ぐことは保証できません。"
+            <Label Text="{x:Static res:AppStrings.Settings_Disclaimer}"
                    Style="{StaticResource Hint}"
                    Margin="0,12,0,0" />
 
             <!-- アプリの情報 -->
-            <Label Text="アプリの情報" Style="{StaticResource FieldLabel}" Margin="0,16,0,0" />
-            <Button Text="このアプリについて"
+            <Label Text="{x:Static res:AppStrings.Settings_AppInfo}" Style="{StaticResource FieldLabel}" Margin="0,16,0,0" />
+            <Button Text="{x:Static res:AppStrings.Settings_About}"
                     Style="{StaticResource InfoButton}"
                     Clicked="OnAboutButtonClick"
-                    ToolTipProperties.Text="アプリのバージョンなどを表示します。" />
-            <Button Text="ライセンス情報"
+                    ToolTipProperties.Text="{x:Static res:AppStrings.Settings_AboutTip}" />
+            <Button Text="{x:Static res:AppStrings.Settings_Licenses}"
                     Style="{StaticResource InfoButton}"
                     Clicked="OnThirdPartyNoticesButtonClick"
-                    ToolTipProperties.Text="使用しているソフトウェアのライセンスを表示します。" />
-            <Button Text="使い方"
+                    ToolTipProperties.Text="{x:Static res:AppStrings.Settings_LicensesTip}" />
+            <Button Text="{x:Static res:AppStrings.Settings_UserGuide}"
                     Style="{StaticResource InfoButton}"
                     Clicked="OnUserGuideButtonClick"
-                    ToolTipProperties.Text="使い方ガイドを Web ブラウザーで開きます。" />
+                    ToolTipProperties.Text="{x:Static res:AppStrings.Settings_UserGuideTip}" />
         </VerticalStackLayout>
     </ScrollView>
 

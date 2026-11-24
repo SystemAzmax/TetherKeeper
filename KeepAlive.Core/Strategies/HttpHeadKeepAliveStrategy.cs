@@ -67,7 +67,7 @@ public sealed class HttpHeadKeepAliveStrategy : IKeepAliveStrategy
         catch (OperationCanceledException)
         {
             return KeepAliveResult.Failed(
-                Name, url, timestamp, _timeProvider.GetElapsedTime(started), $"タイムアウト ({settings.TimeoutMilliseconds} ms)");
+                Name, url, timestamp, _timeProvider.GetElapsedTime(started), Text.Format(CoreStrings.Result_Timeout, settings.TimeoutMilliseconds));
         }
         catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or UriFormatException)
         {
@@ -90,7 +90,7 @@ public sealed class HttpHeadKeepAliveStrategy : IKeepAliveStrategy
         // 回線は生きているので成功扱いだが、目的のサーバーではなくログイン画面 (キャプティブポータル) や
         // プロキシが応答している可能性がある
         return code is >= 300 and < 400
-            ? $"{text}（リダイレクト応答: ログイン画面やプロキシが応答している可能性があります）"
+            ? Text.Format(CoreStrings.Result_HttpRedirect, text)
             : text;
     }
 }

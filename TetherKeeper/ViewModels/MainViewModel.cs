@@ -74,13 +74,13 @@ public partial class MainViewModel : ObservableObject, IDisposable
     public partial bool IsRunning { get; set; }
 
     [ObservableProperty]
-    public partial string StatusText { get; set; } = "停止中";
+    public partial string StatusText { get; set; } = AppStrings.Status_Stopped;
 
     [ObservableProperty]
     public partial Color StatusColor { get; set; } = StoppedColor;
 
     [ObservableProperty]
-    public partial string ToggleButtonText { get; set; } = "開始";
+    public partial string ToggleButtonText { get; set; } = AppStrings.Button_Start;
 
     [ObservableProperty]
     public partial string ConfigurationText { get; set; } = string.Empty;
@@ -103,7 +103,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     public bool CanEditAutoStop => !IsAutoStopScheduled;
 
     [ObservableProperty]
-    public partial string AutoStopButtonText { get; set; } = "予約";
+    public partial string AutoStopButtonText { get; set; } = AppStrings.Button_Schedule;
 
     [ObservableProperty]
     public partial string AutoStopText { get; set; } = string.Empty;
@@ -144,7 +144,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     public partial int ConsecutiveFailures { get; set; }
 
     [ObservableProperty]
-    public partial string LastResultText { get; set; } = "まだ実行していません";
+    public partial string LastResultText { get; set; } = AppStrings.Result_NotRunYet;
 
     /// <summary>予備の通信方式で成功した回数 (0 回のときは空)。</summary>
     [ObservableProperty]
@@ -163,7 +163,11 @@ public partial class MainViewModel : ObservableObject, IDisposable
         _initialized = true;
 
         var (version, isPackaged) = AppInfoProvider.GetVersion();
-        _log.Info($"{AppDisplayName.JAPANESE} {AppAboutInfo.FormatVersion(version)}（{(isPackaged ? "ストア版" : "exe 版")}）を起動しました。");
+        _log.Info(Text.Format(
+            AppStrings.App_Started,
+            AppDisplayName.GetCurrent(),
+            AppAboutInfo.FormatVersion(version),
+            isPackaged ? CoreStrings.About_StoreEdition : CoreStrings.About_ExeEdition));
         var settings = await _settings.LoadAsync();
         await _dataUsage.LoadAsync();
         RefreshAll();
@@ -183,14 +187,14 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         if (_worker.NextRunAt is not { } next)
         {
-            NextRunText = IsRunning ? "実行中…" : string.Empty;
+            NextRunText = IsRunning ? AppStrings.Next_Running : string.Empty;
             return;
         }
 
         var remaining = next - DateTimeOffset.Now;
         NextRunText = remaining > TimeSpan.Zero
-            ? $"次回実行まで {Math.Ceiling(remaining.TotalSeconds):F0} 秒"
-            : "実行中…";
+            ? Text.Format(AppStrings.Next_Seconds, Math.Ceiling(remaining.TotalSeconds))
+            : AppStrings.Next_Running;
     }
 
     [RelayCommand]
@@ -213,7 +217,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         {
             if (AutoStopDate is not { } date || AutoStopTime is not { } time)
             {
-                AutoStopError = "自動停止の日付と時刻を指定してください。";
+                AutoStopError = AppStrings.AutoStop_DateTimeRequired;
                 return;
             }
 
@@ -269,7 +273,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         }
         catch (Exception ex)
         {
-            _log.Error($"ログフォルダを開けませんでした: {ex.Message}");
+            _log.Error(Text.Format(AppStrings.Log_OpenFolderFailed, ex.Message));
         }
     }
 
@@ -313,7 +317,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private void RefreshAll()
     {
         IsRunning = _worker.IsRunning;
-        ToggleButtonText = IsRunning ? "停止" : "開始";
+        ToggleButtonText = IsRunning ? AppStrings.Button_Stop : AppStrings.Button_Start;
 
         var settings = _settings.Current;
         var strategyName = _resolver.Resolve(settings.Method).Name;
@@ -324,7 +328,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
             KeepAliveMethod.TcpConnect => $"{settings.TcpHost}:{settings.TcpPort}",
             _ => string.Empty,
         };
-        ConfigurationText = $"{strategyName} → {target}（{settings.IntervalSeconds} 秒間隔）";
+        ConfigurationText = Text.Format(AppStrings.Config_Text, strategyName, target, settings.IntervalSeconds);
 
         RefreshStatistics();
         RefreshDataUsage();
@@ -347,21 +351,21 @@ public partial class MainViewModel : ObservableObject, IDisposable
         // 過ぎた日時 (停止中に迎えた予約など) は未予約として扱う
         var stopAt = _autoStop.ScheduledAt;
         IsAutoStopScheduled = stopAt is not null;
-        AutoStopButtonText = IsAutoStopScheduled ? "解除" : "予約";
+        AutoStopButtonText = IsAutoStopScheduled ? AppStrings.Button_Cancel : AppStrings.Button_Schedule;
 
         if (stopAt is { } scheduled)
         {
             AutoStopDate = scheduled.Date;
             AutoStopTime = new TimeSpan(scheduled.Hour, scheduled.Minute, 0);
             AutoStopText = IsRunning
-                ? $"{scheduled:yyyy/MM/dd HH:mm} にキープアライブを停止します"
-                : $"{scheduled:yyyy/MM/dd HH:mm} に停止予定（開始すると有効になります）";
+                ? Text.Format(AppStrings.AutoStop_WillStop, scheduled)
+                : Text.Format(AppStrings.AutoStop_WillStopWhenStarted, scheduled);
         }
         else
         {
             AutoStopText = _settings.Current.ExitAppOnAutoStop
-                ? "指定した日時にキープアライブを停止し、アプリも終了します"
-                : "指定した日時にキープアライブを停止します（アプリは終了しません）";
+                ? AppStrings.AutoStop_DescriptionExit
+                : AppStrings.AutoStop_Description;
         }
 
         RefreshWeeklyStop();
@@ -381,9 +385,10 @@ public partial class MainViewModel : ObservableObject, IDisposable
         var next = WeeklySchedule.GetNextOccurrence(
             settings.WeeklyStopDays, settings.WeeklyStopTime, DateTimeOffset.Now, TimeZoneInfo.Local);
         var nextText = next is { } at
-            ? $"（次回 {at.ToLocalTime():MM/dd}（{WeeklySchedule.GetDayName(at.ToLocalTime().DayOfWeek)}）{at.ToLocalTime():HH:mm}）"
+            ? Text.Format(AppStrings.WeeklyStop_Next, at.ToLocalTime(), WeeklySchedule.GetDayName(at.ToLocalTime().DayOfWeek))
             : string.Empty;
-        WeeklyStopText = $"毎週の自動停止: {WeeklySchedule.Format(settings.WeeklyStopDays)} {settings.WeeklyStopTime:HH\\:mm}{nextText}";
+        WeeklyStopText = Text.Format(
+            AppStrings.WeeklyStop_Text, WeeklySchedule.Format(settings.WeeklyStopDays), $"{settings.WeeklyStopTime:HH\\:mm}", nextText);
     }
 
     private void RefreshDataUsage()
@@ -392,12 +397,12 @@ public partial class MainViewModel : ObservableObject, IDisposable
         var settings = _settings.Current;
         var total = DataUsage.Format(usage.TotalBytes);
         DataUsageText = settings.DataLimitBytes is null
-            ? $"{total}（上限なし）"
+            ? Text.Format(AppStrings.DataUsage_NoLimit, total)
             : $"{total} / {settings.DataLimitMegabytes:N0} MB";
         IsDataLimitReached = settings.DataLimitBytes is { } limit && usage.TotalBytes >= limit;
         DataUsageNote = usage.Since is { } since
-            ? $"{since.ToLocalTime():yyyy/MM/dd HH:mm} からの累計（キープアライブの動作中に計測。ほかのアプリの通信も含む）"
-            : "キープアライブの動作中に、使用中のネットワークの送受信量を数えます（ほかのアプリの通信も含む）";
+            ? Text.Format(AppStrings.DataUsage_Since, since.ToLocalTime())
+            : AppStrings.DataUsage_Note;
     }
 
     private void RefreshStatistics()
@@ -410,33 +415,33 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         LastResultText = stats.LastResult is { } last
             ? $"{last.Timestamp:HH:mm:ss} {FormatOutcome(last)} — {last.Message}"
-            : "まだ実行していません";
+            : AppStrings.Result_NotRunYet;
         FallbackSuccessText = stats.FallbackSuccessCount > 0
-            ? $"成功のうち、予備の通信方式で成功: {stats.FallbackSuccessCount} 回"
+            ? Text.Format(AppStrings.Stats_FallbackSuccesses, stats.FallbackSuccessCount)
             : string.Empty;
 
         if (!IsRunning)
         {
-            StatusText = "停止中";
+            StatusText = AppStrings.Status_Stopped;
             StatusColor = StoppedColor;
         }
         else if (stats.ConsecutiveFailures > 0)
         {
-            StatusText = $"動作中（{stats.ConsecutiveFailures} 回連続失敗）";
+            StatusText = Text.Format(AppStrings.Status_RunningWithFailures, stats.ConsecutiveFailures);
             StatusColor = FailingColor;
         }
         else
         {
-            StatusText = "動作中";
+            StatusText = AppStrings.Status_Running;
             StatusColor = RunningColor;
         }
     }
 
     /// <summary>結果の成否 (予備の通信方式で成功した場合は、その方式も出す)。</summary>
     public static string FormatOutcome(KeepAliveResult result) =>
-        !result.Success ? "失敗"
-        : result.UsedFallback ? $"成功（予備の {result.StrategyName}）"
-        : "成功";
+        !result.Success ? AppStrings.Outcome_Failed
+        : result.UsedFallback ? Text.Format(AppStrings.Outcome_SucceededWithFallback, result.StrategyName)
+        : AppStrings.Outcome_Succeeded;
 
     private static LogLine ToLogLine(LogEntry entry) => new(
         entry,

@@ -32,9 +32,9 @@ public partial class HistoryViewModel : ObservableObject
 
     public IReadOnlyList<HistoryPeriod> Periods { get; } =
     [
-        new("直近 24 時間", TimeSpan.FromHours(24), "24時間"),
-        new("直近 7 日", TimeSpan.FromDays(7), "7日"),
-        new("直近 30 日", TimeSpan.FromDays(30), "30日"),
+        new(AppStrings.History_Last24Hours, TimeSpan.FromHours(24), AppStrings.History_File24Hours),
+        new(AppStrings.History_Last7Days, TimeSpan.FromDays(7), AppStrings.History_File7Days),
+        new(AppStrings.History_Last30Days, TimeSpan.FromDays(30), AppStrings.History_File30Days),
     ];
 
     [ObservableProperty]
@@ -72,8 +72,8 @@ public partial class HistoryViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            _log.Error($"通信の結果の履歴を読めませんでした: {ex.Message}");
-            StatusText = $"履歴を読めませんでした: {ex.Message}";
+            _log.Error(Text.Format(AppStrings.History_LoadFailedLog, ex.Message));
+            StatusText = Text.Format(AppStrings.History_LoadFailed, ex.Message);
         }
     }
 
@@ -83,7 +83,7 @@ public partial class HistoryViewModel : ObservableObject
     {
         var path = Path.Combine(
             AppPaths.ExportDirectory,
-            $"TetherKeeper_履歴_{SelectedPeriod.FileNamePart}_{DateTime.Now:yyyyMMdd_HHmmss}.csv");
+            Text.Format(AppStrings.History_FileName, SelectedPeriod.FileNamePart, DateTime.Now));
         try
         {
             Directory.CreateDirectory(AppPaths.ExportDirectory);
@@ -92,14 +92,14 @@ public partial class HistoryViewModel : ObservableObject
                 await ResultHistory.WriteCsvAsync(_results, stream, TimeZoneInfo.Local);
             }
 
-            _log.Info($"通信の結果の履歴を書き出しました: {path}");
-            StatusText = $"書き出しました: {path}";
+            _log.Info(Text.Format(AppStrings.History_ExportedLog, path));
+            StatusText = Text.Format(AppStrings.History_Exported, path);
             ShowInExplorer(path);
         }
         catch (Exception ex)
         {
-            _log.Error($"通信の結果の履歴を書き出せませんでした: {ex.Message}");
-            StatusText = $"書き出せませんでした: {ex.Message}";
+            _log.Error(Text.Format(AppStrings.History_ExportFailedLog, ex.Message));
+            StatusText = Text.Format(AppStrings.History_ExportFailed, ex.Message);
         }
     }
 
@@ -108,20 +108,25 @@ public partial class HistoryViewModel : ObservableObject
         HasResults = summary.Total > 0;
         if (summary.Total == 0)
         {
-            SummaryText = "この期間の記録はありません。";
+            SummaryText = AppStrings.History_NoRecords;
             HourRows = [];
             return;
         }
 
-        var fallback = summary.FallbackSuccesses > 0 ? $"（うち予備で成功 {summary.FallbackSuccesses:N0} 回）" : string.Empty;
-        SummaryText = $"合計 {summary.Total:N0} 回 / 成功 {summary.Successes:N0} 回{fallback} / 失敗 {summary.Failures:N0} 回（{summary.FailureRate:P1}）";
+        var fallback = summary.FallbackSuccesses > 0
+            ? Text.Format(AppStrings.History_FallbackPart, summary.FallbackSuccesses)
+            : string.Empty;
+        SummaryText = Text.Format(
+            AppStrings.History_Summary, summary.Total, summary.Successes, fallback, summary.Failures, summary.FailureRate);
 
         // 棒は失敗率で比べる (時間帯によって通信した回数が違うため、回数より割合の方が比べやすい)
         var maxRate = summary.ByHour.Max(h => h.FailureRate);
         HourRows = summary.ByHour
             .Select(h => new HourRow(
-                $"{h.Hour:00} 時",
-                h.Total == 0 ? "記録なし" : $"{h.Total:N0} 回中 {h.Failures:N0} 回失敗（{h.FailureRate:P1}）",
+                Text.Format(AppStrings.History_Hour, h.Hour),
+                h.Total == 0
+                    ? AppStrings.History_NoRecordsHour
+                    : Text.Format(AppStrings.History_HourCount, h.Total, h.Failures, h.FailureRate),
                 maxRate > 0 ? MaxBarWidth * h.FailureRate / maxRate : 0,
                 h.Failures > 0))
             .ToList();
@@ -139,7 +144,7 @@ public partial class HistoryViewModel : ObservableObject
         catch (Exception ex)
         {
             // 書き出しはできているため、フォルダを開けなくてもエラーにはしない
-            _log.Warning($"書き出したフォルダを開けませんでした: {ex.Message}");
+            _log.Warning(Text.Format(AppStrings.History_OpenFolderFailed, ex.Message));
         }
     }
 }

@@ -1,0 +1,518 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>  <data name="Common_Refresh" xml:space="preserve">
+    <value>更新</value>
+  </data>
+  <data name="Tab_Monitor" xml:space="preserve">
+    <value>モニター</value>
+  </data>
+  <data name="Tab_History" xml:space="preserve">
+    <value>履歴</value>
+  </data>
+  <data name="Tab_Settings" xml:space="preserve">
+    <value>設定</value>
+  </data>
+  <data name="Main_RunNow" xml:space="preserve">
+    <value>今すぐ実行</value>
+  </data>
+  <data name="Main_Exit" xml:space="preserve">
+    <value>終了</value>
+  </data>
+  <data name="Main_AutoStop" xml:space="preserve">
+    <value>自動停止</value>
+  </data>
+  <data name="Main_InOneHour" xml:space="preserve">
+    <value>1 時間後</value>
+  </data>
+  <data name="Main_InOneHourTip" xml:space="preserve">
+    <value>今から 1 時間後に停止するよう予約します</value>
+  </data>
+  <data name="Main_InTwoHours" xml:space="preserve">
+    <value>2 時間後</value>
+  </data>
+  <data name="Main_InTwoHoursTip" xml:space="preserve">
+    <value>今から 2 時間後に停止するよう予約します</value>
+  </data>
+  <data name="Main_DataUsage" xml:space="preserve">
+    <value>通信量</value>
+  </data>
+  <data name="Main_Reset" xml:space="preserve">
+    <value>リセット</value>
+  </data>
+  <data name="Main_ResetTip" xml:space="preserve">
+    <value>通信量の累計を 0 に戻す</value>
+  </data>
+  <data name="Main_DataLimitReached" xml:space="preserve">
+    <value>上限に達したため、開始できません。リセットすると再び開始できます。</value>
+  </data>
+  <data name="Main_Total" xml:space="preserve">
+    <value>合計</value>
+  </data>
+  <data name="Main_Succeeded" xml:space="preserve">
+    <value>成功</value>
+  </data>
+  <data name="Main_Failed" xml:space="preserve">
+    <value>失敗</value>
+  </data>
+  <data name="Main_ConsecutiveFailures" xml:space="preserve">
+    <value>連続失敗</value>
+  </data>
+  <data name="Main_Log" xml:space="preserve">
+    <value>ログ</value>
+  </data>
+  <data name="Main_ResetStatistics" xml:space="preserve">
+    <value>統計リセット</value>
+  </data>
+  <data name="Main_ClearLog" xml:space="preserve">
+    <value>ログ消去</value>
+  </data>
+  <data name="Main_ClearLogTip" xml:space="preserve">
+    <value>画面のログを消去 (ファイルのログは残ります)</value>
+  </data>
+  <data name="Main_Location" xml:space="preserve">
+    <value>保存先</value>
+  </data>
+  <data name="Main_LocationTip" xml:space="preserve">
+    <value>ログファイルの保存フォルダを開く</value>
+  </data>
+  <data name="Main_NoLogs" xml:space="preserve">
+    <value>ログはありません</value>
+  </data>
+  <data name="Status_Stopped" xml:space="preserve">
+    <value>停止中</value>
+  </data>
+  <data name="Status_Running" xml:space="preserve">
+    <value>動作中</value>
+  </data>
+  <data name="Status_RunningWithFailures" xml:space="preserve">
+    <value>動作中（{0} 回連続失敗）</value>
+  </data>
+  <data name="Button_Start" xml:space="preserve">
+    <value>開始</value>
+  </data>
+  <data name="Button_Stop" xml:space="preserve">
+    <value>停止</value>
+  </data>
+  <data name="Button_Schedule" xml:space="preserve">
+    <value>予約</value>
+  </data>
+  <data name="Button_Cancel" xml:space="preserve">
+    <value>解除</value>
+  </data>
+  <data name="Result_NotRunYet" xml:space="preserve">
+    <value>まだ実行していません</value>
+  </data>
+  <data name="App_Started" xml:space="preserve">
+    <value>{0} {1}（{2}）を起動しました。</value>
+  </data>
+  <data name="Next_Running" xml:space="preserve">
+    <value>実行中…</value>
+  </data>
+  <data name="Next_Seconds" xml:space="preserve">
+    <value>次回実行まで {0:F0} 秒</value>
+  </data>
+  <data name="AutoStop_DateTimeRequired" xml:space="preserve">
+    <value>自動停止の日付と時刻を指定してください。</value>
+  </data>
+  <data name="Log_OpenFolderFailed" xml:space="preserve">
+    <value>ログフォルダを開けませんでした: {0}</value>
+  </data>
+  <data name="Config_Text" xml:space="preserve">
+    <value>{0} → {1}（{2} 秒間隔）</value>
+  </data>
+  <data name="AutoStop_WillStop" xml:space="preserve">
+    <value>{0:yyyy/MM/dd HH:mm} にキープアライブを停止します</value>
+  </data>
+  <data name="AutoStop_WillStopWhenStarted" xml:space="preserve">
+    <value>{0:yyyy/MM/dd HH:mm} に停止予定（開始すると有効になります）</value>
+  </data>
+  <data name="AutoStop_DescriptionExit" xml:space="preserve">
+    <value>指定した日時にキープアライブを停止し、アプリも終了します</value>
+  </data>
+  <data name="AutoStop_Description" xml:space="preserve">
+    <value>指定した日時にキープアライブを停止します（アプリは終了しません）</value>
+  </data>
+  <data name="WeeklyStop_Next" xml:space="preserve">
+    <value>（次回 {0:MM/dd}（{1}）{0:HH:mm}）</value>
+  </data>
+  <data name="WeeklyStop_Text" xml:space="preserve">
+    <value>毎週の自動停止: {0} {1}{2}</value>
+  </data>
+  <data name="DataUsage_NoLimit" xml:space="preserve">
+    <value>{0}（上限なし）</value>
+  </data>
+  <data name="DataUsage_Since" xml:space="preserve">
+    <value>{0:yyyy/MM/dd HH:mm} からの累計（キープアライブの動作中に計測。ほかのアプリの通信も含む）</value>
+  </data>
+  <data name="DataUsage_Note" xml:space="preserve">
+    <value>キープアライブの動作中に、使用中のネットワークの送受信量を数えます（ほかのアプリの通信も含む）</value>
+  </data>
+  <data name="Stats_FallbackSuccesses" xml:space="preserve">
+    <value>成功のうち、予備の通信方式で成功: {0} 回</value>
+  </data>
+  <data name="Outcome_Failed" xml:space="preserve">
+    <value>失敗</value>
+  </data>
+  <data name="Outcome_Succeeded" xml:space="preserve">
+    <value>成功</value>
+  </data>
+  <data name="Outcome_SucceededWithFallback" xml:space="preserve">
+    <value>成功（予備の {0}）</value>
+  </data>
+  <data name="Settings_Method" xml:space="preserve">
+    <value>通信方式</value>
+  </data>
+  <data name="Settings_Fallback" xml:space="preserve">
+    <value>予備の通信方式</value>
+  </data>
+  <data name="Settings_FallbackHint" xml:space="preserve">
+    <value>通信方式で失敗したときだけ、この方式（送信先は下のこの方式の欄）で 1 回やり直し、どちらも失敗したときだけ「失敗」とします。送信先の障害や ICMP の遮断で 1 つの方式だけが失敗する場合に、回線の切断と区別できます。やり直した分だけ通信量が増えます。</value>
+  </data>
+  <data name="Settings_PingHost" xml:space="preserve">
+    <value>Ping 送信先（ホスト名 / IP アドレス）</value>
+  </data>
+  <data name="Settings_HttpUrl" xml:space="preserve">
+    <value>HTTP HEAD 送信先 URL</value>
+  </data>
+  <data name="Settings_TcpHost" xml:space="preserve">
+    <value>TCP 接続先ホスト</value>
+  </data>
+  <data name="Settings_Port" xml:space="preserve">
+    <value>ポート</value>
+  </data>
+  <data name="Settings_Interval" xml:space="preserve">
+    <value>実行間隔（秒）</value>
+  </data>
+  <data name="Settings_Timeout" xml:space="preserve">
+    <value>タイムアウト（ミリ秒）</value>
+  </data>
+  <data name="Settings_IntervalHint" xml:space="preserve">
+    <value>間隔 5〜3600 秒、タイムアウト 500〜30000 ミリ秒（間隔より短く）。切断される場合は間隔を 15〜30 秒程度に。</value>
+  </data>
+  <data name="Settings_TrafficEstimateHint" xml:space="preserve">
+    <value>キープアライブ自身の通信だけの目安です（回線や IPv4・IPv6 の違いで変わります）。ほかのアプリの通信、名前解決、予備の通信方式でやり直した分は含みません。「通信量の上限」は、ほかのアプリの通信も含めて数えます。</value>
+  </data>
+  <data name="Settings_DataLimit" xml:space="preserve">
+    <value>通信量の上限（MB）</value>
+  </data>
+  <data name="Settings_DataLimitHint" xml:space="preserve">
+    <value>キープアライブの動作中に数えた通信量の累計がこの値に達したら停止します（0 は上限なし）。ほかのアプリの通信も含みます。累計はモニター画面でリセットするまで、停止やアプリの再起動をまたいで加算します。</value>
+  </data>
+  <data name="Settings_WeeklyStop" xml:space="preserve">
+    <value>毎週決まった時刻に停止する</value>
+  </data>
+  <data name="Settings_WeeklyStopHint" xml:space="preserve">
+    <value>選んだ曜日のこの時刻に、キープアライブを停止します（動作中のときだけ）。日時の予約と違い、停止しても解除しません。開始するのは自分か、ネットワークに応じた自動開始です。</value>
+  </data>
+  <data name="Settings_ExitOnAutoStop" xml:space="preserve">
+    <value>自動停止したらアプリも終了する</value>
+  </data>
+  <data name="Settings_ExitOnAutoStopHint" xml:space="preserve">
+    <value>日時の予約か毎週の自動停止で停止したときに、アプリも終了します。通信量の上限やネットワークの切断で停止したときは終了しません。</value>
+  </data>
+  <data name="Settings_FailureThreshold" xml:space="preserve">
+    <value>通知する連続失敗の回数</value>
+  </data>
+  <data name="Settings_NotifyOnFailure" xml:space="preserve">
+    <value>失敗が続いたときと、復旧したときに通知する</value>
+  </data>
+  <data name="Settings_NotifyHint" xml:space="preserve">
+    <value>この回数だけ続けて失敗すると、接続が切れているとみなして通知し、タスクトレイのアイコンに赤い印を付けます（1〜100 回）。成功に戻ったら「復旧しました」と通知します。通知をオフにしても、アイコンの印は付きます。</value>
+  </data>
+  <data name="Settings_PreventSleep" xml:space="preserve">
+    <value>キープアライブの動作中はスリープしない</value>
+  </data>
+  <data name="Settings_PreventSleepHint" xml:space="preserve">
+    <value>操作しないで放置したときの自動スリープを止めます（画面は消えます）。ふたを閉じる、電源ボタンを押すなどの操作でのスリープは防げません。ノート PC ではバッテリーの消費が増えます。</value>
+  </data>
+  <data name="Settings_AutoControl" xml:space="preserve">
+    <value>指定したネットワークに接続したら開始し、切断したら停止する</value>
+  </data>
+  <data name="Settings_NetworkName" xml:space="preserve">
+    <value>ネットワーク名</value>
+  </data>
+  <data name="Settings_NetworkNamePlaceholder" xml:space="preserve">
+    <value>例: iPhone</value>
+  </data>
+  <data name="Settings_ChooseNetwork" xml:space="preserve">
+    <value>接続中のネットワークから選ぶ</value>
+  </data>
+  <data name="Settings_RefreshNetworksTip" xml:space="preserve">
+    <value>接続中のネットワークの一覧を取り直します。</value>
+  </data>
+  <data name="Settings_NetworkHint" xml:space="preserve">
+    <value>テザリングにつないだ状態で、一覧から選んでください。Wi-Fi はネットワーク名（SSID）、USB や Bluetooth のテザリングは Windows に表示されるネットワーク名で判定します（大文字と小文字は区別します）。接続が変わってから約 5 秒後に開始・停止します。接続中に自分で停止した場合は、つなぎ直すまで自動では開始しません。</value>
+  </data>
+  <data name="Settings_StartOnLaunch" xml:space="preserve">
+    <value>アプリ起動時に自動で開始する</value>
+  </data>
+  <data name="Settings_LaunchAtLogin" xml:space="preserve">
+    <value>Windows ログイン時にアプリを起動する</value>
+  </data>
+  <data name="Settings_Save" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="Settings_RestoreDefaults" xml:space="preserve">
+    <value>既定値に戻す</value>
+  </data>
+  <data name="Settings_Disclaimer" xml:space="preserve">
+    <value>※ 本アプリは定期的に微小な通信を発生させてアイドル切断を軽減するものであり、切断を完全に防ぐことは保証できません。</value>
+  </data>
+  <data name="Settings_AppInfo" xml:space="preserve">
+    <value>アプリの情報</value>
+  </data>
+  <data name="Settings_About" xml:space="preserve">
+    <value>このアプリについて</value>
+  </data>
+  <data name="Settings_AboutTip" xml:space="preserve">
+    <value>アプリのバージョンなどを表示します。</value>
+  </data>
+  <data name="Settings_Licenses" xml:space="preserve">
+    <value>ライセンス情報</value>
+  </data>
+  <data name="Settings_LicensesTip" xml:space="preserve">
+    <value>使用しているソフトウェアのライセンスを表示します。</value>
+  </data>
+  <data name="Settings_UserGuide" xml:space="preserve">
+    <value>使い方</value>
+  </data>
+  <data name="Settings_UserGuideTip" xml:space="preserve">
+    <value>使い方ガイドを Web ブラウザーで開きます。</value>
+  </data>
+  <data name="Method_PingDescription" xml:space="preserve">
+    <value>通信量が最小。管理者権限は不要です。ICMP を遮断するネットワークでは失敗します。</value>
+  </data>
+  <data name="Method_HttpDescription" xml:space="preserve">
+    <value>プロキシ環境や ICMP 遮断環境でも通りやすい方式です。通信量は Ping より多くなります。HTTP の応答があれば内容に関わらず成功とみなします。</value>
+  </data>
+  <data name="Method_TcpDescription" xml:space="preserve">
+    <value>接続確立のみ行い即切断します。ポート 443 などへの接続が許可されている必要があります。</value>
+  </data>
+  <data name="Fallback_None" xml:space="preserve">
+    <value>使わない</value>
+  </data>
+  <data name="Settings_TrafficEstimate" xml:space="preserve">
+    <value>通信量の目安: 1 時間あたり {0}（24 時間で {1}）</value>
+  </data>
+  <data name="Settings_NetworksLoadFailed" xml:space="preserve">
+    <value>接続中のネットワークを取得できませんでした: {0}</value>
+  </data>
+  <data name="Label_Interval" xml:space="preserve">
+    <value>実行間隔</value>
+  </data>
+  <data name="Label_Timeout" xml:space="preserve">
+    <value>タイムアウト</value>
+  </data>
+  <data name="Label_TcpPort" xml:space="preserve">
+    <value>TCP ポート</value>
+  </data>
+  <data name="Label_DataLimit" xml:space="preserve">
+    <value>通信量の上限</value>
+  </data>
+  <data name="Label_FailureThreshold" xml:space="preserve">
+    <value>通知する連続失敗の回数</value>
+  </data>
+  <data name="Settings_IntegerRequired" xml:space="preserve">
+    <value>{0}には整数を入力してください。</value>
+  </data>
+  <data name="Settings_SavedAt" xml:space="preserve">
+    <value>保存しました（{0:HH:mm:ss}）</value>
+  </data>
+  <data name="Settings_DefaultsEntered" xml:space="preserve">
+    <value>既定値を入力しました。保存すると反映されます。</value>
+  </data>
+  <data name="AutoStart_StateFailed" xml:space="preserve">
+    <value>自動起動の状態を取得できませんでした: {0}</value>
+  </data>
+  <data name="AutoStart_Enabled" xml:space="preserve">
+    <value>ログイン時の自動起動を有効にしました。</value>
+  </data>
+  <data name="AutoStart_Disabled" xml:space="preserve">
+    <value>ログイン時の自動起動を無効にしました。</value>
+  </data>
+  <data name="AutoStart_SetFailed" xml:space="preserve">
+    <value>自動起動の設定に失敗しました: {0}</value>
+  </data>
+  <data name="About_Title" xml:space="preserve">
+    <value>{0} について</value>
+  </data>
+  <data name="Licenses_OpenFailedLog" xml:space="preserve">
+    <value>ライセンス情報のファイルを開けませんでした: {0}</value>
+  </data>
+  <data name="Licenses_OpenFailed" xml:space="preserve">
+    <value>ライセンス情報のファイルを開けませんでした。
+
+ファイル: {0}
+詳細: {1}</value>
+  </data>
+  <data name="UserGuide_OpenFailedLog" xml:space="preserve">
+    <value>使い方ガイドを開けませんでした: {0}</value>
+  </data>
+  <data name="UserGuide_OpenFailed" xml:space="preserve">
+    <value>使い方ガイドを開けませんでした。
+
+URL: {0}
+詳細: {1}</value>
+  </data>
+  <data name="History_Last24Hours" xml:space="preserve">
+    <value>直近 24 時間</value>
+  </data>
+  <data name="History_Last7Days" xml:space="preserve">
+    <value>直近 7 日</value>
+  </data>
+  <data name="History_Last30Days" xml:space="preserve">
+    <value>直近 30 日</value>
+  </data>
+  <data name="History_File24Hours" xml:space="preserve">
+    <value>24時間</value>
+  </data>
+  <data name="History_File7Days" xml:space="preserve">
+    <value>7日</value>
+  </data>
+  <data name="History_File30Days" xml:space="preserve">
+    <value>30日</value>
+  </data>
+  <data name="History_FileName" xml:space="preserve">
+    <value>TetherKeeper_履歴_{0}_{1:yyyyMMdd_HHmmss}.csv</value>
+  </data>
+  <data name="History_LoadFailedLog" xml:space="preserve">
+    <value>通信の結果の履歴を読めませんでした: {0}</value>
+  </data>
+  <data name="History_LoadFailed" xml:space="preserve">
+    <value>履歴を読めませんでした: {0}</value>
+  </data>
+  <data name="History_ExportedLog" xml:space="preserve">
+    <value>通信の結果の履歴を書き出しました: {0}</value>
+  </data>
+  <data name="History_Exported" xml:space="preserve">
+    <value>書き出しました: {0}</value>
+  </data>
+  <data name="History_ExportFailedLog" xml:space="preserve">
+    <value>通信の結果の履歴を書き出せませんでした: {0}</value>
+  </data>
+  <data name="History_ExportFailed" xml:space="preserve">
+    <value>書き出せませんでした: {0}</value>
+  </data>
+  <data name="History_OpenFolderFailed" xml:space="preserve">
+    <value>書き出したフォルダを開けませんでした: {0}</value>
+  </data>
+  <data name="History_NoRecords" xml:space="preserve">
+    <value>この期間の記録はありません。</value>
+  </data>
+  <data name="History_FallbackPart" xml:space="preserve">
+    <value>（うち予備で成功 {0:N0} 回）</value>
+  </data>
+  <data name="History_Summary" xml:space="preserve">
+    <value>合計 {0:N0} 回 / 成功 {1:N0} 回{2} / 失敗 {3:N0} 回（{4:P1}）</value>
+  </data>
+  <data name="History_Hour" xml:space="preserve">
+    <value>{0:00} 時</value>
+  </data>
+  <data name="History_NoRecordsHour" xml:space="preserve">
+    <value>記録なし</value>
+  </data>
+  <data name="History_HourCount" xml:space="preserve">
+    <value>{0:N0} 回中 {1:N0} 回失敗（{2:P1}）</value>
+  </data>
+  <data name="History_Export" xml:space="preserve">
+    <value>CSV に書き出す</value>
+  </data>
+  <data name="History_ExportTip" xml:space="preserve">
+    <value>この期間の結果を、ダウンロード フォルダーに CSV で書き出します</value>
+  </data>
+  <data name="History_ByHour" xml:space="preserve">
+    <value>時間帯ごとの失敗</value>
+  </data>
+  <data name="History_Note" xml:space="preserve">
+    <value>キープアライブの動作中に記録した通信の結果を、PC の時刻の時間帯（0〜23 時）ごとに数えます。予備の通信方式で成功した回は成功に数えます。記録は 30 日分を残し、ログと同じフォルダー（モニター画面の「保存先」）の history に日ごとの CSV として保存しています。</value>
+  </data>
+  <data name="Tray_RunningInTrayTitle" xml:space="preserve">
+    <value>{0}はタスクトレイで動作中です</value>
+  </data>
+  <data name="Tray_RunningInTrayMessage" xml:space="preserve">
+    <value>終了するには、トレイアイコンを右クリックして「終了」を選んでください。</value>
+  </data>
+  <data name="Tray_ShowWindow" xml:space="preserve">
+    <value>ウィンドウを表示</value>
+  </data>
+  <data name="Tray_StopKeepAlive" xml:space="preserve">
+    <value>キープアライブを停止</value>
+  </data>
+  <data name="Tray_StartKeepAlive" xml:space="preserve">
+    <value>キープアライブを開始</value>
+  </data>
+  <data name="Tray_ScheduleAutoStop" xml:space="preserve">
+    <value>自動停止を予約</value>
+  </data>
+  <data name="Tray_StopInOneHour" xml:space="preserve">
+    <value>1 時間後に停止</value>
+  </data>
+  <data name="Tray_StopInTwoHours" xml:space="preserve">
+    <value>2 時間後に停止</value>
+  </data>
+  <data name="Tray_CancelSchedule" xml:space="preserve">
+    <value>予約を解除</value>
+  </data>
+  <data name="Tray_Status" xml:space="preserve">
+    <value>状態: {0}</value>
+  </data>
+  <data name="Tray_LastResult" xml:space="preserve">
+    <value>最後の結果: {0:HH:mm:ss} {1}</value>
+  </data>
+  <data name="Tray_AutoStopAt" xml:space="preserve">
+    <value>自動停止: {0:MM/dd HH:mm} に停止予定</value>
+  </data>
+  <data name="Tray_DisconnectedTitle" xml:space="preserve">
+    <value>ネットワークから切断しました</value>
+  </data>
+  <data name="Tray_DisconnectedMessage" xml:space="preserve">
+    <value>「{0}」から切断したため、キープアライブを停止しました。</value>
+  </data>
+  <data name="Tray_TooltipStopped" xml:space="preserve">
+    <value>{0}（停止中）</value>
+  </data>
+  <data name="Tray_TooltipRunning" xml:space="preserve">
+    <value>{0}（動作中）</value>
+  </data>
+  <data name="Tray_TooltipFailing" xml:space="preserve">
+    <value>{0}（動作中・{1} 回連続失敗）</value>
+  </data>
+  <data name="Exit_Exiting" xml:space="preserve">
+    <value>{0}を終了します。</value>
+  </data>
+  <data name="Exit_Error" xml:space="preserve">
+    <value>終了処理中にエラーが発生しました: {0}</value>
+  </data>
+  <data name="Exit_AutoStopped" xml:space="preserve">
+    <value>自動停止したため、アプリを終了します。</value>
+  </data>
+  <data name="SingleInstance_NotResponding" xml:space="preserve">
+    <value>{0}は既に起動していますが、応答がありません。
+
+タスクマネージャーで{0}（TetherKeeper.exe）を終了してから、もう一度起動してください。
+見当たらない場合は、PC を再起動してください。</value>
+  </data>
+  <data name="StartupTask_EnabledByPolicy" xml:space="preserve">
+    <value>組織のポリシーで自動起動が有効にされているため、無効にできません。</value>
+  </data>
+  <data name="StartupTask_DisabledByUser" xml:space="preserve">
+    <value>タスクマネージャーの「スタートアップ アプリ」で{0}が無効にされています。そちらで有効にしてください。</value>
+  </data>
+  <data name="StartupTask_DisabledByPolicy" xml:space="preserve">
+    <value>組織のポリシーで自動起動が禁止されています。</value>
+  </data>
+  <data name="StartupTask_EnableFailed" xml:space="preserve">
+    <value>自動起動を有効にできませんでした (状態: {0})。</value>
+  </data>
+</root>

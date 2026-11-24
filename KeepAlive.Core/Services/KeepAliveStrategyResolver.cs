@@ -18,5 +18,5 @@ public sealed class KeepAliveStrategyResolver : IKeepAliveStrategyResolver
     public IKeepAliveStrategy Resolve(KeepAliveMethod method) =>
         _byMethod.TryGetValue(method, out var strategy)
             ? strategy
-            : throw new InvalidOperationException($"通信方式 {method} の Strategy が登録されていません。");
+            : throw new InvalidOperationException(Text.Format(CoreStrings.Strategy_NotRegistered, method));
 }

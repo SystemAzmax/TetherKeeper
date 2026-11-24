@@ -99,10 +99,10 @@ The destinations and the content of the traffic are as follows.
 - This traffic does not include your personal information or any information stored on your PC.
 - Because of how internet communication works, the destination receives your IP address and the time of the communication.
   The destination handles this information in accordance with its operator's policies.
-- You can change the destinations on the "設定" (Settings) screen. If you specify a host name as the destination, the app looks up that name using DNS.
-- If you choose a "予備の通信方式" (Fallback method), the app also sends the same kind of traffic to the destination of the fallback method, but only when the main method fails.
+- You can change the destinations on the "Settings" screen. If you specify a host name as the destination, the app looks up that name using DNS.
+- If you choose a "Fallback method", the app also sends the same kind of traffic to the destination of the fallback method, but only when the main method fails.
 
-When you select the "使い方" (User guide) button, the app opens the user guide (a GitHub page) in your web browser.
+When you select the "User guide" button, the app opens the user guide (a GitHub page) in your web browser.
 
 ### Information Stored on Your PC
 
@@ -115,11 +115,11 @@ This information is never sent to the developer.
   Error details may include file locations, which may contain your Windows user name.
   Logs older than 30 days are deleted automatically
 - The history of results (the time, whether it succeeded, the method, the destination, the response time, and error details). It is used to count failures by time of day. History older than 30 days is deleted automatically.
-  The app writes it to the Downloads folder on your PC only when you select "CSV に書き出す" (Export to CSV)
+  The app writes it to the Downloads folder on your PC only when you select "Export to CSV"
 
 The app counts data usage on your PC from the amount of data sent and received by the network adapter. It does not read the content of any traffic.
 
-If you use "指定したネットワークに接続したら開始し、切断したら停止する" (Start when connected to the specified network and stop when disconnected), the app reads the names of the networks your PC is connected to (such as Wi-Fi network names (SSIDs)) from Windows.
+If you use "Start when connected to the specified network and stop when disconnected", the app reads the names of the networks your PC is connected to (such as Wi-Fi network names (SSIDs)) from Windows.
 The app uses these names only to show the list on the Settings screen and to check whether your PC is connected to the specified network. It saves only the network name you choose. The app does not use location information.
 
 If you installed the app from the Microsoft Store, this information is deleted when you uninstall the app.
