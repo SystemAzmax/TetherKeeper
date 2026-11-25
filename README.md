@@ -79,7 +79,8 @@ The following files are written to `artifacts\msix\`.
 | `TetherKeeper_<version>_Test\TetherKeeper_<version>_x64.msix` | The installer (it includes .NET and the Windows App SDK, so it can be installed on its own) |
 | `TetherKeeper.cer` | The public key of the signing certificate. Used to trust the certificate on the PC where you install the app |
 
-A self-signed certificate for signing (`CN=TetherKeeper`, valid for 5 years) is created automatically in the current user's certificate store the first time you run the script.
+A self-signed certificate for signing (its subject is the same as the `Publisher` of `Identity` in `Package.appxmanifest`, valid for 5 years) is created automatically in the current user's certificate store the first time you run the script.
+Packages submitted to the Microsoft Store are signed by the Store, so this certificate is only for MSIX packages you try on your own PCs.
 
 Because the signature is timestamped, the script needs an internet connection (only the hash of the signature is sent to the timestamp server). You can change the server with `-TimestampUrl`.
 
@@ -112,7 +113,7 @@ Uninstall TetherKeeper from Settings → Apps → Installed apps. The settings a
 
 | Item | Unpackaged (running the exe directly during development) | MSIX |
 |---|---|---|
-| Where settings and logs are saved | `%LOCALAPPDATA%\TetherKeeper` | `%LOCALAPPDATA%\Packages\TetherKeeper_<publisher ID>\LocalState` (the "Location" button opens its `logs` folder) |
+| Where settings and logs are saved | `%LOCALAPPDATA%\TetherKeeper` | `%LOCALAPPDATA%\Packages\F0C48714.TetherKeeper_<publisher ID>\LocalState` (the "Location" button opens its `logs` folder) |
 | Start at sign-in | The registry Run key | StartupTask (can also be switched in "Startup apps" in Task Manager) |
 | Data when uninstalled | Kept | Deleted automatically |
 
@@ -120,7 +121,7 @@ If you disable start at sign-in in Task Manager, Windows doesn't allow the app's
 
 ### Managing the signing certificate
 
-The certificate used for signing (with its private key) exists only in the "Current User" certificate store on the PC where you created the package. If you lose it, for example when you replace the PC, a new certificate is created automatically. In that case, trust the new `TetherKeeper.cer` on each PC in the same way as step 1.
+The certificate used for signing (with its private key) exists only in the "Current User" certificate store on the PC where you created the package. If you lose it, for example when you replace the PC, or if you change the `Publisher` in `Package.appxmanifest`, a new certificate is created automatically. In that case, trust the new `TetherKeeper.cer` on each PC in the same way as step 1.
 
 The private key is created as non-exportable, so you can't take it out of the PC or back it up. This prevents anyone who steals the private key from installing any package without warning on every PC that trusts this certificate.
 

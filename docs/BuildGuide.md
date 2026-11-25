@@ -30,16 +30,20 @@
 
 1. Partner Center のアプリの **製品管理** → **アプリ名の管理** で、
    `テザリングキーパー` と `TetherKeeper` の両方を予約します。
-2. Visual Studio で TetherKeeper のプロジェクトを右クリックし、
-   **公開** → **アプリケーションをストアと関連付ける** を選びます（予約を足したときは、やり直します）。
-   `Package.appxmanifest` の `Identity` の `Name` と `Publisher` が Partner Center のアプリの値に書き換わり、
-   `Package.StoreAssociation.xml` ができます。
-   - Visual Studio にこのメニューが無い場合は、Partner Center の **製品管理** → **製品 ID** にある
-     `Package/Identity/Name` と `Package/Identity/Publisher` の値を、`Identity` の `Name` と `Publisher` に書き写します。
-   - 関連付けのあとに `Package.appxmanifest` の `DisplayName` が書き換わっていたら、
+2. Partner Center の **製品管理** → **製品 ID** にある `Package/Identity/Name` と `Package/Identity/Publisher` の値を、
+   `TetherKeeper\Platforms\Windows\Package.appxmanifest` の `Identity` の `Name` と `Publisher` に書き写します（設定済み）。
+   - `Name` は `F0C48714.TetherKeeper` のように、Partner Center がアカウントごとに付ける接頭辞も含めて書きます。
+     `Publisher` も `CN=` から 1 文字も変えずに書きます。
+   - Visual Studio の **公開** → **アプリケーションをストアと関連付ける** でも書き換えられますが、
+     このメニューは `WindowsPackageType` が `MSIX` のときだけ出ます。このプロジェクトは開発時に exe で動かすため
+     `None` にしているので、メニューは出ません。手で書き写せば、`Package.StoreAssociation.xml` が無くても申請できます。
+   - メニューで関連付けた場合に `Package.appxmanifest` の `DisplayName` が書き換わっていたら、
      `ms-resource:AppDisplayName` に戻します。
-   - `Publisher` が変わると、`build\Publish-Msix.ps1` の自己署名証明書（`CN=TetherKeeper`）では署名できなくなります。
-     ストアに出すパッケージは、Partner Center にアップロードするとストアが署名します。
+   - ストアに出すパッケージは、Partner Center にアップロードするとストアが署名します。
+     手元で試す MSIX は、`build\Publish-Msix.ps1` が `Publisher` と同じサブジェクトの自己署名証明書を作って署名します。
+     `Publisher` を変えると証明書も新しくなるため、インストール先の PC で新しい `TetherKeeper.cer` の信頼登録が要ります。
+   - `Name` か `Publisher` を変えたパッケージは、前のパッケージとは別のアプリとして扱われ、上書きで更新されません。
+     前のパッケージ（`Name` が `TetherKeeper` のもの）を入れた PC では、それをアンインストールしてから入れ直します（設定とログも削除されます）。
 3. 申請の **ストア登録情報** で、言語ごとの **製品名** を選びます（日本語はテザリングキーパー、英語は TetherKeeper）。
    英語の登録情報を用意しない場合は、**言語の追加と削除** で英語を外せます。
 

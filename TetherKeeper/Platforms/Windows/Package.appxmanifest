@@ -7,8 +7,11 @@
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
   IgnorableNamespaces="uap uap5 rescap">
 
-  <!-- Publisher は署名に使う証明書のサブジェクトと完全に一致させること (build\Publish-Msix.ps1 で作成する証明書は CN=TetherKeeper) -->
-  <Identity Name="TetherKeeper" Publisher="CN=TetherKeeper" Version="0.0.0.0" />
+  <!-- Name と Publisher は、Partner Center の「製品管理」→「製品 ID」の Package/Identity/Name と Package/Identity/Publisher の値。
+       ストアに出すパッケージはストアが署名する。手元で試す MSIX は、build\Publish-Msix.ps1 が
+       この Publisher と同じサブジェクトの自己署名証明書を作って署名する。
+       Version はビルドで ApplicationDisplayVersion から作られるので書き換えない -->
+  <Identity Name="F0C48714.TetherKeeper" Publisher="CN=984901FF-A7B3-415C-B173-06EC90101C99" Version="0.0.0.0" />
 
   <mp:PhoneIdentity PhoneProductId="FFF04110-B8C1-4264-8C3A-7E63456A4440" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 

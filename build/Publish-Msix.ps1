@@ -3,7 +3,9 @@
     TetherKeeper の MSIX パッケージを作成し、自己署名証明書で署名する。
 
 .DESCRIPTION
-    1. 署名用の自己署名証明書 (CN=TetherKeeper) が無ければ作成する
+    1. 署名用の自己署名証明書が無ければ作成する
+       証明書のサブジェクトは、Package.appxmanifest の Identity の Publisher と同じにする
+       (Publisher と一致しない証明書では署名できないため、マニフェストから読む)
        (現在のユーザーの証明書ストアに作るため、管理者権限は不要)
        秘密鍵はエクスポート不可で作成する。盗まれると、この証明書を信頼した全 PC で
        任意の MSIX が警告なしにインストールできてしまうため、PC の外に持ち出せないようにする
@@ -12,7 +14,7 @@
     3. インストール先 PC で信頼登録するための公開証明書 (TetherKeeper.cer) を出力する
 
     出力先: artifacts\msix\
-    証明書の Subject は Package.appxmanifest の Identity Publisher と一致させること。
+    ストアに出すパッケージは、Partner Center にアップロードするとストアが署名するため、この署名は手元で試す MSIX 用。
 
 .PARAMETER TimestampUrl
     署名のタイムスタンプに使う RFC 3161 タイムスタンプサーバー。空文字を指定するとタイムスタンプを付けない。
@@ -43,7 +45,14 @@ $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 $project = Join-Path $root 'TetherKeeper\TetherKeeper.csproj'
 $outDir = Join-Path $root 'artifacts\msix'
-$subject = 'CN=TetherKeeper'
+$manifestPath = Join-Path $root 'TetherKeeper\Platforms\Windows\Package.appxmanifest'
+
+# 署名に使う証明書のサブジェクト (マニフェストの Identity の Publisher と同じにする)
+[xml] $manifest = Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8
+$subject = $manifest.Package.Identity.Publisher
+if (-not $subject) {
+    throw "Package.appxmanifest に Identity の Publisher がありません ($manifestPath)"
+}
 
 # 秘密鍵がエクスポート可能か (判定できない場合は安全側に倒して true)
 function Test-PrivateKeyExportable([System.Security.Cryptography.X509Certificates.X509Certificate2] $Certificate) {

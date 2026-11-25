@@ -78,7 +78,8 @@ powershell -ExecutionPolicy Bypass -File build\Publish-Msix.ps1
 | `TetherKeeper_<バージョン>_Test\TetherKeeper_<バージョン>_x64.msix` | インストーラー本体（.NET と Windows App SDK を同梱しているため単体でインストール可能） |
 | `TetherKeeper.cer` | 署名証明書の公開鍵。インストール先 PC で信頼登録に使う |
 
-署名用の自己署名証明書（`CN=TetherKeeper`、有効期間 5 年）は、初回実行時に現在のユーザーの証明書ストアに自動で作成されます。
+署名用の自己署名証明書（サブジェクトは `Package.appxmanifest` の `Identity` の `Publisher` と同じ、有効期間 5 年）は、初回実行時に現在のユーザーの証明書ストアに自動で作成されます。
+ストアに出すパッケージはストアが署名するため、この証明書は手元で試す MSIX にだけ使います。
 
 署名にはタイムスタンプを付けるため、実行時にインターネット接続が必要です（タイムスタンプサーバーに送られるのは署名のハッシュ値だけです）。使うサーバーは `-TimestampUrl` で変更できます。
 
@@ -111,7 +112,7 @@ powershell -ExecutionPolicy Bypass -File build\Publish-Msix.ps1
 
 | 項目 | 非パッケージ版（開発時の exe 直接実行） | MSIX 版 |
 |---|---|---|
-| 設定・ログの保存先 | `%LOCALAPPDATA%\TetherKeeper` | `%LOCALAPPDATA%\Packages\TetherKeeper_<発行元ID>\LocalState`（「保存先」ボタンで、この中の `logs` が開く） |
+| 設定・ログの保存先 | `%LOCALAPPDATA%\TetherKeeper` | `%LOCALAPPDATA%\Packages\F0C48714.TetherKeeper_<発行元ID>\LocalState`（「保存先」ボタンで、この中の `logs` が開く） |
 | ログイン時の自動起動 | レジストリの Run キー | StartupTask（タスクマネージャーの「スタートアップ アプリ」でも切り替え可能） |
 | アンインストール時のデータ | 残る | 自動で削除される |
 
@@ -119,7 +120,7 @@ powershell -ExecutionPolicy Bypass -File build\Publish-Msix.ps1
 
 ### 署名証明書の管理
 
-署名に使う証明書（秘密鍵付き）は、パッケージを作成した PC の「現在のユーザー」の証明書ストアにだけあります。PC の入れ替えなどで失った場合は、新しい証明書が自動で作られます。その場合、各 PC で新しい `TetherKeeper.cer` を手順 1 と同じように信頼登録してください。
+署名に使う証明書（秘密鍵付き）は、パッケージを作成した PC の「現在のユーザー」の証明書ストアにだけあります。PC の入れ替えなどで失った場合や、`Package.appxmanifest` の `Publisher` を変えた場合は、新しい証明書が自動で作られます。その場合、各 PC で新しい `TetherKeeper.cer` を手順 1 と同じように信頼登録してください。
 
 秘密鍵はエクスポートできない設定で作成されるため、PC の外へ持ち出したりバックアップしたりはできません。これは、秘密鍵が盗まれると、この証明書を信頼したすべての PC で任意のパッケージが警告なしにインストールできてしまうのを防ぐためです。
 
