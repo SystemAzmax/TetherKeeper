@@ -109,6 +109,16 @@ if (Test-Path $outDir) {
     Remove-Item $outDir -Recurse -Force
 }
 
+# タイムスタンプを付けるときは、ハッシュ方式 (SignTool の /td) も指定する。
+# 新しい SignTool は /td が無いとタイムスタンプを付けられず、署名が失敗する (APPX1204)
+$timestampArgs = @()
+if ($TimestampUrl) {
+    $timestampArgs = @(
+        "-p:AppxPackageSigningTimestampServerUrl=$TimestampUrl",
+        '-p:AppxPackageSigningTimestampDigestAlgorithm=SHA256'
+    )
+}
+
 dotnet publish $project `
     -f net10.0-windows10.0.19041.0 `
     -c Release `
@@ -119,8 +129,8 @@ dotnet publish $project `
     -p:GenerateAppxPackageOnBuild=true `
     -p:AppxPackageSigningEnabled=true `
     -p:PackageCertificateThumbprint=$($cert.Thumbprint) `
-    -p:AppxPackageSigningTimestampServerUrl=$TimestampUrl `
-    -p:AppxPackageDir="$outDir\"
+    -p:AppxPackageDir="$outDir\" `
+    @timestampArgs
 if ($LASTEXITCODE -ne 0) {
     throw "dotnet publish が失敗しました (終了コード $LASTEXITCODE)"
 }
